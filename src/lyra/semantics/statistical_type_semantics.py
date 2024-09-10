@@ -49,8 +49,8 @@ from lyra.core.statistical_warnings import (
 )
 
 from lyra.semantics.forward import DefaultForwardSemantics
-from src.lyra.semantics.sklearn_statistical_type_semantics import SklearnTypeSemantics
-from src.lyra.semantics.pandas_statistical_type_semantics import PandasStatisticalTypeSemantics
+from lyra.semantics.sklearn_statistical_type_semantics import SklearnTypeSemantics
+from lyra.semantics.pandas_statistical_type_semantics import PandasStatisticalTypeSemantics
 import lyra.semantics.utilities as utilities
 from lyra.semantics.utilities import SelfUtilitiesSemantics
 
