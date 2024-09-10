@@ -19,7 +19,27 @@ from lyra.engine.forward import ForwardInterpreter
 from lyra.engine.runner import Runner
 from lyra.semantics.backward import DefaultBackwardSemantics
 from lyra.semantics.forward import DefaultForwardSemantics
+from lyra.statistical.statistical_type_domain import StatisticalTypeState
 
+from lyra.semantics.statistical_type_semantics import StatisticalTypeSemantics
+
+
+class ForwardStatisticalTypeAnalysis(Runner):
+
+    def interpreter(self):
+        return ForwardInterpreter(self.cfgs, self.fargs, StatisticalTypeSemantics(), 3)
+
+    def state(self):
+        return StatisticalTypeState(self.variables)
+
+
+class BackwardStatisticalTypeAnalysis(Runner):
+
+    def interpreter(self):
+        return BackwardInterpreter(self.cfgs, self.fargs, StatisticalTypeSemantics(), 3)
+
+    def state(self):
+        return StatisticalTypeState(self.variables)
 
 class ForwardTypeAnalysis(Runner):
 
