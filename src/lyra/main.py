@@ -7,6 +7,11 @@ import argparse
 from lyra.engine.liveness.liveness_analysis import StrongLivenessAnalysis
 from lyra.engine.numerical.interval_analysis import ForwardIntervalAnalysisWithSummarization
 from lyra.engine.usage.usage_analysis import SimpleUsageAnalysis
+from lyra.engine.usage.dataframe_usage_analysis import DataFrameColumnUsageAnalysis
+
+from lyra.engine.numerical.sign_analysis import ForwardSignAnalysis
+from lyra.engine.assumption.assumption_analysis import ForwardTypeAnalysis
+from lyra.engine.assumption.assumption_analysis import ForwardStatisticalTypeAnalysis
 
 
 def main():
@@ -27,7 +32,14 @@ def main():
         StrongLivenessAnalysis().main(args.python_file)
     if args.analysis == 'usage':
         SimpleUsageAnalysis().main(args.python_file)
-
+    if args.analysis == 'df_usage':
+        DataFrameColumnUsageAnalysis().main(args.python_file)
+    if args.analysis == "sign":
+        ForwardSignAnalysis().main(args.python_file)
+    if args.analysis == 'type-statistical':
+        ForwardStatisticalTypeAnalysis().main(args.python_file)
+    if args.analysis == 'type-vanilla':
+        ForwardTypeAnalysis().main(args.python_file)
 
 if __name__ == '__main__':
     main()
