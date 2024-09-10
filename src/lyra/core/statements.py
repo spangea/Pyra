@@ -8,7 +8,7 @@ Lyra's internal representation of Python statements.
 """
 
 from abc import ABCMeta, abstractmethod
-from typing import List
+from typing import List, Any
 
 from lyra.core.expressions import Expression, VariableIdentifier, AttributeIdentifier
 from lyra.core.types import LyraType
@@ -490,3 +490,97 @@ class Call(Statement):
     def __repr__(self):
         arguments = ", ".join("{}".format(argument) for argument in self.arguments)
         return "{}({})".format(self.name, arguments)
+
+
+class Keyword(Statement):
+    def __init__(self, pp, name: str, value: Statement):
+        """Keyword argument representation.
+
+        :param pp: program point associated with the keyword
+        :param name: name of the keyword
+        :param value: value of the keyword
+        """
+        super().__init__(pp)
+        self._name: str = name
+        self._value: Statement = value
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def value(self):
+        return self._value
+
+    def __repr__(self):
+        return "{}={}".format(self.name, self.value)
+
+
+class AccessField(Statement):
+    # TODO: check if compatible with AttributeAccess
+    def __init__(self, pp, left: Statement, right: str, typ: LyraType=typing.Any):
+        """Access field representation.
+
+        :param pp: program point associated with the access field expression
+        :param left: the left-hand side expression
+        :param right: the right-hand side expression
+        """
+        super().__init__(pp)
+        self._left: Statement = left
+        self._right: str = right
+        self.typ: LyraType = typ
+        self.name = str(left) + "." + str(right)
+
+    @property
+    def left(self):
+        return self._left
+
+    @property
+    def right(self):
+        return self._right
+
+    def __repr__(self):
+        return "{}.{}".format(self.left, self.right)
+
+class Assert(Statement):
+    def __init__(self, pp):
+        """Assert statement representation.
+
+        :param pp: program point associated with the raise
+        """
+        super().__init__(pp)
+
+    def __repr__(self):
+        # raise Exception
+        return "assert"
+
+
+class Delete(Statement):
+    def __init__(self, pp, targets):
+        """Delete statement representation.
+
+        :param pp: program point associated with the raise
+        :param targets: the targets to be deleted
+        """
+        super().__init__(pp)
+        self._targets = targets
+
+    def __repr__(self):
+        return "delete {}".format(", ".join("{}".format(target) for target in self._targets))
+
+
+class LambdaExpression(Statement):
+    # TODO: Check if this should be a statement or an expression
+    def __init__(self, pp, args, body):
+        """Lambda expression statement representation.
+
+        :param pp: program point associated with the raise
+        :param args: the formal parameters of the lambda expression
+        :param body: the body of the lambda expression
+        """
+        super().__init__(pp)
+        self._args = args
+        self._body = body
+
+    def __repr__(self):
+        return "lambda {} : {}".format(", ".join("{}".format(arg) for arg in self._args), self._body)
