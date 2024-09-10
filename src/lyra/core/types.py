@@ -32,6 +32,12 @@ class LyraType(metaclass=ABCMeta):
 
         """
 
+class TopLyraType(LyraType):
+    """Top type representation (unknown type)."""
+
+    def __repr__(self):
+        return "top"
+
 
 class BooleanLyraType(LyraType):
     """Boolean type representation."""
@@ -218,6 +224,12 @@ class AttributeAccessLyraType(LyraType):
 
     def __repr__(self):
         return "{}.{}".format(self.target_typ, self.attr_typ)
+
+class NoneLyraType(LyraType):
+    """Top type representation (unknown type)."""
+
+    def __repr__(self):
+        return "None"
 
 
 def resolve_type_annotation(annotation):
