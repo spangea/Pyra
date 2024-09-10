@@ -1,0 +1,543 @@
+from lyra.core.expressions import (
+    Subscription,
+    Literal,
+    VariableIdentifier,
+    ListDisplay,
+    Input,
+)
+from lyra.core.statements import (
+    Call,
+    SubscriptionAccess,
+    VariableAccess,
+    Keyword,
+    LiteralEvaluation,
+    ListDisplayAccess,
+)
+from lyra.core.types import (
+    StringLyraType,
+    ListLyraType,
+    SetLyraType,
+    DataFrameLyraType,
+    IntegerLyraType,
+    FloatLyraType,
+    SeriesLyraType,
+)
+from lyra.engine.interpreter import Interpreter
+
+from lyra.statistical.statistical_type_domain import (
+    StatisticalTypeState,
+    StatisticalTypeLattice,
+)
+import typing
+
+
+def is_DataFrame(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.get_type(caller) == StatisticalTypeLattice.Status.DataFrame:
+                return True
+        else:
+            if isinstance(caller.typ, DataFrameLyraType):
+                return True
+    elif isinstance(caller, Subscription):
+        if isinstance(caller.key, ListDisplay) and (
+            isinstance(caller.target.typ, DataFrameLyraType)
+            or (
+                caller.target in state.store
+                and state.get_type(caller.target)
+                == StatisticalTypeLattice.Status.DataFrame
+            )
+        ):
+            return True
+    elif isinstance(caller, Input) and isinstance(caller.typ, DataFrameLyraType):
+        return True
+    return False
+
+def is_Series(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.store[caller]._less_equal(
+                StatisticalTypeLattice(StatisticalTypeLattice.Status.Series)
+            ):
+                return True
+        else:
+            if isinstance(caller.typ, SeriesLyraType):
+                return True
+    elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
+        if caller in state.store and state.store[caller]._less_equal(
+            StatisticalTypeLattice(StatisticalTypeLattice.Status.Series)
+        ):
+            return True
+        elif not isinstance(caller.key, ListDisplay) and (
+            isinstance(caller.target.typ, DataFrameLyraType)
+            or (
+                caller.target in state.store
+                and state.get_type(caller.target)
+                == StatisticalTypeLattice.Status.DataFrame
+            )
+        ):
+            return True
+    elif isinstance(caller, Input) and isinstance(caller.typ, SeriesLyraType):
+        return True
+    elif isinstance(caller, StatisticalTypeLattice.Status) and StatisticalTypeLattice(
+        caller
+    )._less_equal(StatisticalTypeLattice(StatisticalTypeLattice.Status.Series)):
+        return True
+    return False
+
+
+def is_StringSeries(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.store[caller] == (
+                    StatisticalTypeLattice(StatisticalTypeLattice.Status.StringSeries)
+            ):
+                return True
+    elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
+        if caller in state.store and state.store[caller]._less_equal(
+                StatisticalTypeLattice(StatisticalTypeLattice.Status.StringSeries)
+        ):
+            return True
+    elif (
+            isinstance(caller, StatisticalTypeLattice.Status)
+            and caller == StatisticalTypeLattice.Status.StringSeries
+    ):
+        return True
+    return False
+
+
+def is_RatioSeries(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.store[caller] == (
+                StatisticalTypeLattice(StatisticalTypeLattice.Status.RatioSeries)
+            ):
+                return True
+    elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
+        if caller in state.store and state.store[caller]._less_equal(
+            StatisticalTypeLattice(StatisticalTypeLattice.Status.RatioSeries)
+        ):
+            return True
+    elif (
+        isinstance(caller, StatisticalTypeLattice.Status)
+        and caller == StatisticalTypeLattice.Status.RatioSeries
+    ):
+        return True
+    return False
+
+
+def is_CatSeries(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.store[caller] == StatisticalTypeLattice(
+                StatisticalTypeLattice.Status.CatSeries
+            ):
+                return True
+    elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
+        if caller in state.store and state.store[caller] == StatisticalTypeLattice(
+            StatisticalTypeLattice.Status.CatSeries
+        ):
+            return True
+    elif (
+        isinstance(caller, StatisticalTypeLattice.Status)
+        and caller == StatisticalTypeLattice.Status.CatSeries
+    ):
+        return True
+    return False
+
+
+def is_ScaledSeries(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.store[caller] in {
+                StatisticalTypeLattice.Status.NormSeries,
+                StatisticalTypeLattice.Status.StdSeries,
+            }:
+                return True
+    elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
+        if caller in state.store and state.store[caller] in {
+            StatisticalTypeLattice(StatisticalTypeLattice.Status.NormSeries),
+            StatisticalTypeLattice(StatisticalTypeLattice.Status.StdSeries),
+        }:
+            return True
+    elif isinstance(caller, StatisticalTypeLattice.Status) and caller in {
+        StatisticalTypeLattice.Status.NormSeries,
+        StatisticalTypeLattice.Status.StdSeries,
+    }:
+        return True
+    return False
+
+def is_Array(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.store[caller]._less_equal(
+                StatisticalTypeLattice(StatisticalTypeLattice.Status.Array)
+            ):
+                return True
+    return False
+
+def is_NumericArray(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.store[caller]._less_equal(
+                StatisticalTypeLattice(StatisticalTypeLattice.Status.NumericArray)
+            ):
+                return True
+    return False
+
+def is_StringArray(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.store[caller]._less_equal(
+                StatisticalTypeLattice(StatisticalTypeLattice.Status.StringArray)
+            ):
+                return True
+    return False
+
+def is_List(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.store[caller]._less_equal(
+                StatisticalTypeLattice(StatisticalTypeLattice.Status.List)
+            ):
+                return True
+        else:
+            if isinstance(caller.typ, ListLyraType):
+                return True
+    if isinstance(caller, ListDisplay):
+        return True
+    return False
+
+def is_NumericDisplayList(state, caller):
+    if isinstance(caller, ListDisplay):
+        for x in caller.items:
+            if not isinstance(x.typ, FloatLyraType) and not isinstance(x.typ, IntegerLyraType):
+                return False
+        return True
+    return False
+
+def is_StringList(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.store[caller]._less_equal(
+                StatisticalTypeLattice(StatisticalTypeLattice.Status.StringList)
+            ):
+                return True
+    if isinstance(caller, ListDisplay):
+        for x in caller.items:
+            if not isinstance(x.typ, StringLyraType):
+                return False
+        return True
+    if isinstance(caller, ListDisplayAccess):
+        for x in caller.items:
+            if not isinstance(x.literal.typ, StringLyraType):
+                return False
+        return True
+    return False
+
+def is_StringDisplayList(state, caller):
+    if isinstance(caller, ListDisplay):
+        for x in caller.items:
+            if not isinstance(x.typ, StringLyraType):
+                return False
+        return True
+    if isinstance(caller, ListDisplayAccess):
+        for x in caller.items:
+            if not isinstance(x.literal.typ, StringLyraType):
+                return False
+        return True
+    return False
+
+def is_Set(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.store[caller]._less_equal(
+                StatisticalTypeLattice(StatisticalTypeLattice.Status.Set)
+            ):
+                return True
+        else:
+            if isinstance(caller.typ, SetLyraType):
+                return True
+    return False
+
+
+def is_String(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, StringLyraType):
+        return True
+    elif (
+        isinstance(caller, VariableIdentifier)
+        and state.get_type(caller) == StatisticalTypeLattice.Status.String
+    ):
+        return True
+    elif isinstance(caller, Literal) and isinstance(caller.typ, StringLyraType):
+        return True
+    elif isinstance(caller, Input) and isinstance(caller.typ, StringLyraType):
+        return True
+    return False
+
+
+def is_Numeric(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, IntegerLyraType) or isinstance(caller, FloatLyraType):
+        return True
+    elif (
+        isinstance(caller, VariableIdentifier)
+        and state.get_type(caller) == StatisticalTypeLattice.Status.Numeric
+    ):
+        return True
+    elif isinstance(caller, Literal) and (
+        isinstance(caller.typ, IntegerLyraType) or isinstance(caller.typ, FloatLyraType)
+    ):
+        return True
+    elif isinstance(caller, Input) and (
+        isinstance(caller.typ, IntegerLyraType) or isinstance(caller.typ, FloatLyraType)
+    ):
+        return True
+    return False
+
+
+def is_Scaler(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.get_type(caller) in {
+                StatisticalTypeLattice.Status.MinMaxScaler,
+                StatisticalTypeLattice.Status.MaxAbsScaler,
+                StatisticalTypeLattice.Status.StandardScaler,
+            }:
+                return True
+    elif isinstance(caller, StatisticalTypeLattice.Status) and caller in {
+        StatisticalTypeLattice.Status.MinMaxScaler,
+        StatisticalTypeLattice.Status.MaxAbsScaler,
+        StatisticalTypeLattice.Status.StandardScaler,
+    }:
+        return True
+    return False
+
+
+def is_Encoder(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.get_type(caller) in {
+                StatisticalTypeLattice.Status.OrdinalEncoder,
+                StatisticalTypeLattice.Status.OneHotEncoder,
+                StatisticalTypeLattice.Status.LabelEncoder,
+                StatisticalTypeLattice.Status.LabelBinarizer,
+            }:
+                return True
+    elif isinstance(caller, StatisticalTypeLattice.Status) and caller in {
+        StatisticalTypeLattice.Status.OrdinalEncoder,
+        StatisticalTypeLattice.Status.OneHotEncoder,
+        StatisticalTypeLattice.Status.LabelEncoder,
+        StatisticalTypeLattice.Status.LabelBinarizer,
+    }:
+        return True
+    return False
+
+
+def is_inplace(arguments):
+    for arg in arguments:
+        if isinstance(arg, Keyword) and arg.name == "inplace" and arg.value:
+            return True
+    return False
+
+
+def is_axis_eq_1(arguments):
+    for arg in arguments:
+        if isinstance(arg, Keyword) and arg.name == "axis" and arg.value == 1:
+            return True
+    return False
+
+
+def is_axis_eq_0(arguments):
+    for arg in arguments:
+        if isinstance(arg, Keyword) and arg.name == "axis" and arg.value == 0:
+            return True
+    return False
+
+
+def get_axis(arguments):
+    for arg in arguments:
+        if isinstance(arg, Keyword) and arg.name == "axis":
+            return arg.value
+    return None
+
+
+def remove_inplace(arguments):
+    for arg in arguments:
+        if isinstance(arg, Keyword) and arg.name == "inplace" and arg.value:
+            arguments.remove(arg)
+
+
+def has_to_retstep(arguments):
+    for arg in arguments:
+        if isinstance(arg, Keyword) and arg.name == "retstep" and arg.value:
+            return True
+    return False
+
+
+def has_to_drop(arguments):
+    for arg in arguments:
+        if isinstance(arg, Keyword) and arg.name == "drop" and arg.value:
+            return True
+    return False
+
+
+def get_dtype(arguments):
+    for arg in arguments:
+        if isinstance(arg, Keyword) and arg.name == "dtype" and arg.value:
+            return arg.value
+    return None
+
+def is_dtype_numeric(arguments):
+    numerictypes = {"np.float_", "np.float16", "np.float32", "np.float64",
+                    "np.float128", "np.floating", "np.longfloat", "np.double",
+                    "np.single", "float", "np.complex_", "np.complex64",
+                    "np.complex128", "np.complex256", "np.csingle", "np.cfloat",
+                    "np.clongfloat", "complex", "np.int_", "np.int8", "np.int16",
+                    "np.int32", "np.int64", "np.intc", "np.intp", "np.longlong",
+                    "np.short", "int", "np.uint", "np.unsignedinteger", "np.ubyte",
+                    "np.uint8", "np.uint16", "np.uint32", "np.uint64", "np.uintc",
+                    "np.uintp", "np.ulonglong", "np.ushort"}
+    dtype = get_dtype(arguments)
+
+    if dtype is not None and dtype in numerictypes:
+        return True
+    return False
+
+def is_dtype_string(arguments) -> bool:
+    stringtypes = {"np.string_", "np.str_", "np.bytes_", "np.character",
+                   "np.unicode_", "str", "bytes", "memoryview"}
+    dtype = get_dtype(arguments)
+
+    if dtype is not None and dtype in stringtypes:
+        return True
+    return False
+
+def is_dtype_bool(arguments) -> bool:
+    booltypes = {"np.bool_", "bool"}
+    dtype = get_dtype(arguments)
+
+    if dtype is not None and dtype in booltypes:
+        return True
+    return False
+
+
+def is_average_not_None(arguments):
+    for arg in arguments:
+        if isinstance(arg, Keyword) and arg.name == "average" and arg.value is None:
+            return False
+    return True
+
+
+def is_zero_division_NaN(arguments):
+    nans = {"np.nan", "np.NaN", "np.NAN"}
+    for arg in arguments:
+        if isinstance(arg, Keyword) and arg.name == "zero_division" and arg.value in nans:
+            return True
+    return False
+
+
+class SelfUtilitiesSemantics:
+    def get_caller(
+        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+    ):
+        dfs = self.semantics(stmt.arguments[0], state, interpreter).result
+        assert len(dfs) == 1, (
+            f"Function {stmt.name} is supposed to be called "
+            "either on a single DataFrame or Series element"
+        )
+        caller = list(dfs)[0]
+        return caller
+
+    def semantics_without_inplace(
+        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+    ) -> StatisticalTypeState:
+        caller = self.get_caller(stmt, state, interpreter)
+        remove_inplace(stmt.arguments)
+        eval = self.semantics(stmt, state, interpreter)
+        state._assign(caller, eval.result.pop())
+
+    def forget_arg(self, caller, arg, state: StatisticalTypeState):
+        if isinstance(arg, LiteralEvaluation):
+            s = Subscription(typing.Any, caller, arg.literal)
+            if s in state.store:
+                state.forget_variable(s)
+        elif isinstance(arg, ListDisplayAccess):
+            for i in arg.items:
+                s = Subscription(typing.Any, caller, i.literal)
+                if s in state.store:
+                    state.forget_variable(s)
+        elif isinstance(arg, str):
+            s = Subscription(typing.Any, caller, Literal(StringLyraType(), arg))
+            if s in state.store:
+                state.forget_variable(s)
+
+    def forget_columns(self, caller, stmt, state: StatisticalTypeState):
+        for arg in stmt.arguments:
+            if isinstance(arg, Keyword) and arg.name == "columns":
+                if isinstance(arg.value, list):
+                    for v in arg.value:
+                        self.forget_arg(caller, v, state)
+                else:
+                    self.forget_arg(caller, arg.value, state)
+            else:  # Directly a LiteralEvaluation or ListDisplayAccess
+                self.forget_arg(caller, arg, state)
+
+    def return_same_type_as_caller(
+        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+    ) -> StatisticalTypeState:
+        caller = self.get_caller(stmt, state, interpreter)
+        if caller in state.store:
+            # If statistical type info is already present, it is convenient to use it because it could be preciser
+            statistical_type = state.get_type(caller)
+            state.result = {statistical_type}
+        else:
+            if is_DataFrame(state, caller):
+                state.result = {Input(typ=(DataFrameLyraType(library="pandas")))}
+            elif is_Series(state, caller):
+                # TODO: here we can be more precise if we return a statistical type element (not a Input/LyraType)
+                state.result = {Input(typ=SeriesLyraType(library="pandas"))}
+            elif is_String(state, caller):
+                state.result = {Input(typ=StringLyraType())}
+            elif is_Numeric(state, caller):
+                state.result = {Input(typ=FloatLyraType())}
+            elif is_Set(state, caller):
+                state.result = {Input(typ=SetLyraType())}
+            elif is_Scaler(state, caller):
+                state.result = state.get_type(caller)
+            elif is_Encoder(state, caller):
+                state.result = state.get_type(caller)
+            else:
+                raise Exception("Unexpected type of caller")
+        return state
