@@ -22,7 +22,7 @@ from lyra.abstract_domains.state import State
 from lyra.abstract_domains.store import Store
 from lyra.core.expressions import Expression, VariableIdentifier, Subscription, Slicing, \
     BinaryComparisonOperation, \
-    UnaryBooleanOperation, Literal, BinaryBooleanOperation, KeysIdentifier, ValuesIdentifier
+    UnaryBooleanOperation, Literal, BinaryBooleanOperation, KeysIdentifier, ValuesIdentifier, TupleDisplay
 from lyra.core.types import DictLyraType
 from lyra.core.utils import copy_docstring
 
@@ -169,19 +169,19 @@ class LivenessState(Store, State):
     @copy_docstring(State._assume_binary_boolean)
     def _assume_binary_boolean(self, condition: BinaryBooleanOperation, bwd: bool = False) -> 'LivenessState':
         return self._assume_any(condition)
-    
+
     @copy_docstring(State._assume_eq_comparison)
     def _assume_eq_comparison(self, condition: BinaryComparisonOperation, bwd: bool = False) -> 'LivenessState':
         return self._assume_any(condition)
-    
+
     @copy_docstring(State._assume_noteq_comparison)
     def _assume_noteq_comparison(self, condition: BinaryComparisonOperation, bwd: bool = False) -> 'LivenessState':
         return self._assume_any(condition)
-    
+
     @copy_docstring(State._assume_lt_comparison)
     def _assume_lt_comparison(self, condition: BinaryComparisonOperation, bwd: bool = False) -> 'LivenessState':
         return self._assume_any(condition)
-    
+
     @copy_docstring(State._assume_lte_comparison)
     def _assume_lte_comparison(self, condition: BinaryComparisonOperation, bwd: bool = False) -> 'LivenessState':
         return self._assume_any(condition)
@@ -189,23 +189,23 @@ class LivenessState(Store, State):
     @copy_docstring(State._assume_gt_comparison)
     def _assume_gt_comparison(self, condition: BinaryComparisonOperation, bwd: bool = False) -> 'LivenessState':
         return self._assume_any(condition)
-    
+
     @copy_docstring(State._assume_gte_comparison)
     def _assume_gte_comparison(self, condition: BinaryComparisonOperation, bwd: bool = False) -> 'LivenessState':
         return self._assume_any(condition)
-    
+
     @copy_docstring(State._assume_is_comparison)
     def _assume_is_comparison(self, condition: BinaryComparisonOperation, bwd: bool = False) -> 'LivenessState':
         return self._assume_any(condition)
-    
+
     @copy_docstring(State._assume_isnot_comparison)
     def _assume_isnot_comparison(self, condition: BinaryComparisonOperation, bwd: bool = False) -> 'LivenessState':
         return self._assume_any(condition)
-    
+
     @copy_docstring(State._assume_in_comparison)
     def _assume_in_comparison(self, condition: BinaryComparisonOperation, bwd: bool = False) -> 'LivenessState':
         return self._assume_any(condition)
-    
+
     @copy_docstring(State._assume_notin_comparison)
     def _assume_notin_comparison(self, condition: BinaryComparisonOperation, bwd: bool = False) -> 'LivenessState':
         return self._assume_any(condition)
@@ -298,6 +298,22 @@ class StrongLivenessState(LivenessState):
                 if identifier.is_dictionary:
                     self.keys[identifier.keys].top()
                     self.values[identifier.values].top()
+        return self
+
+    @copy_docstring(State._assign_tuple)
+    def _assign_tuple(self, left: TupleDisplay, right: Expression) -> '':
+        # CHECKME
+        if hasattr(right, "items") and len(left.items) == len(right.items):
+            for l, r in zip(left.items, right.items):
+                self._assign(l, r)
+        elif hasattr(right, "__len__") and len(left.items) == len(right):
+            for l, r in zip(left.items, right):
+                self._assign(l, r)
+        else:
+            self.store[left].top()
+            raise NotImplementedError("Way to return \"Top\" not yet implemented")
+            # for l in left.items:
+            #     self._assign(l, StatisticalTypeLattice.Status.Top)
         return self
 
     @copy_docstring(State._substitute_subscription)

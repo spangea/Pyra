@@ -17,7 +17,7 @@ from lyra.abstract_domains.state import State
 from lyra.abstract_domains.store import Store
 from lyra.abstract_domains.usage.usage_lattice import UsageLattice
 from lyra.core.expressions import VariableIdentifier, Expression, Subscription, Slicing, \
-    BinaryComparisonOperation, KeysIdentifier, ValuesIdentifier
+    BinaryComparisonOperation, KeysIdentifier, ValuesIdentifier, TupleDisplay
 from lyra.core.types import LyraType, DictLyraType
 from lyra.core.utils import copy_docstring
 
@@ -133,6 +133,21 @@ class SimpleUsageState(Stack, State):
     @copy_docstring(State._assign_variable)
     def _assign_variable(self, left: VariableIdentifier, right: Expression) -> 'SimpleUsageState':
         return self._assign_any(left, right)
+
+    @copy_docstring(State._assign_tuple)
+    def _assign_tuple(self, left: TupleDisplay, right: Expression) -> '':
+        # CHECKME
+        if hasattr(right, "items") and len(left.items) == len(right.items):
+            for l, r in zip(left.items, right.items):
+                self._assign(l, r)
+        elif hasattr(right, "__len__") and len(left.items) == len(right):
+            for l, r in zip(left.items, right):
+                self._assign(l, r)
+        else:
+            raise NotImplementedError("Way to return \"Top\" not yet implemented")
+            # for l in left.items:
+            #     self._assign(l, StatisticalTypeLattice.Status.Top)
+        return self
 
     @copy_docstring(State._assign_subscription)
     def _assign_subscription(self, left: Subscription, right: Expression) -> 'SimpleUsageState':
