@@ -11,11 +11,6 @@ from lyra.core.statements import (
     TupleDisplayAccess,
 )
 from lyra.core.types import (
-    DataFrameLyraType,
-    IntegerLyraType,
-    FloatLyraType,
-    SeriesLyraType,
-    BooleanLyraType,
     TopLyraType,
 )
 from lyra.engine.interpreter import Interpreter
@@ -34,13 +29,13 @@ class PandasStatisticalTypeSemantics:
     def DataFrame_call_semantics(
             stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
-        state.result = {Input(typ=DataFrameLyraType(library=""))}
+        state.result = {StatisticalTypeLattice.Status.DataFrame}
         return state
 
     def Series_call_semantics(
             stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
-        state.result = {Input(typ=SeriesLyraType(library=""))}
+        state.result = {StatisticalTypeLattice.Status.Series}
         return state
 
     def isna_library_call_semantics(
@@ -48,12 +43,12 @@ class PandasStatisticalTypeSemantics:
     ) -> StatisticalTypeState:
         caller = self.get_caller(stmt, state, interpreter)
         if utilities.is_Series(state, caller):
-            state.result = {Input(typ=SeriesLyraType(library="pandas"))}
+            state.result = {StatisticalTypeLattice.Status.Series}
         elif utilities.is_DataFrame(state, caller):
-            state.result = {Input(typ=(DataFrameLyraType(library="pandas")))}
+            state.result = {StatisticalTypeLattice.Status.DataFrame}
         else:
             state.result = {
-                Input(typ=BooleanLyraType())
+                StatisticalTypeLattice.Status.Boolean
             }  # TODO: The real return type could be bool or array-like of bool
         return state
 
@@ -77,7 +72,7 @@ class PandasStatisticalTypeSemantics:
     def select_dtypes_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
-        state.result = {Input(typ=(DataFrameLyraType(library="pandas")))}
+        state.result = {StatisticalTypeLattice.Status.DataFrame}
         return state
 
     def set_flags_call_semantics(
@@ -90,12 +85,12 @@ class PandasStatisticalTypeSemantics:
     ) -> StatisticalTypeState:
         caller = self.get_caller(stmt, state, interpreter)
         if utilities.is_Series(state, caller):
-            state.result = {Input(typ=SeriesLyraType(library="pandas"))}
+            state.result = {StatisticalTypeLattice.Status.Series}
         elif utilities.is_DataFrame(state, caller):
-            state.result = {Input(typ=(DataFrameLyraType(library="pandas")))}
+            state.result = {StatisticalTypeLattice.Status.DataFrame}
         else:
             state.result = {
-                Input(typ=BooleanLyraType())
+                StatisticalTypeLattice.Status.Boolean
             }  # TODO: The real return type could be bool or array-like of bool
         return state
 
@@ -117,7 +112,7 @@ class PandasStatisticalTypeSemantics:
     def merge_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
-        state.result = {Input(typ=(DataFrameLyraType(library="pandas")))}
+        state.result = {StatisticalTypeLattice.Status.DataFrame}
         return state
 
     def sort_values_call_semantics(
@@ -137,7 +132,7 @@ class PandasStatisticalTypeSemantics:
     def value_counts_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
-        state.result = {Input(typ=(SeriesLyraType(library="pandas")))}
+        state.result = {StatisticalTypeLattice.Status.Series}
         return state
 
     def unique_call_semantics(
@@ -149,7 +144,7 @@ class PandasStatisticalTypeSemantics:
     def from_dict_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
-        state.result = {Input(typ=DataFrameLyraType(library=""))}
+        state.result = {StatisticalTypeLattice.Status.DataFrame}
         return state
 
     def memory_usage_call_semantics(
@@ -157,9 +152,9 @@ class PandasStatisticalTypeSemantics:
     ) -> StatisticalTypeState:
         caller = self.get_caller(stmt, state, interpreter)
         if utilities.is_Series(state, caller):
-            state.result = {Input(typ=IntegerLyraType())}
+            state.result = {StatisticalTypeLattice.Status.Numeric}
         elif utilities.is_DataFrame(state, caller):
-            state.result = {Input(typ=(SeriesLyraType(library="pandas")))}
+            state.result = {StatisticalTypeLattice.Status.Series}
         return state
 
     def drop_duplicates_call_semantics(
@@ -167,7 +162,7 @@ class PandasStatisticalTypeSemantics:
     ) -> StatisticalTypeState:
         if utilities.is_inplace(stmt.arguments):
             self.semantics_without_inplace(stmt, state, interpreter)
-            state.result = {Input(typ=TopLyraType())}  # inplace calls return None type
+            state.result = {StatisticalTypeLattice.Status.NoneRet}  # inplace calls return None type
             return state
         return self.return_same_type_as_caller(stmt, state, interpreter)
 
@@ -178,7 +173,7 @@ class PandasStatisticalTypeSemantics:
             self.semantics_without_inplace(stmt, state, interpreter)
             state.result = {StatisticalTypeLattice.Status.NoneRet}
             return state
-        state.result = {Input(typ=(DataFrameLyraType(library="pandas")))}
+        state.result = {StatisticalTypeLattice.Status.DataFrame}
         return state
 
     def cumsum_call_semantics(
@@ -242,7 +237,7 @@ class PandasStatisticalTypeSemantics:
     def crosstab_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
-        state.result = {Input(typ=(DataFrameLyraType(library="pandas")))}
+        state.result = {StatisticalTypeLattice.Status.DataFrame}
         return state
 
     def nlargest_call_semantics(
@@ -303,7 +298,7 @@ class PandasStatisticalTypeSemantics:
         if utilities.is_DataFrame(state, caller):
             return self.return_same_type_as_caller(stmt, state, interpreter)
         elif utilities.is_Series(state, caller):
-            state.result = {Input(typ=FloatLyraType())}
+            state.result = {StatisticalTypeLattice.Status.Numeric}
             return state
         else:
             raise Exception("Unexpected type of caller")
@@ -322,7 +317,7 @@ class PandasStatisticalTypeSemantics:
                         else:
                             sub = Subscription(None, caller, a.id)
                         state._assign(sub, StatisticalTypeLattice.Status.CatSeries)
-            state.result = {Input(typ=(DataFrameLyraType(library="pandas")))}
+            state.result = {StatisticalTypeLattice.Status.DataFrame}
             return state
         else:
             raise Exception("Unexpected type of caller")
@@ -342,9 +337,9 @@ class PandasStatisticalTypeSemantics:
         for arg in stmt.arguments:
             if isinstance(arg, Keyword) and arg.name == "x":
                 if arg.value == 0 or arg.value == "index":
-                    state.result = {Input(typ=(SeriesLyraType(library="pandas")))}
+                    state.result = {StatisticalTypeLattice.Status.Series}
                 elif arg.value == 1 or arg.value == "columns":
-                    state.result = {Input(typ=(DataFrameLyraType(library="pandas")))}
+                    state.result = {StatisticalTypeLattice.Status.DataFrame}
                 return state
         return self.return_same_type_as_caller(stmt, state, interpreter)
 
@@ -355,7 +350,7 @@ class PandasStatisticalTypeSemantics:
         if utilities.is_DataFrame(state, caller):
             return self.return_same_type_as_caller(stmt, state, interpreter)
         elif utilities.is_Series(state, caller):
-            state.result = {Input(typ=FloatLyraType())}
+            state.result = {StatisticalTypeLattice.Status.Numeric}
             return state
         else:
             raise Exception("Unexpected type of caller")
@@ -432,9 +427,9 @@ class PandasStatisticalTypeSemantics:
     ) -> StatisticalTypeState:
         caller = self.get_caller(stmt, state, interpreter)
         if utilities.is_DataFrame(state, caller):
-            state.result = {Input(typ=(SeriesLyraType(library="pandas")))}
+            state.result = {StatisticalTypeLattice.Status.Series}
         elif utilities.is_Series(state, caller):
-            state.result = {Input(typ=FloatLyraType())}
+            state.result = {StatisticalTypeLattice.Status.Numeric}
         return state
 
     def mask_call_semantics(
@@ -460,7 +455,7 @@ class PandasStatisticalTypeSemantics:
     ) -> StatisticalTypeState:
         caller = self.get_caller(stmt, state, interpreter)
         if utilities.is_Series(state, caller) or utilities.is_DataFrame(state, caller):
-            state.result = {Input(typ=IntegerLyraType())}
+            state.result = {StatisticalTypeLattice.Status.Numeric}
             return state
         else:
             raise Exception("Unexpected type of caller")
@@ -492,10 +487,10 @@ class PandasStatisticalTypeSemantics:
     ) -> StatisticalTypeState:
         caller = self.get_caller(stmt, state, interpreter)
         if utilities.is_Series(state, caller) or utilities.is_List(state, caller):
-            state.result = {Input(typ=FloatLyraType())}
+            state.result = {StatisticalTypeLattice.Status.Numeric}
             return state
         elif utilities.is_DataFrame(state, caller):
-            state.result = {Input(typ=(SeriesLyraType(library="pandas")))}
+            state.result = {StatisticalTypeLattice.Status.Series}
             return state
         else:
             raise Exception("Unexpected type of caller")
@@ -587,9 +582,9 @@ class PandasStatisticalTypeSemantics:
     ) -> StatisticalTypeState:
         caller = self.get_caller(stmt, state, interpreter)
         if utilities.is_DataFrame(state, caller):
-            state.result = {Input(typ=(SeriesLyraType(library="pandas")))}
+            state.result = {StatisticalTypeLattice.Status.Series}
         elif utilities.is_Series(state, caller):
-            state.result = {Input(typ=FloatLyraType())}
+            state.result = {StatisticalTypeLattice.Status.Numeric}
         return state
 
     def sort_index_call_semantics(
@@ -606,9 +601,9 @@ class PandasStatisticalTypeSemantics:
     ) -> StatisticalTypeState:
         caller = self.get_caller(stmt, state, interpreter)
         if utilities.is_DataFrame(state, caller):
-            state.result = {Input(typ=(SeriesLyraType(library="pandas")))}
+            state.result = {StatisticalTypeLattice.Status.Series}
         elif utilities.is_Series(state, caller):
-            state.result = {Input(typ=FloatLyraType())}
+            state.result = {StatisticalTypeLattice.Status.Numeric}
         return state
 
     def loc_semantics(
@@ -620,19 +615,19 @@ class PandasStatisticalTypeSemantics:
             caller = self.get_caller(call, state, interpreter)
             if utilities.is_DataFrame(state, caller):
                 if isinstance(call.arguments[1], ListDisplayAccess):
-                    state.result = {Input(typ=(DataFrameLyraType(library="pandas")))}
+                    state.result = {StatisticalTypeLattice.Status.DataFrame}
                 elif isinstance(call.arguments[1], LiteralEvaluation):
-                    state.result = {Input(typ=(SeriesLyraType(library="pandas")))}
+                    state.result = {StatisticalTypeLattice.Status.Series}
                 elif isinstance(call.arguments[1], TupleDisplayAccess):
                     if len(call.arguments[1].items) == 1:
                         state.result = {
-                            Input(typ=(DataFrameLyraType(library="pandas")))
+                            StatisticalTypeLattice.Status.DataFrame
                         }
                     else:
                         state.result = {StatisticalTypeLattice.Status.Scalar}
             elif utilities.is_Series(state, caller):
                 if isinstance(call.arguments[1], ListDisplayAccess):
-                    state.result = {Input(typ=(SeriesLyraType(library="pandas")))}
+                    state.result = {StatisticalTypeLattice.Status.Series}
                 elif isinstance(call.arguments[1], LiteralEvaluation):
                     state.result = {StatisticalTypeLattice.Status.Scalar}
             return state
@@ -647,19 +642,19 @@ class PandasStatisticalTypeSemantics:
     def read_csv_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
-        state.result = {Input(typ=DataFrameLyraType(library=""))}
+        state.result = {StatisticalTypeLattice.Status.DataFrame}
         return state
 
     def DataFrame_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
-        state.result = {Input(typ=DataFrameLyraType(library=""))}
+        state.result = {StatisticalTypeLattice.Status.DataFrame}
         return state
 
     def Series_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
-        state.result = {Input(typ=SeriesLyraType(library=""))}
+        state.result = {StatisticalTypeLattice.Status.Series}
         return state
 
     def drop_call_semantics(
