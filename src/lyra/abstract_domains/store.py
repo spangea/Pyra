@@ -50,15 +50,12 @@ class Store(EnvironmentMixin):
             self._lengths, self._keys, self._values = dict(), dict(), dict()
             for v in variables:
                 if v.has_length:
-                    # GD: TEMPORARY FIX
-                    # For ForwardStatisticalTypeAnalysis we are not interested in length property for DataFrameLyraType
-                    if not isinstance(v.typ, DataFrameLyraType):
-                        self._lengths[v.length] = IntervalLattice(lower=0)
-                        if v.is_dictionary:
-                            _key = lattices[v.typ.key_typ](**self._arguments[v.typ.key_typ])
-                            self._keys[v.keys] = _key
-                            _value = lattices[v.typ.val_typ](**self._arguments[v.typ.val_typ])
-                            self._values[v.values] = _value
+                    self._lengths[v.length] = IntervalLattice(lower=0)
+                    if v.is_dictionary:
+                        _key = lattices[v.typ.key_typ](**self._arguments[v.typ.key_typ])
+                        self._keys[v.keys] = _key
+                        _value = lattices[v.typ.val_typ](**self._arguments[v.typ.val_typ])
+                        self._values[v.values] = _value
         except KeyError as key:
             error = f"Missing lattice for variable type {repr(key.args[0])}!"
             raise ValueError(error)
