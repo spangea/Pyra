@@ -46,10 +46,14 @@ class PandasStatisticalTypeSemantics:
             state.result = {StatisticalTypeLattice.Status.Series}
         elif utilities.is_DataFrame(state, caller):
             state.result = {StatisticalTypeLattice.Status.DataFrame}
+        elif utilities.is_Array(state, caller):
+            state.result = {StatisticalTypeLattice.Status.BoolArray}
+        elif utilities.is_Numeric(state, caller) or utilities.is_String(state, caller):
+            state.result = {StatisticalTypeLattice.Status.Boolean}
         else:
             state.result = {
-                StatisticalTypeLattice.Status.Boolean
-            }  # TODO: The real return type could be bool or array-like of bool
+                StatisticalTypeLattice.Status.Top
+            }
         return state
 
     def isna_call_semantics(
