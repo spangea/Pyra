@@ -12,10 +12,10 @@ from typing import Dict, Any, Type, Set
 
 from lyra.abstract_domains.numerical.interval_lattice import IntervalLattice
 from lyra.core.expressions import VariableIdentifier, LengthIdentifier, KeysIdentifier, \
-    ValuesIdentifier
+    ValuesIdentifier, Subscription
 from lyra.abstract_domains.lattice import Lattice, EnvironmentMixin
 from lyra.core.types import LyraType, SequenceLyraType, ContainerLyraType, DictLyraType, \
-    IntegerLyraType
+    IntegerLyraType, DataFrameLyraType
 from lyra.core.utils import copy_docstring
 
 
@@ -50,12 +50,15 @@ class Store(EnvironmentMixin):
             self._lengths, self._keys, self._values = dict(), dict(), dict()
             for v in variables:
                 if v.has_length:
-                    self._lengths[v.length] = IntervalLattice(lower=0)
-                    if v.is_dictionary:
-                        _key = lattices[v.typ.key_typ](**self._arguments[v.typ.key_typ])
-                        self._keys[v.keys] = _key
-                        _value = lattices[v.typ.val_typ](**self._arguments[v.typ.val_typ])
-                        self._values[v.values] = _value
+                    # GD: TEMPORARY FIX
+                    # For ForwardStatisticalTypeAnalysis we are not interested in length property for DataFrameLyraType
+                    if not isinstance(v.typ, DataFrameLyraType):
+                        self._lengths[v.length] = IntervalLattice(lower=0)
+                        if v.is_dictionary:
+                            _key = lattices[v.typ.key_typ](**self._arguments[v.typ.key_typ])
+                            self._keys[v.keys] = _key
+                            _value = lattices[v.typ.val_typ](**self._arguments[v.typ.val_typ])
+                            self._values[v.values] = _value
         except KeyError as key:
             error = f"Missing lattice for variable type {repr(key.args[0])}!"
             raise ValueError(error)
@@ -130,8 +133,12 @@ class Store(EnvironmentMixin):
     def is_bottom(self) -> bool:
         """The current store is bottom if `any` of its variables map to a bottom element."""
         for variable, element in self.store.items():
-            if not variable.has_length and element.is_bottom():
-                return True
+            # GD: TEMPORARY FIX
+            if not isinstance(variable, Subscription):  # This could happen if lhs is a subscription of a DataFrame
+                if hasattr(variable, "has_lenght") and not variable.has_length and element.is_bottom():
+                    return True
+                elif element.is_bottom():
+                    return True
         return any(element.is_bottom() for element in self.lengths.values())
 
     @copy_docstring(Lattice.is_top)

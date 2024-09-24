@@ -6,12 +6,14 @@ Lyra's internal forward semantics of statements.
 
 :Authors: Caterina Urban
 """
+import typing
+import warnings
 from abc import ABCMeta
 from typing import Union
 
 from lyra.abstract_domains.lattice import EnvironmentMixin
 from lyra.core.expressions import BinarySequenceOperation, ListDisplay, VariableIdentifier, \
-    SetDisplay, LengthIdentifier, KeysIdentifier, ValuesIdentifier
+    SetDisplay, LengthIdentifier, KeysIdentifier, ValuesIdentifier, Subscription
 from lyra.core.types import ListLyraType, IntegerLyraType, SetLyraType, SequenceLyraType, \
     ContainerLyraType, DictLyraType
 from lyra.engine.interpreter import Interpreter
@@ -19,10 +21,10 @@ from lyra.semantics.pandas import DefaultPandasSemantics
 from lyra.semantics.semantics import Semantics, DefaultSemantics
 
 from lyra.abstract_domains.state import State
-from lyra.core.statements import Assignment, Call, Return
+from lyra.core.statements import Assignment, Call, Return, SubscriptionAccess, AccessField
 
 from copy import deepcopy
-
+from lyra.core.statistical_warnings import SpecialSubscriptionAssignmentWarning, SpecialAccessFieldWarning
 
 class ForwardSemantics(Semantics):
     """Forward semantics of statements."""
@@ -62,6 +64,11 @@ class UserDefinedCallSemantics(ForwardSemantics):
         :param state: state before executing the call statement
         :return: state modified by the call statement
         """
+
+        # This means that stmt is an open call
+        if stmt.name not in interpreter.cfgs:
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
+
         fname, fcfg = stmt.name, interpreter.cfgs[stmt.name]
         # add formal function parameters to the state and assign their actual values
         formal_args = interpreter.fargs[fname]
@@ -130,7 +137,17 @@ class AssignmentSemantics(ForwardSemantics):
         :param state: state before executing the assignment
         :return: state modified by the assignment
         """
-        lhs = self.semantics(stmt.left, state, interpreter).result      # lhs evaluation
+        if isinstance(stmt.left, AccessField):
+            lhs = getattr(self, "access_field_semantics")(stmt, state, interpreter, is_lhs=True)
+            warnings.warn(f"Special accessfield in lhs @ line {stmt.pp.line}", SpecialAccessFieldWarning)
+
+        elif (isinstance(stmt.left, SubscriptionAccess) \
+                and hasattr(stmt.left.target, "right") and \
+                hasattr(self, '{}_semantics'.format(stmt.left.target.right))):
+            lhs = {Subscription(typing.Any, stmt.left.target.left, stmt.left.key)}
+            warnings.warn(f"Special subscription in lhs @ line {stmt.pp.line}", SpecialSubscriptionAssignmentWarning)
+        else:
+            lhs = self.semantics(stmt.left, state, interpreter).result      # lhs evaluation
 
         ret = None
         if isinstance(stmt.right, Call) and stmt.right.name in interpreter.cfgs:

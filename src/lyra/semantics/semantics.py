@@ -11,6 +11,9 @@ Lyra's internal semantics of statements.
 import itertools
 import re
 from copy import deepcopy
+import pandas
+import numpy
+import matplotlib.pyplot
 
 from lyra.abstract_domains.state import State
 from lyra.core.expressions import BinaryArithmeticOperation, Subscription, Slicing, \
@@ -20,11 +23,9 @@ from lyra.core.expressions import BinaryBooleanOperation, Input, TupleDisplay, L
 from lyra.core.expressions import BinaryOperation, BinaryComparisonOperation
 from lyra.core.expressions import UnaryArithmeticOperation, UnaryBooleanOperation
 from lyra.core.expressions import UnaryOperation
-from lyra.core.expressions import AttributeReference
 from lyra.core.statements import Statement, VariableAccess, LiteralEvaluation, Call, \
     TupleDisplayAccess, ListDisplayAccess, SetDisplayAccess, DictDisplayAccess, \
-    SubscriptionAccess, SlicingAccess, \
-    AttributeAccess
+    SubscriptionAccess, SlicingAccess, LibraryAccess, Delete
 from lyra.core.types import LyraType, BooleanLyraType, IntegerLyraType, FloatLyraType, \
     StringLyraType, TupleLyraType, ListLyraType, SetLyraType, DictLyraType
 from lyra.engine.interpreter import Interpreter
@@ -207,16 +208,7 @@ class ExpressionSemantics(Semantics):
         state.result = result
         return state
 
-    def attribute_access_semantics(self, stmt: AttributeAccess, state, interpreter) -> State:
-        """Semantics of an attribute access.
-        """
-        # This simply transforms the statement into an expression (or
-        # expressions), and does not depend on the attribute name. The behavior
-        # that depends on the attribute name is therefore delegated to whoever
-        # handles the AttributeReference expression.
-        target = self.semantics(stmt.target, state, interpreter).result
-        attr = stmt.attr
-        state.result = {AttributeReference(stmt.typ, t, attr) for t in target}
+    def assert_semantics(self, stmt: SlicingAccess, state, interpreter) -> State:
         return state
 
 
@@ -230,9 +222,43 @@ class CallSemantics(Semantics):
         :param state: state before executing the call statement
         :return: state modified by the call statement
         """
+        """
+        call_semantics automatically calls the semantics depending on the type of
+        call (class, library or instance/default).
+        If the specific semantics it is not found, then the most general semantics
+        (instance call) is executed, but before that, if the first argument is
+        a LibraryAccess, then it is removed from the arguments so that the
+        resolution can work as-is.
+        It is *PROGRAMMER'S DUTY* to implement different kind of semantics if
+        the behavior of the call changes as the type of the call changes.
+        """
         name = '{}_call_semantics'.format(stmt.name)
+        if len(stmt.arguments) >= 1 and isinstance(stmt.arguments[0], LibraryAccess):
+            if stmt.arguments[0].library == "pandas":
+                if hasattr(pandas, stmt.arguments[0].name):     # Class call
+                    name = '{}_class_call_semantics'.format(stmt.name)
+                elif hasattr(pandas, stmt.name):                # Library call
+                    name = '{}_library_call_semantics'.format(stmt.name)
+                stmt.arguments.pop(0)
+            elif stmt.arguments[0].library == "numpy":
+                if hasattr(numpy, stmt.arguments[0].name):     # Class call
+                    name = '{}_class_call_semantics'.format(stmt.name)
+                elif hasattr(numpy, stmt.name):                # Library call
+                    name = '{}_library_call_semantics'.format(stmt.name)
+                stmt.arguments.pop(0)
+            elif stmt.arguments[0].library == "matplotlib.pyplot":
+                if hasattr(matplotlib.pyplot, stmt.arguments[0].name):     # Class call
+                    name = '{}_class_call_semantics'.format(stmt.name)
+                elif hasattr(matplotlib.pyplot, stmt.name):                # Library call
+                    name = '{}_library_call_semantics'.format(stmt.name)
+                stmt.arguments.pop(0)
+
         if hasattr(self, name):
             return getattr(self, name)(stmt, state, interpreter)
+        else:
+            name = '{}_call_semantics'.format(stmt.name)
+            if hasattr(self, name):
+                return getattr(self, name)(stmt, state, interpreter)
         return getattr(self, 'user_defined_call_semantics')(stmt, state, interpreter)
 
 
@@ -997,6 +1023,10 @@ class BuiltInCallSemantics(CallSemantics):
         operator = BinaryBooleanOperation.Operator.Or
         return self._binary_operation(stmt, operator, state, interpreter)
 
+    def delete_semantics(self, stmt: Delete, state: State, interpreter: Interpreter) -> State:
+        for t in stmt._targets:
+            state = state.delete_var(t)
+        return state
 
 class DefaultSemantics(ExpressionSemantics, BuiltInCallSemantics):
     """Default semantics of statements.

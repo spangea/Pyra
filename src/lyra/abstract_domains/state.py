@@ -18,8 +18,8 @@ from lyra.abstract_domains.lattice import Lattice
 from lyra.core.expressions import Expression, VariableIdentifier, Subscription, Slicing, \
     AttributeReference, Literal, \
     NegationFreeExpression, UnaryBooleanOperation, BinaryBooleanOperation, \
-    BinaryComparisonOperation
-from lyra.core.statements import ProgramPoint
+    BinaryComparisonOperation, TupleDisplay
+from lyra.core.statements import ProgramPoint, AccessField
 from lyra.core.types import BooleanLyraType, IntegerLyraType, FloatLyraType, StringLyraType, \
     ContainerLyraType, DictLyraType
 from lyra.core.utils import copy_docstring
@@ -95,6 +95,15 @@ class State(Lattice, metaclass=ABCMeta):
         :return: current state modified by the assignment
         """
 
+    @abstractmethod
+    def _assign_tuple(self, left: TupleDisplay, right: Expression) -> 'State':
+        """Assign an expression to a tuple (Python multiple assignment)
+
+        :param left: the slicing to be assigned to
+        :param right: expression to assign
+        :return: current state modified by the assignment
+        """
+
     def _assign(self, left: Expression, right: Expression) -> 'State':
         """Assign an expression to another expression.
 
@@ -114,6 +123,10 @@ class State(Lattice, metaclass=ABCMeta):
             return self._assign_subscription(left, right)
         elif isinstance(left, Slicing):
             return self._assign_slicing(left, right)
+        elif isinstance(left, TupleDisplay):
+            return self._assign_tuple(left, right)
+        elif isinstance(left, AccessField):
+            return self._assign_accessfield(left, right)
         raise ValueError(f"Unexpected assignment to {left}!")
 
     def assign(self, left: Set[Expression], right: Set[Expression]) -> 'State':
