@@ -518,7 +518,7 @@ class Keyword(Statement):
 
 class AccessField(Statement):
     # TODO: check if compatible with AttributeAccess
-    def __init__(self, pp, left: Statement, right: str, typ: LyraType=typing.Any):
+    def __init__(self, pp, left: Statement, right: str, typ: LyraType=Any):
         """Access field representation.
 
         :param pp: program point associated with the access field expression

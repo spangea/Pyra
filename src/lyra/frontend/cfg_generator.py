@@ -1,14 +1,17 @@
 import ast
 import optparse
 import sys
+import typing
+from typing import Any
 
 from lyra.core.cfg import *
 from lyra.core.expressions import Literal, Identifier, AttributeIdentifier
 from lyra.core.statements import *
 from lyra.core.types import IntegerLyraType, BooleanLyraType, resolve_type_annotation, \
     FloatLyraType, ListLyraType, TupleLyraType, StringLyraType, DictLyraType, SetLyraType, \
-    DataFrameLyraType, AttributeAccessLyraType
+    DataFrameLyraType, AttributeAccessLyraType, NoneLyraType, TopLyraType
 from lyra.visualization.graph_renderer import CFGRenderer
+from lyra.core.statements import AccessField, Assert
 
 
 class LooseControlFlowGraph:
@@ -345,6 +348,9 @@ class CFGVisitor(ast.NodeVisitor):
         elif isinstance(node.value, str):
             expr = Literal(StringLyraType(), node.s)
             return LiteralEvaluation(pp, expr)
+        elif node.n is None:
+            expr = Literal(NoneLyraType(), str(node.n))
+            return LiteralEvaluation(pp, expr)
         raise NotImplementedError(f"Num of type {node.n.__class__.__name__} is unsupported!")
 
     # noinspection PyUnusedLocal
@@ -385,11 +391,54 @@ class CFGVisitor(ast.NodeVisitor):
             return ListDisplayAccess(pp, typ, items)
         else:
             items = [self.visit(item, types, libraries, None, fname=fname) for item in node.elts]
-            if isinstance(items[0], LiteralEvaluation):
-                itm_typ = items[0].literal.typ
+            if len(items) == 0:
+                itm_typ = None
             else:
-                itm_typ = items[0].typ
+                if (hasattr(items[0], "literal") and hasattr(items[0].literal, "typ")) or hasattr(items[0], "typ"):
+                    if isinstance(items[0], LiteralEvaluation):
+                        itm_typ = items[0].literal.typ
+                    else:
+                        itm_typ = items[0].typ
+                else:
+                    itm_typ = None
             return ListDisplayAccess(pp, ListLyraType(itm_typ), items)
+
+    def visit_ListComp(self, node, types=None, libraries=None, typ=None, fname=''):
+        # FIXME GD: Better type for ListComp can be inferred by the Generator.
+        # For now only List is inferred and ListComp is returned as ListDisplayAccess
+        pp = ProgramPoint(node.lineno, node.col_offset)
+        expr = Literal(TopLyraType(), "LYRA: LIST COMPREHENSION NOT REPRESENTED")
+        items = [LiteralEvaluation(pp, expr)]
+        if len(items) == 0:
+            itm_typ = None
+        else:
+            if (hasattr(items[0], "literal") and hasattr(items[0].literal, "typ")) or hasattr(items[0], "typ"):
+                if isinstance(items[0], LiteralEvaluation):
+                    itm_typ = items[0].literal.typ
+                else:
+                    itm_typ = items[0].typ
+            else:
+                itm_typ = None
+        return ListDisplayAccess(pp, ListLyraType(itm_typ), items)
+
+    def visit_Lambda(self, node, types=None, libraries=None, typ=None, fname=''):
+        """Visitor function for a lambda expression.
+        the args attribute stores the arguments of the lambda expression.
+        the body attribute stores the body of the lambda expression."""
+        pp = ProgramPoint(node.lineno, node.col_offset)
+        args = []
+        for arg in node.args.args:
+            types[arg.arg] = TopLyraType
+            args.append(arg.arg)
+        body = self.visit(node.body, types, libraries, typ, fname)
+        return LambdaExpression(pp, args, body)
+
+    def visit_Slice(self, node, types=None, libraries=None, typ=None, fname=''):
+        pp = ProgramPoint(node.lineno, node.col_offset)
+        lower = self.visit(node.lower) if node.lower is not None else None
+        upper = self.visit(node.upper) if node.upper is not None else None
+        step = self.visit(node.step) if node.step is not None else None
+        return SlicingAccess(pp, typ, None, lower, upper, step)
 
     def visit_Tuple(self, node, types=None, libraries=None, typ=None, fname=''):
         """Visitor function for a tuple.
@@ -437,7 +486,7 @@ class CFGVisitor(ast.NodeVisitor):
         The attributes keys and values store lists of nodes with matching order
         representing the keys and the values, respectively."""
         pp = ProgramPoint(node.lineno, node.col_offset)
-        if isinstance(typ, list):   # this comes from a subscript
+        if isinstance(typ, list):  # this comes from a subscript
             keys = [self.visit(key, types, libraries, typ[0], fname=fname) for key in node.keys]
             values = [self.visit(value, types, libraries, typ[1], fname=fname) for value in node.values]
             val_typ = values[0].typ if isinstance(typ[1], list) else typ[1]
@@ -448,12 +497,16 @@ class CFGVisitor(ast.NodeVisitor):
             return DictDisplayAccess(pp, typ, keys, values)
         else:
             keys = [self.visit(key, types, libraries, None, fname=fname) for key in node.keys]
-            if isinstance(keys[0], LiteralEvaluation):
+            if len(keys) == 0:
+                key_typ = TopLyraType
+            elif isinstance(keys[0], LiteralEvaluation):
                 key_typ = keys[0].literal.typ
             else:
                 key_typ = keys[0].typ
             values = [self.visit(value, types, libraries, None, fname=fname) for value in node.values]
-            if isinstance(values[0], LiteralEvaluation):
+            if len(values) == 0:
+                val_typ = TopLyraType
+            elif isinstance(values[0], LiteralEvaluation):
                 val_typ = values[0].literal.typ
             else:
                 val_typ = values[0].typ
@@ -485,22 +538,32 @@ class CFGVisitor(ast.NodeVisitor):
                 if typ:
                     types[name] = typ
                 else:
-                    raise ValueError(f"Missing type annotation for variable {name}!")
+                    types[name] = Any
+                    #raise ValueError(f"Missing type annotation for variable {name}!")
             expr = VariableIdentifier(types[name], name)
             return VariableAccess(pp, types[name], expr)
         if isinstance(node.ctx, ast.Load):
-            if name in libraries:
-                return LibraryAccess(pp, libraries[name], name)
+            if libraries is not None:
+                if name in libraries:
+                    return LibraryAccess(pp, libraries[name], name)
+                if name.replace(str(fname) + "#", "") in libraries:
+                    demangled_name = name.replace(str(fname) + "#", "")
+                    return LibraryAccess(pp, libraries[demangled_name], demangled_name)
             if name in types:
                 _name = name
             else:
                 _name = name.replace(fname + '#', '')
-            assert _name in types
+            # assert _name in types
             # assert types[name] == typ or typ is None
             expr = VariableIdentifier(types[_name], _name)
             return VariableAccess(pp, types[_name], expr)
-        assert isinstance(node.ctx, ast.Del)
-        raise NotImplementedError(f"Name deletion is unsupported!")
+        if isinstance(node.ctx, ast.Del):
+            if name not in types:
+                if typ:
+                    types[name] = typ
+                else:
+                    types[name] = Any
+            return VariableIdentifier(types[name], name)
 
     # Attribute
 
@@ -561,7 +624,10 @@ class CFGVisitor(ast.NodeVisitor):
         The attributes left, ops, and comparators store the first value in the comparison,
         the list of operators, and the list of compared values after the first."""
         pp = ProgramPoint(node.lineno, node.col_offset)
-        assert isinstance(typ, BooleanLyraType)  # we expect typ to be a BooleanLyraType
+        # GD: FIXME -> Manage unannotated types better
+        # assert isinstance(typ, BooleanLyraType)  # we expect typ to be a BooleanLyraType
+        if not hasattr(node, "left") and isinstance(node, ast.Subscript) and node:
+            node = node.slice
         left = self.visit(node.left, types, libraries, None, fname=fname)
         name = type(node.ops[0]).__name__.lower()
         second = self.visit(node.comparators[0], types, libraries, None, fname=fname)
@@ -593,79 +659,124 @@ class CFGVisitor(ast.NodeVisitor):
                 arguments = [self.visit(arg, types, libraries, typ(), fname=fname) for arg in node.args]
                 return Call(pp, name, arguments, ListLyraType(typ()))
             arguments = [self.visit(arg, types, libraries, None, fname=fname) for arg in node.args]
+            arguments.extend([self.visit(arg, types, libraries, None, fname=fname) for arg in node.keywords])
             return Call(pp, name, arguments, typ)
         elif isinstance(node.func, ast.Attribute):
             name: str = node.func.attr
             if name == 'append':
-                arguments = [self.visit(node.func.value, types, libraries, None, fname=fname)]     # target
-                assert isinstance(arguments[0].typ, ListLyraType)
-                args = [self.visit(arg, types, libraries, arguments[0].typ.typ, fname=fname) for arg in node.args]
+                # GD: FIXME -> Manage unannotated types better
+                arguments = [self.visit(node.func.value, types, libraries, None, fname=fname)]  # target
+                # assert isinstance(arguments[0].typ, ListLyraType)
+                # Assertion is commented out because append can also be called on DataFrame and Series
+                args = [self.visit(arg, types, libraries, None, fname=fname) for arg in node.args]
                 arguments.extend(args)
-                return Call(pp, name, arguments, arguments[0].typ)
+                return Call(pp, name, arguments, ListLyraType(typ))
             if name == 'count':  # str.count(sub, start= 0,end=len(string))
                 arguments = [self.visit(node.func.value, types, libraries, None, fname=fname)]  # target
                 args = [self.visit(arg, types, libraries, None, fname=fname) for arg in node.args]
                 arguments.extend(args)
-                assert isinstance(arguments[0].typ, (StringLyraType, ListLyraType))
+                # GD: FIXME -> Manage unannotated types better
+                # assert isinstance(arguments[0].typ, (StringLyraType, ListLyraType))
                 return Call(pp, name, arguments, IntegerLyraType())
             if name == 'find':  # str.find(str, beg=0, end=len(string))
                 arguments = [self.visit(node.func.value, types, libraries, None, fname=fname)]  # target
                 args = [self.visit(arg, types, libraries, None, fname=fname) for arg in node.args]
                 arguments.extend(args)
-                assert isinstance(arguments[0].typ, StringLyraType)
+                # assert isinstance(arguments[0].typ, StringLyraType)
                 return Call(pp, name, arguments, IntegerLyraType())
             if name == 'get':  # dict.get(key[, value])
-                arguments = [self.visit(node.func.value, types, libraries, None, fname=fname)]     # target
+                arguments = [self.visit(node.func.value, types, libraries, None, fname=fname)]  # target
                 args = [self.visit(arg, types, libraries, None, fname=fname) for arg in node.args]
                 arguments.extend(args)
-                assert isinstance(arguments[0].typ, DictLyraType)
-                return Call(pp, name, arguments, arguments[0].typ.val_typ)
+                # assert isinstance(arguments[0].typ, DictLyraType)
+                if isinstance(arguments[0].typ, DictLyraType):
+                    return Call(pp, name, arguments, arguments[0].typ.val_typ)
+                else:
+                    return Call(pp, name, arguments, typing.Any)
             if name == 'items':
-                arguments = [self.visit(node.func.value, types, libraries, None, fname=fname)]     # target
+                arguments = [self.visit(node.func.value, types, libraries, None, fname=fname)]  # target
                 args = [self.visit(arg, types, libraries, None, fname=fname) for arg in node.args]
                 arguments.extend(args)
-                assert isinstance(arguments[0].typ, DictLyraType)
-                tuple_typ = TupleLyraType([arguments[0].typ.key_typ, arguments[0].typ.val_typ])
-                return Call(pp, name, arguments, SetLyraType(tuple_typ))
+                # assert isinstance(arguments[0].typ, DictLyraType)
+                if isinstance(arguments[0].typ, DictLyraType):
+                    tuple_typ = TupleLyraType([arguments[0].typ.key_typ, arguments[0].typ.val_typ])
+                    return Call(pp, name, arguments, SetLyraType(tuple_typ))
+                else:
+                    return Call(pp, name, arguments, typing.Any)
             if name == 'keys':
-                arguments = [self.visit(node.func.value, types, libraries, None, fname=fname)]     # target
+                arguments = [self.visit(node.func.value, types, libraries, None, fname=fname)]  # target
                 args = [self.visit(arg, types, libraries, None, fname=fname) for arg in node.args]
                 arguments.extend(args)
-                assert isinstance(arguments[0].typ, DictLyraType)
-                return Call(pp, name, arguments, SetLyraType(arguments[0].typ.key_typ))
+                # assert isinstance(arguments[0].typ, DictLyraType)
+                if isinstance(arguments[0].typ, DictLyraType):
+                    return Call(pp, name, arguments, SetLyraType(arguments[0].typ.key_typ))
+                else:
+                    return Call(pp, name, arguments, typing.Any)
             if name == 'lstrip' or name == 'strip' or name == 'rstrip':
-                arguments = [self.visit(node.func.value, types, libraries, None, fname=fname)]     # target
+                arguments = [self.visit(node.func.value, types, libraries, None, fname=fname)]  # target
                 args = [self.visit(arg, types, libraries, None, fname=fname) for arg in node.args]
                 arguments.extend(args)
-                assert isinstance(arguments[0].typ, StringLyraType)
-                return Call(pp, name, arguments, arguments[0].typ)
+                # assert isinstance(arguments[0].typ, StringLyraType)
+                if isinstance(arguments[0].typ, DictLyraType):
+                    return Call(pp, name, arguments, arguments[0].typ)
+                else:
+                    return Call(pp, name, arguments, typing.Any)
             if name == 'split':  # str.split([sep[, maxsplit]])
-                if isinstance(typ, list):    # this comes from a subscript
+                if isinstance(typ, list):  # this comes from a subscript
                     _typ = ListLyraType(typ[0])
                 else:
                     _typ = typ
-                assert isinstance(_typ, ListLyraType)  # we expect type to be a ListLyraType
+                # assert isinstance(_typ, ListLyraType)  # we expect type to be a ListLyraType
                 arguments = [self.visit(node.func.value, types, libraries, _typ.typ, fname=fname)]  # target
                 args_typs = zip(node.args, [_typ.typ, IntegerLyraType()])
                 args = [self.visit(arg, types, libraries, arg_typ, fname=fname) for arg, arg_typ in args_typs]
                 arguments.extend(args)
-                return Call(pp, name, arguments, typ)
+                if isinstance(arguments[0].typ, DictLyraType):
+                    return Call(pp, name, arguments, typ)
+                else:
+                    return Call(pp, name, arguments, typing.Any)
             if name == 'values':
-                arguments = [self.visit(node.func.value, types, libraries, None, fname=fname)]     # target
+                arguments = [self.visit(node.func.value, types, libraries, None, fname=fname)]  # target
                 args = [self.visit(arg, types, libraries, None, fname=fname) for arg in node.args]
                 arguments.extend(args)
-                assert isinstance(arguments[0].typ, DictLyraType)
-                return Call(pp, name, arguments, SetLyraType(arguments[0].typ.val_typ))
+                # assert isinstance(arguments[0].typ, DictLyraType)
+                if isinstance(arguments[0].typ, DictLyraType):
+                    return Call(pp, name, arguments, SetLyraType(arguments[0].typ.val_typ))
+                else:
+                    return Call(pp, name, arguments, typing.Any)
             if name == 'update':
-                arguments = [self.visit(node.func.value, types, libraries, None, fname=fname)]     # target
+                arguments = [self.visit(node.func.value, types, libraries, None, fname=fname)]  # target
                 args = [self.visit(arg, types, libraries, None, fname=fname) for arg in node.args]
                 arguments.extend(args)
-                assert isinstance(arguments[0].typ, SetLyraType)
-                return Call(pp, name, arguments, arguments[0].typ)
-            arguments = [self.visit(node.func.value, types, libraries, None, fname=fname)]     # target
-            # TODO: deal with keywords
+                # assert isinstance(arguments[0].typ, SetLyraType)
+                if isinstance(arguments[0].typ, DictLyraType):
+                    return Call(pp, name, arguments, arguments[0].typ)
+                else:
+                    return Call(pp, name, arguments, typing.Any)
+            arguments = [self.visit(node.func.value, types, libraries, None, fname=fname)]  # target
             arguments.extend([self.visit(arg, types, libraries, None, fname=fname) for arg in node.args])
+            # Deal with keywords
+            arguments.extend([self.visit(arg, types, libraries, None, fname=fname) for arg in node.keywords])
             return Call(pp, name, arguments, typ)
+
+    def visit_keyword(self, node, types=None, libraries=None, typ=None, fname=''):
+        """Visitor function for a keyword argument.
+        The attributes arg and value store the name of the argument and its value, respectively."""
+        pp = ProgramPoint(node.lineno, node.col_offset)
+        if isinstance(node.value, ast.Constant):
+            return Keyword(pp, node.arg, node.value.value)
+        elif isinstance(node.value, ast.List):
+            args_list = []
+            for a in node.value.elts:
+                if hasattr(a, 'value'):
+                    args_list.append(a.value)
+                else:
+                    args_list.append(a)
+            return Keyword(pp, node.arg, args_list)
+        elif isinstance(node.value, ast.Attribute):
+            return Keyword(pp, node.arg, node.value.value.id + '.' + node.value.attr)
+        elif isinstance(node.value, ast.Name):
+            return Keyword(pp, node.arg, node.value.id)
 
     def visit_IfExp(self, node, targets, op=None, types=None, libraries=None, typ=None, fname=''):
         """Visitor function for an if expression.
@@ -725,21 +836,37 @@ class CFGVisitor(ast.NodeVisitor):
         binop = isinstance(node.slice, ast.BinOp)
         subscript = isinstance(node.slice, ast.Subscript)
         list = isinstance(node.slice, ast.List)
-        tuple = isinstance(node.slice, ast.Tuple)
-        compare = isinstance(node.slice, ast.Compare)
-        if constant or name or binop or subscript or list:
+        is_tuple = isinstance(node.slice, ast.Tuple)  # Needed for parsing df.loc[1,2]
+        is_joined_str = isinstance(node.slice,
+                                   ast.JoinedStr)  # Needed if sub to a formatted str like df[f'{feature}_zero']
+        is_compare = isinstance(node.slice, ast.Compare)
+        is_unop = isinstance(node.slice, ast.UnaryOp)
+        is_loc = isinstance(target.typ, AttributeAccessLyraType) and isinstance(target.typ.target_typ,
+                                                                                DataFrameLyraType)
+        if constant or name or binop or subscript or list or is_tuple or is_joined_str or is_compare or is_unop:
             key = self.visit(node.slice, types, libraries, None, fname=fname)
-            if isinstance(key, LiteralEvaluation):
-                _typ = key.literal.typ
+            if key is not None:
+                if isinstance(key, LiteralEvaluation):
+                    _typ = key.literal.typ
+                else:
+                    _typ = key.typ
             else:
-                _typ = key.typ
+                _typ = TopLyraType
             target = self.visit(node.value, types, libraries, [_typ, typ], fname=fname)
+            if isinstance(target, AccessField):
+                return SubscriptionAccess(pp, None, target, key)
             if isinstance(target.typ, DictLyraType):
                 return SubscriptionAccess(pp, target.typ.val_typ, target, key)
             elif isinstance(target.typ, ListLyraType):
                 return SubscriptionAccess(pp, target.typ.typ, target, key)
+            elif isinstance(node.slice, ast.Compare):
+                self.visit_Compare(node, types, libraries)
+                return SubscriptionAccess(pp, TopLyraType, target, key)
+            # elif isinstance(node.slice, ast.UnaryOp):
+            #     self.visit_UnaryOp(node.slice, types)
+            #     return SubscriptionAccess(pp, TopLyraType, target, key)
             else:  # String
-                return SubscriptionAccess(pp, target.typ, target, key)
+                    return SubscriptionAccess(pp, target.typ, target, key)
         elif isinstance(node.slice, ast.Slice):
             value = self.visit(node.value, types, libraries, None, fname=fname)
             lower = None
@@ -752,11 +879,11 @@ class CFGVisitor(ast.NodeVisitor):
             if node.slice.step:
                 step = self.visit(node.slice.step, types, libraries, None, fname=fname)
             return SlicingAccess(pp, typ, value, lower, upper, step)
-        elif tuple and is_loc:
+        elif is_tuple and is_loc:
             key = self.visit(node.slice, types, libraries, TupleLyraType([BooleanLyraType(),None]), fname=fname)
             target = self.visit(node.value, types, libraries, None, fname=fname)
             return SubscriptionAccess(pp, target.typ, target, key)
-        elif compare and is_loc:
+        elif is_compare and is_loc:
             key = self.visit(node.slice, types, libraries, BooleanLyraType(), fname=fname)
             target = self.visit(node.value, types, libraries, None, fname=fname)
             return SubscriptionAccess(pp, target.typ, target, key)
@@ -772,7 +899,10 @@ class CFGVisitor(ast.NodeVisitor):
         assert typ is None     # we expect typ to be None
         assert len(node.targets) == 1
         target = self.visit(node.targets[0], types=types, libraries=libraries, typ=None, fname=fname)
-        value = self.visit(node.value, types=types, libraries=libraries, typ=target.typ, fname=fname)
+        if hasattr(target, 'typ'):
+            value = self.visit(node.value, types=types, libraries=libraries, typ=target.typ, fname=fname)
+        else:
+            value = self.visit(node.value, types=types, libraries=libraries, typ=TopLyraType, fname=fname)
         return Assignment(pp, target, value)
 
     def visit_AnnAssign(self, node, types=None, libraries=None, typ=None, fname=''):
@@ -812,11 +942,39 @@ class CFGVisitor(ast.NodeVisitor):
         pp = ProgramPoint(node.lineno, node.col_offset)
         library = node.names[0].name
         name = node.names[0].asname
+        if name:
+            libraries[name] = library
+            return Import(pp, library, name)
+        else:
+            libraries[library] = library
+            return Import(pp, library, library)
+
+    def visit_ImportFrom(self, node, types=None, libraries=None, fname=''):
+        """Visitor function for a library import.
+        """
+        pp = ProgramPoint(node.lineno, node.col_offset)
+        library = node.module
+        if hasattr(node.names[0], 'asname') and node.names[0].asname is not None:
+            name = node.names[0].asname
+        else:
+            name = node.names[0].name
         libraries[name] = library
         if name:
             return Import(pp, library, name)
         else:
             return Import(pp, library, library)
+
+    def visit_Attribute(self, node, types=None, libraries=None, typ=None, fname=''):
+        # FIXME -> There are two visit attirbute
+        """Visitor function for an attribute.
+        The visit of an attribute return an access field expression.
+        """
+        pp = ProgramPoint(node.lineno, node.col_offset)
+        left = self.visit(node.value, libraries=libraries, fname=fname, types=types)
+        right = node.attr
+        if isinstance(left, LibraryAccess):
+            return LibraryAccess(pp, left.library, right)
+        return AccessField(pp, left, right)
 
     # Control Flow
 
@@ -929,18 +1087,23 @@ class CFGVisitor(ast.NodeVisitor):
                 target_typ = iterated.typ.typ
         elif isinstance(iterated, Call):
             if iterated.name == 'range':
-                assert isinstance(iterated.typ, ListLyraType)
+                # assert isinstance(iterated.typ, ListLyraType)
                 target_typ = iterated.typ.typ
             elif iterated.name == 'items' or iterated.name == 'keys' or iterated.name == 'values':
-                assert isinstance(iterated.typ, SetLyraType)
+                # assert isinstance(iterated.typ, SetLyraType)
                 target_typ = iterated.typ.typ
             elif iterated.name == 'list':
-                assert len(iterated.arguments) == 1
+                # assert len(iterated.arguments) == 1
                 if isinstance(iterated.arguments[0].typ, ListLyraType):
                     target_typ = iterated.arguments[0].typ.typ
             else:
-                error = "The type of the target {} is not yet determinable!".format(iterated)
-                raise NotImplementedError(error)
+                target_typ = TopLyraType
+                # error = "The type of the target {} is not yet determinable!".format(iterated)
+                # raise NotImplementedError(error)
+        elif isinstance(iterated, AccessField):
+            target_typ = TopLyraType
+        elif isinstance(iterated, SlicingAccess):
+            target_typ = TopLyraType
         else:
             error = "The iteration attribute {} is not yet translatable to CFG!".format(iterated)
             raise NotImplementedError(error)
@@ -1095,6 +1258,12 @@ class CFGVisitor(ast.NodeVisitor):
                 self._fdefs[child.name] = child
             elif isinstance(child, ast.Import):
                 factory.add_stmts(self.visit(child, types, libraries, fname=fname))
+            elif isinstance(child, ast.ImportFrom):
+                factory.add_stmts(self.visit(child, types, libraries, fname=fname))
+            elif isinstance(child, ast.Assert):
+                factory.add_stmts(self.visit(child, types, libraries))
+            elif isinstance(child, ast.Delete):
+                factory.add_stmts(self.visit(child, types, libraries))
             else:
                 error = "The statement {} is not yet translatable to CFG!".format(child)
                 raise NotImplementedError(error)
@@ -1106,6 +1275,11 @@ class CFGVisitor(ast.NodeVisitor):
             factory.append_cfg(_dummy_cfg(self._id_gen))
 
         return factory.cfg
+
+    def visit_Delete(self, node, types=None, libraries=None, typ=None):
+        pp = ProgramPoint(node.lineno, node.col_offset)
+        targets = [self.visit(target, types, libraries, type) for target in node.targets]
+        return Delete(pp, targets)
 
     # noinspection PyUnusedLocal
     def visit_Module(self, node, types=None, libraries=None, typ=None):
@@ -1121,6 +1295,15 @@ class CFGVisitor(ast.NodeVisitor):
             fun_cfg = self.visit_FunctionDef(child, types, libraries, child.name)
             fun_factory.append_cfg(fun_cfg)
         return self._cfgs
+
+    def visit_Assert(self, node, types=None, libraries=None, typ=None):
+        return Assert(ProgramPoint(node.lineno, node.col_offset))
+
+    def visit_JoinedStr(self, node, types=None, libraries=None, typ=None, fname=""):
+        # Formatted string are ignored
+        pp = ProgramPoint(node.lineno, node.col_offset)
+        expr = Literal(StringLyraType(), "LYRA: FORMATTED STRING NOT REPRESENTED")
+        return LiteralEvaluation(pp, expr)
 
     # def _restructure_return_and_raise_edges(self, cfg):
     #     nodes_to_be_removed = []

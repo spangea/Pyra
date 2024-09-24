@@ -216,14 +216,20 @@ class ControlFlowGraph:
             if current.identifier not in visited:
                 visited.add(current.identifier)
                 for stmt in current.stmts:
-                    if isinstance(stmt, Assignment) and isinstance(stmt.left, VariableAccess):
-                        variable = stmt.left.variable
-                        variables.add(variable)
-                        # if isinstance(variable.typ, (SequenceLyraType, ContainerLyraType)):
-                        #     variables.add(LengthIdentifier(variable))
-                        #     if isinstance(variable.typ, DictLyraType):
-                        #         variables.add(KeysIdentifier(variable))
-                        #         variables.add(ValuesIdentifier(variable))
+                    if isinstance(stmt, Assignment):
+                        if isinstance(stmt.left, VariableAccess):
+                            variable = stmt.left.variable
+                            variables.add(variable)
+                        elif isinstance(stmt.left, TupleDisplayAccess):
+                            for x in stmt.left.items:
+                                if isinstance(x, VariableAccess):
+                                    variables.add(x.variable)
+
+                    # if isinstance(variable.typ, (SequenceLyraType, ContainerLyraType)):
+                    #     variables.add(LengthIdentifier(variable))
+                    #     if isinstance(variable.typ, DictLyraType):
+                    #         variables.add(KeysIdentifier(variable))
+                    #         variables.add(ValuesIdentifier(variable))
                 if isinstance(current, Loop):
                     edges = self.edges.items()
                     conds = list()

@@ -231,7 +231,6 @@ class NoneLyraType(LyraType):
     def __repr__(self):
         return "None"
 
-
 def resolve_type_annotation(annotation):
     """Type annotation resolution."""
 
@@ -269,5 +268,8 @@ def resolve_type_annotation(annotation):
             return DataFrameLyraType(annotation.value.id)
         elif annotation.attr == 'Series':
             return SeriesLyraType(annotation.value.id)
+
+    if isinstance(annotation, type(None)):
+        return NoneLyraType
 
     raise NotImplementedError(f"Type annotation {annotation} is not yet supported!")
