@@ -12,7 +12,7 @@ from lyra.abstract_domains.usage.usage_lattice import UsageLattice
 from lyra.abstract_domains.usage.usage_domain import UsageStore
 from lyra.core.expressions import Slicing, Expression, Subscription, \
         VariableIdentifier, BinaryComparisonOperation, Literal, ListDisplay, \
-        AttributeReference
+        AttributeReference, TupleDisplay
 from lyra.core.dataframe_expressions import Concat, Loc
 from lyra.core.types import LyraType, DataFrameLyraType, StringLyraType
 from lyra.core.utils import copy_docstring
@@ -372,6 +372,11 @@ class DataFrameColumnUsageState(Stack, State, EnvironmentMixin):
     @copy_docstring(State._assign_slicing)
     def _assign_slicing(self, left: Slicing, right: Expression) -> 'SimpleUsageState':
         return self._assign_any(left, right)
+
+    @copy_docstring(State._assign_variable)
+    def _assign_tuple(self, left: TupleDisplay, right: Expression) -> '':
+        return self._assign_any(left, right)
+
 
     def _assume_any(self, condition: Expression) -> 'SimpleUsageState':
         effect = False  # effect of the current nesting level on the outcome of the program
