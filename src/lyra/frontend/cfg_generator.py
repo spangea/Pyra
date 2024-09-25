@@ -579,6 +579,8 @@ class CFGVisitor(ast.NodeVisitor):
         pp = ProgramPoint(node.lineno, node.col_offset)
 
         target = self.visit(node.value, types, libraries, None, fname=fname)
+        if isinstance(target, LibraryAccess):
+            return LibraryAccess(pp, target.library, node.attr)
         attr = AttributeIdentifier(StringLyraType(), node.attr)
         access_typ = AttributeAccessLyraType(target.typ, None)
         return AttributeAccess(pp, access_typ, target, attr)
@@ -964,17 +966,6 @@ class CFGVisitor(ast.NodeVisitor):
         else:
             return Import(pp, library, library)
 
-    def visit_Attribute(self, node, types=None, libraries=None, typ=None, fname=''):
-        # FIXME -> There are two visit attirbute
-        """Visitor function for an attribute.
-        The visit of an attribute return an access field expression.
-        """
-        pp = ProgramPoint(node.lineno, node.col_offset)
-        left = self.visit(node.value, libraries=libraries, fname=fname, types=types)
-        right = node.attr
-        if isinstance(left, LibraryAccess):
-            return LibraryAccess(pp, left.library, right)
-        return AccessField(pp, left, right)
 
     # Control Flow
 

@@ -16,7 +16,7 @@ from lyra.core.statements import (
     Call,
     SubscriptionAccess,
     VariableAccess,
-    AccessField,
+    AttributeAccess,
     LibraryAccess,
     ListDisplayAccess,
     Keyword
@@ -64,26 +64,26 @@ class StatisticalTypeSemantics(
         state.result = {StatisticalTypeLattice.Status.Dict}
         return state
 
-    def values_semantics(self, access: AccessField, state: State) -> StatisticalTypeState:
+    def values_semantics(self, access: AttributeAccess, state: State) -> StatisticalTypeState:
         caller = access.left.variable
         if utilities.is_DataFrame(state, caller) or utilities.is_Series(state, caller):
             return StatisticalTypeLattice.Status.Array
         else:
             return StatisticalTypeLattice.Status.Top
 
-    def access_field_semantics(
-        self, access: AccessField, state: StatisticalTypeState, interpreter: Interpreter, is_lhs = False
+    def attribute_access_semantics(
+        self, access: AttributeAccess, state: StatisticalTypeState, interpreter: Interpreter, is_lhs = False
     ) -> StatisticalTypeState:
         if is_lhs:
-            return {access.left}
-        if isinstance(access.left, VariableAccess):
-            id = access.left.variable
+            return {access.target}
+        if isinstance(access.target, VariableAccess):
+            id = access.target.variable
             # FIXME: Access on fields of df or series can return specific types
             if state.get_type(id) == StatisticalTypeLattice.Status.DataFrame:
-                if hasattr(pd.DataFrame, access.right):
-                    if access.right == "dtypes":
+                if hasattr(pd.DataFrame, access.attr.name):
+                    if access.attr.name == "dtypes":
                         state.result = {StatisticalTypeLattice.Status.Series}
-                    elif access.right == "values":
+                    elif access.attr.name == "values":
                         state.result = {self.values_semantics(access, state)}
                     else:
                         state.result = {Input(typ=typing.Any)}
@@ -93,22 +93,22 @@ class StatisticalTypeSemantics(
                 StatisticalTypeLattice(StatisticalTypeLattice.Status.Series)
             ):
                 state.result = {Input(typ=typing.Any)}
-        elif isinstance(access.left, Call):
+        elif isinstance(access.target, Call):
             # CHECK
-            eval = self.semantics(access.left, state, interpreter)
+            eval = self.semantics(access.target, state, interpreter)
             for v in eval.variables:
-                if v == access.left.arguments[0].variable and isinstance(
+                if v == access.target.arguments[0].variable and isinstance(
                     v, VariableIdentifier
                 ):
-                    access_field = AccessField(
-                        state.pp, access.left.arguments[0], access.right
+                    access_field = AttributeAccess(
+                        state.pp, access.target.arguments[0], access.attr
                     )
                     return self.access_field_semantics(access_field, state, interpreter)
-        elif isinstance(access.left, AccessField):
-            if access.left.right == "cat":  # Nothing to be done
-                if access.right == "codes":
+        elif isinstance(access.target, AttributeAccess):
+            if access.target.attr.name == "cat":  # Nothing to be done
+                if access.attr.name == "codes":
                     state.result = {StatisticalTypeLattice.Status.CatSeries}
-        elif isinstance(access.left, LibraryAccess):
+        elif isinstance(access.target, LibraryAccess):
             # This should not happen
             raise Exception("Access field is actually a LibraryAccess")
         return state
@@ -129,11 +129,11 @@ class StatisticalTypeSemantics(
         state: StatisticalTypeState,
         interpreter: Interpreter,
     ) -> StatisticalTypeState:
-        # Check and resolution for AccessField in scenarios like df.loc[0]
-        if isinstance(stmt.target, AccessField) and hasattr(
-            self, "{}_semantics".format(stmt.target.right)
+        # Check and resolution for AttributeAccess in scenarios like df.loc[0]
+        if isinstance(stmt.target, AttributeAccess) and hasattr(
+            self, "{}_semantics".format(stmt.target.attr)
         ):
-            return getattr(self, "{}_semantics".format(stmt.target.right))(
+            return getattr(self, "{}_semantics".format(stmt.target.attr))(
                 stmt, state, interpreter
             )
         target = self.semantics(stmt.target, state, interpreter).result

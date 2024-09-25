@@ -19,7 +19,7 @@ class CategoricalConversionMean(UserWarning):
 class ScaledMean(UserWarning):
     pass
 
-class SpecialAccessFieldWarning(UserWarning):
+class SpecialAttributeAccessWarning(UserWarning):
     pass
 
 class CategoricalPlot(UserWarning):

@@ -619,9 +619,9 @@ class PandasStatisticalTypeSemantics:
     ) -> StatisticalTypeState:
         # We must arrive here from subscription_access_semantics
         if isinstance(stmt, SubscriptionAccess):
-            call = Call(stmt.pp, stmt, [stmt.target.left, stmt.key], TopLyraType)
-            caller = self.get_caller(call, state, interpreter)
-            if utilities.is_DataFrame(state, caller):
+            call = Call(stmt.pp, stmt, [stmt.target, stmt.key], TopLyraType)
+            accessed_var = stmt.target.target.variable
+            if utilities.is_DataFrame(state, accessed_var):
                 if isinstance(call.arguments[1], ListDisplayAccess):
                     state.result = {StatisticalTypeLattice.Status.DataFrame}
                 elif isinstance(call.arguments[1], LiteralEvaluation):
@@ -633,7 +633,7 @@ class PandasStatisticalTypeSemantics:
                         }
                     else:
                         state.result = {StatisticalTypeLattice.Status.Scalar}
-            elif utilities.is_Series(state, caller):
+            elif utilities.is_Series(state, accessed_var):
                 if isinstance(call.arguments[1], ListDisplayAccess):
                     state.result = {StatisticalTypeLattice.Status.Series}
                 elif isinstance(call.arguments[1], LiteralEvaluation):

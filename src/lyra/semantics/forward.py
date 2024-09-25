@@ -21,10 +21,10 @@ from lyra.semantics.pandas import DefaultPandasSemantics
 from lyra.semantics.semantics import Semantics, DefaultSemantics
 
 from lyra.abstract_domains.state import State
-from lyra.core.statements import Assignment, Call, Return, SubscriptionAccess, AccessField
+from lyra.core.statements import Assignment, Call, Return, SubscriptionAccess, AttributeAccess
 
 from copy import deepcopy
-from lyra.core.statistical_warnings import SpecialSubscriptionAssignmentWarning, SpecialAccessFieldWarning
+from lyra.core.statistical_warnings import SpecialSubscriptionAssignmentWarning, SpecialAttributeAccessWarning
 
 class ForwardSemantics(Semantics):
     """Forward semantics of statements."""
@@ -137,14 +137,14 @@ class AssignmentSemantics(ForwardSemantics):
         :param state: state before executing the assignment
         :return: state modified by the assignment
         """
-        if isinstance(stmt.left, AccessField):
-            lhs = getattr(self, "access_field_semantics")(stmt, state, interpreter, is_lhs=True)
-            warnings.warn(f"Special accessfield in lhs @ line {stmt.pp.line}", SpecialAccessFieldWarning)
+        if isinstance(stmt.left, AttributeAccess):
+            lhs = getattr(self, "attribute_access_semantics")(stmt, state, interpreter, is_lhs=True)
+            warnings.warn(f"Special attribute access in lhs @ line {stmt.pp.line}", SpecialAttributeAccessWarning)
 
         elif (isinstance(stmt.left, SubscriptionAccess) \
-                and hasattr(stmt.left.target, "right") and \
-                hasattr(self, '{}_semantics'.format(stmt.left.target.right))):
-            lhs = {Subscription(typing.Any, stmt.left.target.left, stmt.left.key)}
+                and hasattr(stmt.left.target, "attr") and \
+                hasattr(self, '{}_semantics'.format(stmt.left.target.attr))):
+            lhs = {Subscription(typing.Any, stmt.left.target.target, stmt.left.key)}
             warnings.warn(f"Special subscription in lhs @ line {stmt.pp.line}", SpecialSubscriptionAssignmentWarning)
         else:
             lhs = self.semantics(stmt.left, state, interpreter).result      # lhs evaluation
