@@ -23,9 +23,10 @@ from lyra.core.expressions import BinaryBooleanOperation, Input, TupleDisplay, L
 from lyra.core.expressions import BinaryOperation, BinaryComparisonOperation
 from lyra.core.expressions import UnaryArithmeticOperation, UnaryBooleanOperation
 from lyra.core.expressions import UnaryOperation
+from lyra.core.expressions import AttributeReference
 from lyra.core.statements import Statement, VariableAccess, LiteralEvaluation, Call, \
     TupleDisplayAccess, ListDisplayAccess, SetDisplayAccess, DictDisplayAccess, \
-    SubscriptionAccess, SlicingAccess, LibraryAccess, Delete
+    SubscriptionAccess, SlicingAccess, LibraryAccess, Delete, AttributeAccess
 from lyra.core.types import LyraType, BooleanLyraType, IntegerLyraType, FloatLyraType, \
     StringLyraType, TupleLyraType, ListLyraType, SetLyraType, DictLyraType
 from lyra.engine.interpreter import Interpreter
@@ -209,6 +210,18 @@ class ExpressionSemantics(Semantics):
         return state
 
     def assert_semantics(self, stmt: SlicingAccess, state, interpreter) -> State:
+        return state
+
+    def attribute_access_semantics(self, stmt: AttributeAccess, state, interpreter) -> State:
+        """Semantics of an attribute access.
+        """
+        # This simply transforms the statement into an expression (or
+        # expressions), and does not depend on the attribute name. The behavior
+        # that depends on the attribute name is therefore delegated to whoever
+        # handles the AttributeReference expression.
+        target = self.semantics(stmt.target, state, interpreter).result
+        attr = stmt.attr
+        state.result = {AttributeReference(stmt.typ, t, attr) for t in target}
         return state
 
 
