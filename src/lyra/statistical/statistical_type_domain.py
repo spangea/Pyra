@@ -26,6 +26,7 @@ from lyra.core.statistical_warnings import TypeChangedWarning, InconsistentTypeW
 
 # TODO: Check correctness and update documentation and operators
 
+
 class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMixin):
     from enum import IntEnum
 
@@ -272,6 +273,12 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
             return True
         return False
 
+    @classmethod
+    def get_all_types(cls):
+        types = set()
+        for t in StatisticalTypeLattice.Status:
+            types.add(cls(t))
+        return types
 
     @classmethod
     def _list_types(cls):

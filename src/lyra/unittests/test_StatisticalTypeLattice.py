@@ -81,50 +81,18 @@ class TestStatisticalTypeLattice(unittest.TestCase):
         return StatisticalTypeLattice().bottom()
 
     def test_is_top(self):
-        self.assertTrue(self.top_el().is_top())
-        self.assertFalse(self.series().is_top())
-        self.assertFalse(self.data_frame().is_top())
-        self.assertFalse(self.string().is_top())
-        self.assertFalse(self.numeric().is_top())
-        self.assertFalse(self.boolean().is_top())
-        self.assertFalse(self.bottom_el().is_top())
-        self.assertFalse(self.dict().is_top())
-        self.assertFalse(self.tuple().is_top())
-
-        for num_series_status in StatisticalTypeLattice._numeric_series_types():
-            self.assertFalse(StatisticalTypeLattice(num_series_status).is_top())
-
-        for str_series_status in StatisticalTypeLattice._string_series_types():
-            self.assertFalse(StatisticalTypeLattice(str_series_status).is_top())
-
-        for array_status in StatisticalTypeLattice._array_types():
-            self.assertFalse(StatisticalTypeLattice(array_status).is_top())
-
-        for list_status in StatisticalTypeLattice._list_types():
-            self.assertFalse(StatisticalTypeLattice(list_status).is_top())
+        for t in StatisticalTypeLattice.get_all_types():
+            if t == self.top_el():
+                self.assertTrue(t.is_top())
+            else:
+                self.assertFalse(t.is_top())
 
     def test_is_bottom(self):
-        self.assertFalse(self.top_el().is_bottom())
-        self.assertFalse(self.series().is_bottom())
-        self.assertFalse(self.data_frame().is_bottom())
-        self.assertFalse(self.string().is_bottom())
-        self.assertFalse(self.numeric().is_bottom())
-        self.assertFalse(self.boolean().is_bottom())
-        self.assertTrue(self.bottom_el().is_bottom())
-        self.assertFalse(self.dict().is_bottom())
-        self.assertFalse(self.tuple().is_bottom())
-
-        for num_series_status in StatisticalTypeLattice._numeric_series_types():
-            self.assertFalse(StatisticalTypeLattice(num_series_status).is_bottom())
-
-        for str_series_status in StatisticalTypeLattice._string_series_types():
-            self.assertFalse(StatisticalTypeLattice(str_series_status).is_bottom())
-
-        for array_status in StatisticalTypeLattice._array_types():
-            self.assertFalse(StatisticalTypeLattice(array_status).is_bottom())
-
-        for list_status in StatisticalTypeLattice._list_types():
-            self.assertFalse(StatisticalTypeLattice(list_status).is_bottom())
+        for t in StatisticalTypeLattice.get_all_types():
+            if t == self.bottom_el():
+                self.assertTrue(t.is_bottom())
+            else:
+                self.assertFalse(t.is_bottom())
 
     def test_neg_top(self):
         self.assertEqual(self.top_el()._neg(), self.top_el())
