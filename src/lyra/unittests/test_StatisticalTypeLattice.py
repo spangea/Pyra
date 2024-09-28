@@ -80,6 +80,10 @@ class TestStatisticalTypeLattice(unittest.TestCase):
     def boolean() -> StatisticalTypeLattice:
         return StatisticalTypeLattice(StatisticalTypeLattice.Status.Boolean)
 
+    @staticmethod
+    def clone(t) -> StatisticalTypeLattice:
+        return StatisticalTypeLattice(t.element)
+
     def test_is_top(self):
         """
         Test the `is_top` method for all types in `StatisticalTypeLattice`.
@@ -164,6 +168,189 @@ class TestStatisticalTypeLattice(unittest.TestCase):
             self.assertTrue(StatisticalTypeLattice(list_status)._less_equal(self.list()))
             if list_status != StatisticalTypeLattice.Status.List:
                 self.assertFalse(self.list()._less_equal(StatisticalTypeLattice(list_status)))
+
+    def test_join_top(self):
+        """
+        Test `_join` method when joining any type with the top element.
+
+        This test asserts that joining any type `t` with the top element results in the top element itself.
+        """
+        for t in StatisticalTypeLattice.get_all_types():
+            self.assertEqual(self.top_el()._join(t), self.top_el())
+            self.assertEqual(t._join(self.top_el()), self.top_el())
+
+    def test_join_bottom(self):
+        """
+        Test `_join` method when joining any type with the bottom element.
+
+        This test asserts that joining any type `t` with the bottom element results in `t`.
+        """
+        for t in StatisticalTypeLattice.get_all_types():
+            t_c = self.clone(t)
+            self.assertEqual(self.bottom_el()._join(t), t_c)
+            self.assertEqual(t._join(self.bottom_el()), t_c)
+
+    def test_join(self):
+        for string_series_status in StatisticalTypeLattice._string_series_types():
+            self.assertEqual(StatisticalTypeLattice(string_series_status)._join(self.series()), self.series())
+            self.assertEqual(StatisticalTypeLattice(string_series_status)._join(self.string_series()),
+                             self.string_series(), string_series_status)
+            self.assertEqual(self.series()._join(StatisticalTypeLattice(string_series_status)), self.series())
+            self.assertEqual(self.string_series()._join(StatisticalTypeLattice(string_series_status)),
+                             self.string_series())
+
+            self.assertEqual(StatisticalTypeLattice(string_series_status)._join(self.data_frame()), self.top_el())
+            self.assertEqual(StatisticalTypeLattice(string_series_status)._join(self.numeric()), self.top_el())
+            self.assertEqual(StatisticalTypeLattice(string_series_status)._join(self.string()), self.top_el())
+            self.assertEqual(StatisticalTypeLattice(string_series_status)._join(self.boolean()), self.top_el())
+
+        for num_series_status in StatisticalTypeLattice._numeric_series_types():
+            self.assertEqual(StatisticalTypeLattice(num_series_status)._join(self.series()), self.series())
+            self.assertEqual(StatisticalTypeLattice(num_series_status)._join(self.numeric_series()),
+                             self.numeric_series())
+            self.assertEqual(self.series()._join(StatisticalTypeLattice(num_series_status)), self.series())
+            self.assertEqual(self.numeric_series()._join(StatisticalTypeLattice(num_series_status)),
+                             self.numeric_series())
+
+            self.assertEqual(StatisticalTypeLattice(num_series_status)._join(self.data_frame()), self.top_el())
+            self.assertEqual(StatisticalTypeLattice(num_series_status)._join(self.numeric()), self.top_el())
+            self.assertEqual(StatisticalTypeLattice(num_series_status)._join(self.string()), self.top_el())
+            self.assertEqual(StatisticalTypeLattice(num_series_status)._join(self.boolean()), self.top_el())
+
+        for array_status in StatisticalTypeLattice._array_types():
+            self.assertEqual(StatisticalTypeLattice(array_status)._join(self.array()), self.array())
+            self.assertEqual(StatisticalTypeLattice(array_status)._join(self.array()),
+                             self.array())
+            self.assertEqual(self.array()._join(StatisticalTypeLattice(array_status)), self.array())
+
+            self.assertEqual(StatisticalTypeLattice(array_status)._join(self.data_frame()), self.top_el())
+            self.assertEqual(StatisticalTypeLattice(array_status)._join(self.numeric()), self.top_el())
+            self.assertEqual(StatisticalTypeLattice(array_status)._join(self.string()), self.top_el())
+            self.assertEqual(StatisticalTypeLattice(array_status)._join(self.boolean()), self.top_el())
+
+        for num_series_status in StatisticalTypeLattice._numeric_series_types():
+            for string_series_status in StatisticalTypeLattice._string_series_types():
+                self.assertEqual(
+                    StatisticalTypeLattice(num_series_status)._join(StatisticalTypeLattice(string_series_status)),
+                    self.series())
+                self.assertEqual(
+                    StatisticalTypeLattice(string_series_status)._join(StatisticalTypeLattice(num_series_status)),
+                    self.series())
+
+        self.assertEqual(self.string_series()._join(self.numeric_series()), self.series())
+        self.assertEqual(self.numeric_series()._join(self.string_series()), self.series())
+
+    def test_meet_top(self):
+        """
+         Test `_meet` method when meeting any type with the top element.
+
+         This test asserts that meeting any type `t` with the top element results in `t`.
+         """
+        for t in StatisticalTypeLattice.get_all_types():
+            t_c = self.clone(t)
+            self.assertEqual(self.top_el()._meet(t), t_c)
+            self.assertEqual(t._meet(self.top_el()), t_c)
+
+    def test_meet_bottom(self):
+        """
+         Test `_meet` method when meeting any type with the bottom element.
+
+         This test asserts that meeting any type `t` with the bottom element results in the bottom element itself.
+         """
+        for t in StatisticalTypeLattice.get_all_types():
+            self.assertEqual(self.bottom_el()._meet(t), self.bottom_el())
+            self.assertEqual(t._meet(self.bottom_el()), self.bottom_el())
+
+    def test_meet(self):
+        for s1 in StatisticalTypeLattice._string_series_types():
+            for s2 in StatisticalTypeLattice._string_series_types():
+                if s1 == s2:
+                    self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)),
+                                     StatisticalTypeLattice(s2))
+                elif s1 == StatisticalTypeLattice.Status.StringSeries:
+                    self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)),
+                                     StatisticalTypeLattice(s2))
+                elif s2 == StatisticalTypeLattice.Status.StringSeries:
+                    self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)),
+                                     StatisticalTypeLattice(s1))
+                else:
+                    self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)), self.bottom_el())
+
+        for s1 in StatisticalTypeLattice._numeric_series_types():
+            for s2 in StatisticalTypeLattice._numeric_series_types():
+                if s1 == s2:
+                    self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)),
+                                     StatisticalTypeLattice(s2))
+                elif s1 == StatisticalTypeLattice.Status.NumericSeries:
+                    self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)),
+                                     StatisticalTypeLattice(s2))
+                elif s2 == StatisticalTypeLattice.Status.NumericSeries:
+                    self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)),
+                                     StatisticalTypeLattice(s1))
+                else:
+                    self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)), self.bottom_el())
+
+        for s1 in StatisticalTypeLattice._array_types():
+            for s2 in StatisticalTypeLattice._array_types():
+                if s1 == s2:
+                    self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)),
+                                     StatisticalTypeLattice(s2))
+                elif s1 == StatisticalTypeLattice.Status.Array:
+                    self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)),
+                                     StatisticalTypeLattice(s2))
+                elif s2 == StatisticalTypeLattice.Status.Array:
+                    self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)),
+                                     StatisticalTypeLattice(s1))
+                else:
+                    self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)), self.bottom_el())
+
+        for s1 in StatisticalTypeLattice._numeric_series_types():
+            for s2 in StatisticalTypeLattice._string_series_types():
+                self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)), self.bottom_el())
+                self.assertEqual(StatisticalTypeLattice(s2)._meet(StatisticalTypeLattice(s1)), self.bottom_el())
+
+        for s1 in StatisticalTypeLattice._array_types():
+            for s2 in StatisticalTypeLattice._string_series_types():
+                self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)), self.bottom_el())
+                self.assertEqual(StatisticalTypeLattice(s2)._meet(StatisticalTypeLattice(s1)), self.bottom_el())
+
+        for s1 in StatisticalTypeLattice._array_types():
+            for s2 in StatisticalTypeLattice._numeric_series_types():
+                self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)), self.bottom_el())
+                self.assertEqual(StatisticalTypeLattice(s2)._meet(StatisticalTypeLattice(s1)), self.bottom_el())
+
+    def test_widening(self):
+        """
+        Test the `widening` method.
+
+        Since the widening operator relies on the join,
+        this test verifies that `t1.join(t2)` is equal to `t1.widening(t2)` for all t1 and t2 types.
+        """
+        for t1 in StatisticalTypeLattice.get_all_types():
+            for t2 in StatisticalTypeLattice.get_all_types():
+                t1_c = self.clone(t1)
+                t2_c = self.clone(t2)
+                self.assertEqual(t1.join(t2), t1_c.widening(t2_c))
+
+    def test_top(self):
+        self.assertEqual(self.top_el().top(), self.top_el())
+        self.assertEqual(self.series().top(), self.top_el())
+        self.assertEqual(self.ratio_series().top(), self.top_el())
+        self.assertEqual(self.data_frame().top(), self.top_el())
+        self.assertEqual(self.string().top(), self.top_el())
+        self.assertEqual(self.numeric().top(), self.top_el())
+        self.assertEqual(self.boolean().top(), self.top_el())
+        self.assertEqual(self.bottom_el().top(), self.top_el())
+
+    def test_bottom(self):
+        self.assertEqual(self.top_el().bottom(), self.bottom_el())
+        self.assertEqual(self.series().bottom(), self.bottom_el())
+        self.assertEqual(self.ratio_series().bottom(), self.bottom_el())
+        self.assertEqual(self.data_frame().bottom(), self.bottom_el())
+        self.assertEqual(self.string().bottom(), self.bottom_el())
+        self.assertEqual(self.numeric().bottom(), self.bottom_el())
+        self.assertEqual(self.boolean().bottom(), self.bottom_el())
+        self.assertEqual(self.bottom_el().bottom(), self.bottom_el())
 
     def test_neg_top(self):
         self.assertEqual(self.top_el()._neg(), self.top_el())
@@ -265,288 +452,6 @@ class TestStatisticalTypeLattice(unittest.TestCase):
         self.assertEqual(self.boolean()._concat(self.top_el()), self.top_el())
         self.assertEqual(self.bottom_el()._concat(self.top_el()), self.top_el())
 
-    def test_join_top(self):
-        self.assertEqual(self.top_el()._join(self.top_el()), self.top_el())
-        self.assertEqual(self.data_frame()._join(self.top_el()), self.top_el())
-        self.assertEqual(self.string()._join(self.top_el()), self.top_el())
-        self.assertEqual(self.numeric()._join(self.top_el()), self.top_el())
-        self.assertEqual(self.boolean()._join(self.top_el()), self.top_el())
-        self.assertEqual(self.bottom_el()._join(self.top_el()), self.top_el())
-        self.assertEqual(self.tuple()._join(self.top_el()), self.top_el())
-        self.assertEqual(self.dict()._join(self.top_el()), self.top_el())
-        self.assertEqual(self.top_el()._join(self.data_frame()), self.top_el())
-        self.assertEqual(self.top_el()._join(self.string()), self.top_el())
-        self.assertEqual(self.top_el()._join(self.numeric()), self.top_el())
-        self.assertEqual(self.top_el()._join(self.boolean()), self.top_el())
-        self.assertEqual(self.top_el()._join(self.bottom_el()), self.top_el())
-        self.assertEqual(self.top_el()._join(self.dict()), self.top_el())
-        self.assertEqual(self.top_el()._join(self.tuple()), self.top_el())
-
-        for string_series_status in StatisticalTypeLattice._string_series_types():
-            self.assertEqual(self.top_el()._join(StatisticalTypeLattice(string_series_status)),
-                             self.top_el())
-            self.assertEqual(StatisticalTypeLattice(string_series_status)._join(self.top_el()),
-                             self.top_el())
-
-        for num_series_status in StatisticalTypeLattice._numeric_series_types():
-            self.assertEqual(self.top_el()._join(StatisticalTypeLattice(num_series_status)),
-                             self.top_el())
-            self.assertEqual(StatisticalTypeLattice(num_series_status)._join(self.top_el()),
-                             self.top_el())
-
-        for array_status in StatisticalTypeLattice._array_types():
-            self.assertEqual(self.top_el()._join(StatisticalTypeLattice(array_status)),
-                             self.top_el())
-            self.assertEqual(StatisticalTypeLattice(array_status)._join(self.top_el()),
-                             self.top_el())
-
-        for list_status in StatisticalTypeLattice._list_types():
-            self.assertEqual(self.top_el()._join(StatisticalTypeLattice(list_status)),
-                             self.top_el())
-            self.assertEqual(StatisticalTypeLattice(list_status)._join(self.top_el()),
-                             self.top_el())
-
-        self.assertEqual(self.top_el()._join(self.series()), self.top_el())
-        self.assertEqual(self.series()._join(self.top_el()), self.top_el())
-        self.assertEqual(self.array()._join(self.top_el()), self.top_el())
-
-    def test_join_bottom(self):
-        self.assertEqual(self.data_frame()._join(self.bottom_el()), self.data_frame())
-        self.assertEqual(self.string()._join(self.bottom_el()), self.string())
-        self.assertEqual(self.numeric()._join(self.bottom_el()), self.numeric())
-        self.assertEqual(self.tuple()._join(self.bottom_el()), self.tuple())
-        self.assertEqual(self.dict()._join(self.bottom_el()), self.dict())
-        self.assertEqual(self.boolean()._join(self.bottom_el()), self.boolean())
-        self.assertEqual(self.top_el()._join(self.bottom_el()), self.top_el())
-        self.assertEqual(self.bottom_el()._join(self.bottom_el()), self.bottom_el())
-        self.assertEqual(self.bottom_el()._join(self.data_frame()), self.data_frame())
-        self.assertEqual(self.bottom_el()._join(self.string()), self.string())
-        self.assertEqual(self.bottom_el()._join(self.numeric()), self.numeric())
-        self.assertEqual(self.bottom_el()._join(self.boolean()), self.boolean())
-        self.assertEqual(self.bottom_el()._join(self.top_el()), self.top_el())
-        self.assertEqual(self.bottom_el()._join(self.tuple()), self.tuple())
-        self.assertEqual(self.bottom_el()._join(self.dict()), self.dict())
-
-        for string_series_status in StatisticalTypeLattice._string_series_types():
-            self.assertEqual(self.bottom_el()._join(StatisticalTypeLattice(string_series_status)),
-                             StatisticalTypeLattice(string_series_status))
-            self.assertEqual(StatisticalTypeLattice(string_series_status)._join(self.bottom_el()),
-                             StatisticalTypeLattice(string_series_status))
-
-        for num_series_status in StatisticalTypeLattice._numeric_series_types():
-            self.assertEqual(self.bottom_el()._join(StatisticalTypeLattice(num_series_status)),
-                             StatisticalTypeLattice(num_series_status))
-            self.assertEqual(StatisticalTypeLattice(num_series_status)._join(self.bottom_el()),
-                             StatisticalTypeLattice(num_series_status))
-
-        for array_status in StatisticalTypeLattice._array_types():
-            self.assertEqual(self.bottom_el()._join(StatisticalTypeLattice(array_status)),
-                             StatisticalTypeLattice(array_status))
-            self.assertEqual(StatisticalTypeLattice(array_status)._join(self.bottom_el()),
-                             StatisticalTypeLattice(array_status))
-
-        for list_status in StatisticalTypeLattice._list_types():
-            self.assertEqual(self.bottom_el()._join(StatisticalTypeLattice(list_status)),
-                             StatisticalTypeLattice(list_status))
-            self.assertEqual(StatisticalTypeLattice(list_status)._join(self.bottom_el()),
-                             StatisticalTypeLattice(list_status))
-
-        self.assertEqual(self.bottom_el()._join(self.series()), self.series())
-        self.assertEqual(self.series()._join(self.bottom_el()), self.series())
-        self.assertEqual(self.array()._join(self.bottom_el()), self.array())
-
-    def test_join(self):
-        for string_series_status in StatisticalTypeLattice._string_series_types():
-            self.assertEqual(StatisticalTypeLattice(string_series_status)._join(self.series()), self.series())
-            self.assertEqual(StatisticalTypeLattice(string_series_status)._join(self.string_series()), self.string_series(), string_series_status)
-            self.assertEqual(self.series()._join(StatisticalTypeLattice(string_series_status)), self.series())
-            self.assertEqual(self.string_series()._join(StatisticalTypeLattice(string_series_status)), self.string_series())
-
-            self.assertEqual(StatisticalTypeLattice(string_series_status)._join(self.data_frame()), self.top_el())
-            self.assertEqual(StatisticalTypeLattice(string_series_status)._join(self.numeric()), self.top_el())
-            self.assertEqual(StatisticalTypeLattice(string_series_status)._join(self.string()), self.top_el())
-            self.assertEqual(StatisticalTypeLattice(string_series_status)._join(self.boolean()), self.top_el())
-
-        for num_series_status in StatisticalTypeLattice._numeric_series_types():
-            self.assertEqual(StatisticalTypeLattice(num_series_status)._join(self.series()), self.series())
-            self.assertEqual(StatisticalTypeLattice(num_series_status)._join(self.numeric_series()), self.numeric_series())
-            self.assertEqual(self.series()._join(StatisticalTypeLattice(num_series_status)), self.series())
-            self.assertEqual(self.numeric_series()._join(StatisticalTypeLattice(num_series_status)), self.numeric_series())
-
-            self.assertEqual(StatisticalTypeLattice(num_series_status)._join(self.data_frame()), self.top_el())
-            self.assertEqual(StatisticalTypeLattice(num_series_status)._join(self.numeric()), self.top_el())
-            self.assertEqual(StatisticalTypeLattice(num_series_status)._join(self.string()), self.top_el())
-            self.assertEqual(StatisticalTypeLattice(num_series_status)._join(self.boolean()), self.top_el())
-
-        for array_status in StatisticalTypeLattice._array_types():
-            self.assertEqual(StatisticalTypeLattice(array_status)._join(self.array()), self.array())
-            self.assertEqual(StatisticalTypeLattice(array_status)._join(self.array()),
-                             self.array())
-            self.assertEqual(self.array()._join(StatisticalTypeLattice(array_status)), self.array())
-
-            self.assertEqual(StatisticalTypeLattice(array_status)._join(self.data_frame()), self.top_el())
-            self.assertEqual(StatisticalTypeLattice(array_status)._join(self.numeric()), self.top_el())
-            self.assertEqual(StatisticalTypeLattice(array_status)._join(self.string()), self.top_el())
-            self.assertEqual(StatisticalTypeLattice(array_status)._join(self.boolean()), self.top_el())
-
-        for num_series_status in StatisticalTypeLattice._numeric_series_types():
-            for string_series_status in StatisticalTypeLattice._string_series_types():
-                self.assertEqual(StatisticalTypeLattice(num_series_status)._join(StatisticalTypeLattice(string_series_status)), self.series())
-                self.assertEqual(StatisticalTypeLattice(string_series_status)._join(StatisticalTypeLattice(num_series_status)), self.series())
-
-        self.assertEqual(self.string_series()._join(self.numeric_series()), self.series())
-        self.assertEqual(self.numeric_series()._join(self.string_series()), self.series())
-
-
-    def test_meet_top(self):
-        self.assertEqual(self.top_el()._meet(self.top_el()), self.top_el())
-        self.assertEqual(self.data_frame()._meet(self.top_el()), self.data_frame())
-        self.assertEqual(self.string()._meet(self.top_el()), self.string())
-        self.assertEqual(self.numeric()._meet(self.top_el()), self.numeric())
-        self.assertEqual(self.tuple()._meet(self.top_el()), self.tuple())
-        self.assertEqual(self.dict()._meet(self.top_el()), self.dict())
-        self.assertEqual(self.boolean()._meet(self.top_el()), self.boolean())
-        self.assertEqual(self.bottom_el()._meet(self.top_el()), self.bottom_el())
-        self.assertEqual(self.top_el()._meet(self.string()), self.string())
-        self.assertEqual(self.top_el()._meet(self.numeric()), self.numeric())
-        self.assertEqual(self.top_el()._meet(self.boolean()), self.boolean())
-        self.assertEqual(self.top_el()._meet(self.data_frame()), self.data_frame())
-        self.assertEqual(self.top_el()._meet(self.bottom_el()), self.bottom_el())
-
-        for string_series_status in StatisticalTypeLattice._string_series_types():
-            self.assertEqual(self.top_el()._meet(StatisticalTypeLattice(string_series_status)), StatisticalTypeLattice(string_series_status))
-            self.assertEqual(StatisticalTypeLattice(string_series_status)._meet(self.top_el()), StatisticalTypeLattice(string_series_status))
-
-        for num_series_status in StatisticalTypeLattice._numeric_series_types():
-            self.assertEqual(self.top_el()._meet(StatisticalTypeLattice(num_series_status)), StatisticalTypeLattice(num_series_status))
-            self.assertEqual(StatisticalTypeLattice(num_series_status)._meet(self.top_el()), StatisticalTypeLattice(num_series_status))
-
-        for array_status in StatisticalTypeLattice._array_types():
-            self.assertEqual(self.top_el()._meet(StatisticalTypeLattice(array_status)), StatisticalTypeLattice(array_status))
-            self.assertEqual(StatisticalTypeLattice(array_status)._meet(self.top_el()), StatisticalTypeLattice(array_status))
-
-        self.assertEqual(self.top_el()._meet(self.series()), self.series())
-        self.assertEqual(self.series()._meet(self.top_el()), self.series())
-
-    def test_meet_bottom(self):
-        self.assertEqual(self.data_frame()._meet(self.bottom_el()), self.bottom_el())
-        self.assertEqual(self.string()._meet(self.bottom_el()), self.bottom_el())
-        self.assertEqual(self.numeric()._meet(self.bottom_el()), self.bottom_el())
-        self.assertEqual(self.tuple()._meet(self.bottom_el()), self.bottom_el())
-        self.assertEqual(self.dict()._meet(self.bottom_el()), self.bottom_el())
-        self.assertEqual(self.boolean()._meet(self.bottom_el()), self.bottom_el())
-        self.assertEqual(self.top_el()._meet(self.bottom_el()), self.bottom_el())
-        self.assertEqual(self.bottom_el()._meet(self.bottom_el()), self.bottom_el())
-        self.assertEqual(self.bottom_el()._meet(self.series()), self.bottom_el())
-        self.assertEqual(self.bottom_el()._meet(self.data_frame()), self.bottom_el())
-        self.assertEqual(self.bottom_el()._meet(self.string()), self.bottom_el())
-        self.assertEqual(self.bottom_el()._meet(self.numeric()), self.bottom_el())
-        self.assertEqual(self.bottom_el()._meet(self.boolean()), self.bottom_el())
-        self.assertEqual(self.bottom_el()._meet(self.top_el()), self.bottom_el())
-
-        for string_series_status in StatisticalTypeLattice._string_series_types():
-            self.assertEqual(self.bottom_el()._meet(StatisticalTypeLattice(string_series_status)), self.bottom_el())
-            self.assertEqual(StatisticalTypeLattice(string_series_status)._meet(self.bottom_el()), self.bottom_el())
-
-        for num_series_status in StatisticalTypeLattice._numeric_series_types():
-            self.assertEqual(self.bottom_el()._meet(StatisticalTypeLattice(num_series_status)), self.bottom_el())
-            self.assertEqual(StatisticalTypeLattice(num_series_status)._meet(self.bottom_el()), self.bottom_el())
-
-        for array_status in StatisticalTypeLattice._array_types():
-            self.assertEqual(self.bottom_el()._meet(StatisticalTypeLattice(array_status)), self.bottom_el())
-            self.assertEqual(StatisticalTypeLattice(array_status)._meet(self.bottom_el()), self.bottom_el())
-
-        self.assertEqual(self.bottom_el()._meet(self.series()), self.bottom_el())
-        self.assertEqual(self.series()._meet(self.bottom_el()), self.bottom_el())
-
-    def test_meet(self):
-        for s1 in StatisticalTypeLattice._string_series_types():
-            for s2 in StatisticalTypeLattice._string_series_types():
-                if s1 == s2:
-                    self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)),
-                                     StatisticalTypeLattice(s2))
-                elif s1 == StatisticalTypeLattice.Status.StringSeries:
-                    self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)),
-                                     StatisticalTypeLattice(s2))
-                elif s2 == StatisticalTypeLattice.Status.StringSeries:
-                    self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)),
-                                     StatisticalTypeLattice(s1))
-                else:
-                    self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)), self.bottom_el())
-
-        for s1 in StatisticalTypeLattice._numeric_series_types():
-            for s2 in StatisticalTypeLattice._numeric_series_types():
-                if s1 == s2:
-                    self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)),
-                                     StatisticalTypeLattice(s2))
-                elif s1 == StatisticalTypeLattice.Status.NumericSeries:
-                    self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)),
-                                     StatisticalTypeLattice(s2))
-                elif s2 == StatisticalTypeLattice.Status.NumericSeries:
-                    self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)),
-                                     StatisticalTypeLattice(s1))
-                else:
-                    self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)), self.bottom_el())
-
-        for s1 in StatisticalTypeLattice._array_types():
-            for s2 in StatisticalTypeLattice._array_types():
-                if s1 == s2:
-                    self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)),
-                                     StatisticalTypeLattice(s2))
-                elif s1 == StatisticalTypeLattice.Status.Array:
-                    self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)),
-                                     StatisticalTypeLattice(s2))
-                elif s2 == StatisticalTypeLattice.Status.Array:
-                    self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)),
-                                     StatisticalTypeLattice(s1))
-                else:
-                    self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)), self.bottom_el())
-
-        for s1 in StatisticalTypeLattice._numeric_series_types():
-            for s2 in StatisticalTypeLattice._string_series_types():
-                self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)), self.bottom_el())
-                self.assertEqual(StatisticalTypeLattice(s2)._meet(StatisticalTypeLattice(s1)), self.bottom_el())
-
-        for s1 in StatisticalTypeLattice._array_types():
-            for s2 in StatisticalTypeLattice._string_series_types():
-                self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)), self.bottom_el())
-                self.assertEqual(StatisticalTypeLattice(s2)._meet(StatisticalTypeLattice(s1)), self.bottom_el())
-
-        for s1 in StatisticalTypeLattice._array_types():
-            for s2 in StatisticalTypeLattice._numeric_series_types():
-                self.assertEqual(StatisticalTypeLattice(s1)._meet(StatisticalTypeLattice(s2)), self.bottom_el())
-                self.assertEqual(StatisticalTypeLattice(s2)._meet(StatisticalTypeLattice(s1)), self.bottom_el())
-
-    def test_widening_top(self):
-        # Widening is implemented with join, so they must have the same result
-        self.assertEqual(self.top_el()._widening(self.top_el()), self.top_el()._join(self.top_el()))
-        self.assertEqual(self.series()._widening(self.top_el()), self.series()._join(self.top_el()))
-        self.assertEqual(self.ratio_series()._widening(self.top_el()), self.ratio_series()._join(self.top_el()))
-        self.assertEqual(self.data_frame()._widening(self.top_el()), self.data_frame()._join(self.top_el()))
-        self.assertEqual(self.string()._widening(self.top_el()), self.string()._join(self.top_el()))
-        self.assertEqual(self.numeric()._widening(self.top_el()), self.numeric()._join(self.top_el()))
-        self.assertEqual(self.boolean()._widening(self.top_el()), self.boolean()._join(self.top_el()))
-        self.assertEqual(self.bottom_el()._widening(self.top_el()), self.bottom_el()._join(self.top_el()))
-
-    def test_top(self):
-        self.assertEqual(self.top_el().top(), self.top_el())
-        self.assertEqual(self.series().top(), self.top_el())
-        self.assertEqual(self.ratio_series().top(), self.top_el())
-        self.assertEqual(self.data_frame().top(), self.top_el())
-        self.assertEqual(self.string().top(), self.top_el())
-        self.assertEqual(self.numeric().top(), self.top_el())
-        self.assertEqual(self.boolean().top(), self.top_el())
-        self.assertEqual(self.bottom_el().top(), self.top_el())
-
-    def test_bottom(self):
-        self.assertEqual(self.top_el().bottom(), self.bottom_el())
-        self.assertEqual(self.series().bottom(), self.bottom_el())
-        self.assertEqual(self.ratio_series().bottom(), self.bottom_el())
-        self.assertEqual(self.data_frame().bottom(), self.bottom_el())
-        self.assertEqual(self.string().bottom(), self.bottom_el())
-        self.assertEqual(self.numeric().bottom(), self.bottom_el())
-        self.assertEqual(self.boolean().bottom(), self.bottom_el())
-        self.assertEqual(self.bottom_el().bottom(), self.bottom_el())
 
 if __name__ == '__main__':
     unittest.main()
