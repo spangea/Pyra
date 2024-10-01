@@ -275,10 +275,7 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
 
     @classmethod
     def get_all_types(cls):
-        types = set()
-        for t in StatisticalTypeLattice.Status:
-            types.add(cls(t))
-        return types
+        return {cls(t) for t in StatisticalTypeLattice.Status}
 
     @classmethod
     def _list_types(cls):
@@ -321,6 +318,28 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
     def _string_series_types(cls):
         s = (StatisticalTypeLattice.Status.StringSeries,
              StatisticalTypeLattice.Status.CatSeries)
+        return s
+
+    @classmethod
+    def _atom_types(cls):
+        s = (StatisticalTypeLattice.Status.NoneRet,
+             StatisticalTypeLattice.Status.Plot,
+             StatisticalTypeLattice.Status.LabelBinarizer,
+             StatisticalTypeLattice.Status.OrdinalEncoder,
+             StatisticalTypeLattice.Status.OneHotEncoder,
+             StatisticalTypeLattice.Status.LabelEncoder,
+             StatisticalTypeLattice.Status.MaxAbsScaler,
+             StatisticalTypeLattice.Status.MinMaxScaler,
+             StatisticalTypeLattice.Status.StandardScaler,
+             StatisticalTypeLattice.Status.Scalar,
+             StatisticalTypeLattice.Status.DataFrame,
+             StatisticalTypeLattice.Status.Tuple,
+             StatisticalTypeLattice.Status.Set,
+             StatisticalTypeLattice.Status.Dict,
+             StatisticalTypeLattice.Status.String,
+             StatisticalTypeLattice.Status.Numeric,
+             StatisticalTypeLattice.Status.Boolean
+             )
         return s
 
     def _join(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':

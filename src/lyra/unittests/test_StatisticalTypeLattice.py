@@ -261,6 +261,137 @@ class TestStatisticalTypeLattice(unittest.TestCase):
             self.assertEqual(self.bottom_el()._meet(t), self.bottom_el())
             self.assertEqual(t._meet(self.bottom_el()), self.bottom_el())
 
+    def _assert_operation(self, s1, s2, op, expected):
+        """Tests the op operation of two types s1 and s2 (e.g., tests s1 op s2 and s2 op s1).
+
+          :param s1: the first element
+          :param s2: the second element
+          :param op: the operation to apply
+          :param expected: the expected result of s1 op s2
+        """
+        self.assertEqual(op(StatisticalTypeLattice(s1), StatisticalTypeLattice(s2)), expected)
+        self.assertEqual(op(StatisticalTypeLattice(s2), StatisticalTypeLattice(s1)), expected)
+
+    def _test_meet_same_type(self, group_types, sub_top):
+        """Assert the meet operation of a group of types.
+
+          :param group_types: the group of types
+          :param sub_top: the highest element of group_types
+        """
+        for s1 in group_types:
+            for s2 in group_types:
+                if s1 == s2 or s1 == sub_top:
+                    self._assert_operation(s1, s2, lambda x, y: x._meet(y), StatisticalTypeLattice(s2))
+                elif s2 == sub_top:
+                    self._assert_operation(s1, s2, lambda x, y: x._meet(y), StatisticalTypeLattice(s1))
+                else:
+                    self._assert_operation(s1, s2, lambda x, y: x._meet(y), self.bottom_el())
+
+    def _test_join_same_type(self, group_types, sub_top):
+        """Tests the join operation of a group of types.
+
+          :param group_types: the group of types
+          :param sub_top: the highest element of group_types
+        """
+        for s1 in group_types:
+            for s2 in group_types:
+                if s1 == s2:
+                    self._assert_operation(s1, s2, lambda x, y: x._join(y), StatisticalTypeLattice(s1))
+                elif s1 == sub_top or s2 == sub_top:
+                    self._assert_operation(s1, s2, lambda x, y: x._join(y), StatisticalTypeLattice(sub_top))
+                else:
+                    self._assert_operation(s1, s2, lambda x, y: x._join(y), StatisticalTypeLattice(sub_top))
+
+    def _test_operation_different_groups(self, groups, op, expected):
+        """Tests the operation op of groups of different types. Taken two elements from two different groups of types
+        should return expected.
+
+        :param groups: the groups of types
+        :param op: the operation
+        :param expected: the highest element of group_types
+        """
+        for i, group1 in enumerate(groups):
+            for j, group2 in enumerate(groups):
+                # Test operation for all pairs of types between group1 and group2
+                for s1 in group1:
+                    for s2 in group2:
+                        if i != j:
+                            self._assert_operation(s1, s2, op, expected)
+
+    def test_meet_new(self):
+        # Parametrize the meet operation
+        operation = lambda x, y: x._meet(y)
+
+        # Testing meet within string series types
+        self._test_meet_same_type(StatisticalTypeLattice._string_series_types(),
+                                       StatisticalTypeLattice.Status.StringSeries)
+
+        # Test meet within numeric series types
+        self._test_meet_same_type(StatisticalTypeLattice._numeric_series_types(),
+                                       StatisticalTypeLattice.Status.NumericSeries)
+
+        # Test meet within array types
+        self._test_meet_same_type(StatisticalTypeLattice._array_types(),
+                                       StatisticalTypeLattice.Status.Array)
+
+        # Test meet within list types
+        self._test_meet_same_type(StatisticalTypeLattice._list_types(),
+                                       StatisticalTypeLattice.Status.List)
+
+        # Test meet across different type groups
+        groups = [
+            StatisticalTypeLattice._numeric_series_types(),
+            StatisticalTypeLattice._string_series_types(),
+            StatisticalTypeLattice._array_types(),
+            StatisticalTypeLattice._list_types(),
+            StatisticalTypeLattice._atom_types()
+        ]
+
+        self._test_operation_different_groups(groups, operation, self.bottom_el())
+
+    def test_join_new(self):
+        # Parametrize the meet operation
+        operation = lambda x, y: x._join(y)
+
+        # Testing meet within string series types
+        self._test_join_same_type(StatisticalTypeLattice._string_series_types(),
+                                       StatisticalTypeLattice.Status.StringSeries)
+
+        # Test meet within numeric series types
+        self._test_join_same_type(StatisticalTypeLattice._numeric_series_types(),
+                                       StatisticalTypeLattice.Status.NumericSeries)
+
+        # Test meet within array types
+        self._test_join_same_type(StatisticalTypeLattice._array_types(),
+                                       StatisticalTypeLattice.Status.Array)
+
+        # Test meet across different type groups
+        groups = [
+            StatisticalTypeLattice._string_series_types(),
+            StatisticalTypeLattice._array_types(),
+            StatisticalTypeLattice._list_types(),
+            StatisticalTypeLattice._atom_types()
+        ]
+
+        self._test_operation_different_groups(groups, operation, self.top_el())
+
+        groups = [
+            StatisticalTypeLattice._numeric_series_types(),
+            StatisticalTypeLattice._array_types(),
+            StatisticalTypeLattice._list_types(),
+            StatisticalTypeLattice._atom_types()
+        ]
+
+        self._test_operation_different_groups(groups, operation, self.top_el())
+
+        groups = [
+            StatisticalTypeLattice._numeric_series_types(),
+            StatisticalTypeLattice._string_series_types(),
+        ]
+
+        self._test_operation_different_groups(groups, operation, self.series())
+
+
     def test_meet(self):
         for s1 in StatisticalTypeLattice._string_series_types():
             for s2 in StatisticalTypeLattice._string_series_types():
