@@ -338,6 +338,10 @@ class TestStatisticalTypeLattice(unittest.TestCase):
         self._test_meet_same_type(StatisticalTypeLattice._list_types(),
                                        StatisticalTypeLattice.Status.List)
 
+        # Test meet within atom types
+        self._test_meet_same_type(StatisticalTypeLattice._atom_types(),
+                                       self.bottom_el())
+
         # Test meet across different type groups
         groups = [
             StatisticalTypeLattice._numeric_series_types(),
@@ -364,6 +368,10 @@ class TestStatisticalTypeLattice(unittest.TestCase):
         # Test meet within array types
         self._test_join_same_type(StatisticalTypeLattice._array_types(),
                                        StatisticalTypeLattice.Status.Array)
+
+        # Test meet within atom types
+        self._test_meet_same_type(StatisticalTypeLattice._atom_types(),
+                                  self.top_el())
 
         # Test meet across different type groups
         groups = [
