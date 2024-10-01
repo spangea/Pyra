@@ -373,7 +373,7 @@ class DataFrameColumnUsageState(Stack, State, EnvironmentMixin):
     def _assign_slicing(self, left: Slicing, right: Expression) -> 'SimpleUsageState':
         return self._assign_any(left, right)
 
-    @copy_docstring(State._assign_variable)
+    @copy_docstring(State._assign_tuple)
     def _assign_tuple(self, left: TupleDisplay, right: Expression) -> '':
         return self._assign_any(left, right)
 

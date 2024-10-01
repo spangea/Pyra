@@ -61,17 +61,7 @@ class Basis(Store, State, metaclass=ABCMeta):
 
     @copy_docstring(State._assign_tuple)
     def _assign_tuple(self, left: TupleDisplay, right: Expression) -> '':
-        if hasattr(right, "items") and len(left.items) == len(right.items):
-            for l, r in zip(left.items, right.items):
-                self._assign(l, r)
-        elif hasattr(right, "__len__") and len(left.items) == len(right):
-            for l, r in zip(left.items, right):
-                self._assign(l, r)
-        else:
-            raise NotImplementedError("Way to return \"Top\" not yet implemented")
-            # for l in left.items:
-            #     self._assign(l, StatisticalTypeLattice.Status.Top)
-        return self
+        raise NotImplementedError
 
     @copy_docstring(State.enter_if)
     def enter_if(self):

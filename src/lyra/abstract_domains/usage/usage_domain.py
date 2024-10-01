@@ -136,18 +136,7 @@ class SimpleUsageState(Stack, State):
 
     @copy_docstring(State._assign_tuple)
     def _assign_tuple(self, left: TupleDisplay, right: Expression) -> '':
-        # CHECKME
-        if hasattr(right, "items") and len(left.items) == len(right.items):
-            for l, r in zip(left.items, right.items):
-                self._assign(l, r)
-        elif hasattr(right, "__len__") and len(left.items) == len(right):
-            for l, r in zip(left.items, right):
-                self._assign(l, r)
-        else:
-            raise NotImplementedError("Way to return \"Top\" not yet implemented")
-            # for l in left.items:
-            #     self._assign(l, StatisticalTypeLattice.Status.Top)
-        return self
+        return self._assign_any(left, right)
 
     @copy_docstring(State._assign_subscription)
     def _assign_subscription(self, left: Subscription, right: Expression) -> 'SimpleUsageState':
