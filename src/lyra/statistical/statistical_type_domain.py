@@ -321,6 +321,14 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
         return s
 
     @classmethod
+    def _is_series_type(cls, status):
+        return (
+                status in cls._string_series_types() or
+                status in cls._numeric_series_types() or
+                status == StatisticalTypeLattice.Status.BoolSeries
+        )
+
+    @classmethod
     def _atom_types(cls):
         s = (StatisticalTypeLattice.Status.NoneRet,
              StatisticalTypeLattice.Status.Plot,
@@ -357,17 +365,22 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
             return self._replace(StatisticalTypeLattice(other.element))
         elif other._less_equal(self):
             return self
+        # Computes the join between types of the same group
+        # Numeric series
         elif self.element in self._numeric_series_types() and other.element in self._numeric_series_types():
             return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.NumericSeries))
+        # String series
         elif self.element in self._string_series_types() and other.element in self._string_series_types():
             return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.StringSeries))
+        # Array
         elif self.element in self._array_types() and other.element in self._array_types():
             return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Array))
+        # List
         elif self.element in self._list_types() and other.element in self._list_types():
             return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.List))
-        elif self.element in self._string_series_types() and other.element in self._numeric_series_types():
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Series))
-        elif other.element in self._string_series_types() and self.element in self._numeric_series_types():
+
+        # Computes the join between types of different series groups
+        elif self._is_series_type(self.element) and self._is_series_type(other.element):
             return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Series))
         return self._replace(self.top())
 
