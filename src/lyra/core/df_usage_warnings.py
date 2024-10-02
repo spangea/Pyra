@@ -1,0 +1,2 @@
+class DropBeforeUse(UserWarning):
+    pass
