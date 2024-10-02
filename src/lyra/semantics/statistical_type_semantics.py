@@ -995,3 +995,9 @@ class StatisticalTypeSemantics(
         state.result = {StatisticalTypeLattice.Status.Top}
         return state # Returns an object of the GridSearchCV class from the Sklearn library.
 
+    def download_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.Boolean}
+        return state
+
