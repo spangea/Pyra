@@ -4,6 +4,12 @@ from copy import deepcopy
 from typing import Set, Union
 from enum import Enum
 
+import warnings
+
+from lyra.core.df_usage_warnings import (
+    DropBeforeUse
+)
+
 from lyra.abstract_domains.lattice import BoundedLattice, EnvironmentMixin
 from lyra.core.expressions import walk, Input
 from lyra.abstract_domains.state import State
@@ -624,7 +630,11 @@ class DataFrameColumnUsageState(Stack, State, EnvironmentMixin):
             # Check for "drop-before-use" errors
             for col in cols_to_unuse:
                 if col in self.lattice.store[dataframe].store and is_used(self.lattice.store[dataframe].store[col]):
-                    print(f"Warning: at {pp} column {col} of {dataframe} dropped before use!")
+                    warnings.warn(
+                        f"Warning: in {pp} the column {col} of {dataframe} dropped before use!",
+                        category=DropBeforeUse,
+                        stacklevel=2,
+                    )
 
             self.lattice.store[dataframe].bottom(cols_to_unuse)
             return self
