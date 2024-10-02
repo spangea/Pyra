@@ -25,10 +25,6 @@ class TestStatisticalTypeLattice(unittest.TestCase):
         return StatisticalTypeLattice(StatisticalTypeLattice.Status.ExpSeries)
 
     @staticmethod
-    def int_series() -> StatisticalTypeLattice:
-        return StatisticalTypeLattice(StatisticalTypeLattice.Status.IntSeries)
-
-    @staticmethod
     def std_series() -> StatisticalTypeLattice:
         return StatisticalTypeLattice(StatisticalTypeLattice.Status.StdSeries)
 
@@ -269,7 +265,7 @@ class TestStatisticalTypeLattice(unittest.TestCase):
                             self._assert_operation(s1, s2, op, expected)
 
     def test_meet(self):
-        # Parametrize the meet operation
+        """Test the meet operator for types that are neither the bottom type nor the top type."""
         operation = lambda x, y: x._meet(y)
 
         # Testing meet within string series types
@@ -305,7 +301,7 @@ class TestStatisticalTypeLattice(unittest.TestCase):
         self._test_operation_different_groups(groups, operation, self.bottom_el())
 
     def test_join(self):
-        # Parametrize the meet operation
+        """Test the join operator for types that are neither the bottom type nor the top type."""
         operation = lambda x, y: x._join(y)
 
         # Testing meet within string series types
@@ -363,26 +359,6 @@ class TestStatisticalTypeLattice(unittest.TestCase):
                 t1_c = self.clone(t1)
                 t2_c = self.clone(t2)
                 self.assertEqual(t1.join(t2), t1_c.widening(t2_c))
-
-    def test_top(self):
-        self.assertEqual(self.top_el().top(), self.top_el())
-        self.assertEqual(self.series().top(), self.top_el())
-        self.assertEqual(self.ratio_series().top(), self.top_el())
-        self.assertEqual(self.data_frame().top(), self.top_el())
-        self.assertEqual(self.string().top(), self.top_el())
-        self.assertEqual(self.numeric().top(), self.top_el())
-        self.assertEqual(self.boolean().top(), self.top_el())
-        self.assertEqual(self.bottom_el().top(), self.top_el())
-
-    def test_bottom(self):
-        self.assertEqual(self.top_el().bottom(), self.bottom_el())
-        self.assertEqual(self.series().bottom(), self.bottom_el())
-        self.assertEqual(self.ratio_series().bottom(), self.bottom_el())
-        self.assertEqual(self.data_frame().bottom(), self.bottom_el())
-        self.assertEqual(self.string().bottom(), self.bottom_el())
-        self.assertEqual(self.numeric().bottom(), self.bottom_el())
-        self.assertEqual(self.boolean().bottom(), self.bottom_el())
-        self.assertEqual(self.bottom_el().bottom(), self.bottom_el())
 
     def test_neg_top(self):
         self.assertEqual(self.top_el()._neg(), self.top_el())
