@@ -1,0 +1,120 @@
+{
+  "https://numpy.org/doc/stable/reference/distutils.html": [
+    "Warning numpy.distutils is deprecated, and will be removed for\nPython >= 3.12. For more details, see Status of numpy.distutils and migration advice",
+    "Warning Note that setuptools does major releases often and those may contain\nchanges that break numpy.distutils , which will not be updated anymore\nfor new setuptools versions. It is therefore recommended to set an\nupper version bound in your build configuration for the last known version\nof setuptools that works with your build."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.allclose.html": [
+    "Warning The default atol is not appropriate for comparing numbers\nwith magnitudes much smaller than one (see Notes)."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.shares_memory.html": [
+    "Warning This function can be exponentially slow for some inputs, unless max_work is set to zero or a positive integer.\nIf in doubt, use numpy.may_share_memory instead."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.remainder.html": [
+    "Warning This should not be confused with: Python 3.7\u2019s math.remainder and C\u2019s remainder , which\ncomputes the IEEE remainder, which are the complement to round(x1 / x2) . The MATLAB rem function and or the C % operator which is the\ncomplement to int(x1 / x2) ."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.interp.html": [
+    "Warning The x-coordinate sequence is expected to be increasing, but this is not\nexplicitly enforced.  However, if the sequence xp is non-increasing,\ninterpolation results are meaningless. Note that, since NaN is unsortable, xp also cannot contain NaNs. A simple check for xp being strictly increasing is: np . all ( np . diff ( xp ) > 0 )"
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.arange.html": [
+    "Warning The length of the output might not be numerically stable. Another stability issue is due to the internal implementation of numpy.arange .\nThe actual step value used to populate the array is dtype(start + step) - dtype(start) and not step . Precision loss\ncan occur here, due to casting or due to using floating points when start is much larger than step . This can lead to unexpected\nbehaviour. For example: >>> np . arange ( 0 , 5 , 0.5 , dtype = int ) array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) >>> np . arange ( - 3 , 3 , 0.5 , dtype = int ) array([-3, -2, -1,  0,  1,  2,  3,  4,  5,  6,  7,  8]) In such cases, the use of numpy.linspace should be preferred. The built-in range generates Python built-in integers\nthat have arbitrary size , while numpy.arange produces numpy.int32 or numpy.int64 numbers. This may result in\nincorrect results for large integer values: >>> power = 40 >>> modulo = 10000 >>> x1 = [( n ** power ) % modulo for n in range ( 8 )] >>> x2 = [( n ** power ) % modulo for n in np . arange ( 8 )] >>> print ( x1 ) [0, 1, 7776, 8801, 6176, 625, 6576, 4001]  # correct >>> print ( x2 ) [0, 1, 7776, 7185, 0, 5969, 4816, 3361]  # incorrect"
+  ],
+  "https://numpy.org/doc/stable/reference/arrays.ndarray.html": [
+    "Warning It does not generally hold that self.strides[-1] == self.itemsize for C-style contiguous arrays or self.strides[0] == self.itemsize for\nFortran-style contiguous arrays is true.",
+    "Warning In place operations will perform the calculation using the\nprecision decided by the data type of the two operands, but will\nsilently downcast the result (if necessary) so it can fit back into\nthe array.  Therefore, for mixed precision calculations, A {op}= B can be different than A = A {op} B . For example, suppose a = ones((3,3)) . Then, a += 3j is different than a = a + 3j : while they both perform the same computation, a += 3 casts the result to fit back in a , whereas a = a + 3j re-binds the name a to the result."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.ndarray.dtype.html": [
+    "Warning Setting arr.dtype is discouraged and may be deprecated in the\nfuture.  Setting will replace the dtype without modifying the\nmemory (see also ndarray.view and ndarray.astype )."
+  ],
+  "https://numpy.org/doc/stable/reference/distutils_status_migration.html": [
+    "Warning numpy.distutils is only tested with setuptools < 60.0 , newer\nversions may break. See Interaction of numpy.distutils with setuptools for details."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.char.chararray.strides.html": [
+    "Warning Setting arr.strides is discouraged and may be deprecated in the\nfuture. numpy.lib.stride_tricks.as_strided should be preferred\nto create a new view of the same data in a safer way."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.ndarray.strides.html": [
+    "Warning Setting arr.strides is discouraged and may be deprecated in the\nfuture. numpy.lib.stride_tricks.as_strided should be preferred\nto create a new view of the same data in a safer way."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.ndarray.shape.html": [
+    "Warning Setting arr.shape is discouraged and may be deprecated in the\nfuture.  Using ndarray.reshape is the preferred approach."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.ma.arange.html": [
+    "Warning The length of the output might not be numerically stable. Another stability issue is due to the internal implementation of numpy.arange .\nThe actual step value used to populate the array is dtype(start + step) - dtype(start) and not step . Precision loss\ncan occur here, due to casting or due to using floating points when start is much larger than step . This can lead to unexpected\nbehaviour. For example: >>> np . arange ( 0 , 5 , 0.5 , dtype = int ) array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) >>> np . arange ( - 3 , 3 , 0.5 , dtype = int ) array([-3, -2, -1,  0,  1,  2,  3,  4,  5,  6,  7,  8]) In such cases, the use of numpy.linspace should be preferred. The built-in range generates Python built-in integers\nthat have arbitrary size , while numpy.arange produces numpy.int32 or numpy.int64 numbers. This may result in\nincorrect results for large integer values: >>> power = 40 >>> modulo = 10000 >>> x1 = [( n ** power ) % modulo for n in range ( 8 )] >>> x2 = [( n ** power ) % modulo for n in np . arange ( 8 )] >>> print ( x1 ) [0, 1, 7776, 8801, 6176, 625, 6576, 4001]  # correct >>> print ( x2 ) [0, 1, 7776, 7185, 0, 5969, 4816, 3361]  # incorrect"
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.isclose.html": [
+    "Warning The default atol is not appropriate for comparing numbers\nwith magnitudes much smaller than one (see Notes)."
+  ],
+  "https://numpy.org/doc/stable/reference/arrays.scalars.html": [
+    "Warning The int_ type does not inherit from the int built-in under Python 3, because type int is no\nlonger a fixed-width integer type.",
+    "Warning The bool type is not a subclass of the int_ type\n(the bool is not even a number type). This is different\nthan Python\u2019s default implementation of bool as a\nsub-class of int .",
+    "Warning See Note on string types . Numeric Compatibility: If you used old typecode characters in your\nNumeric code (which was never recommended), you will need to change\nsome of them to the new characters. In particular, the needed\nchanges are c -> S1 , b -> B , 1 -> b , s -> h , w -> H , and u -> I . These changes make the type character\nconvention more consistent with other Python modules such as the struct module."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.lib.stride_tricks.as_strided.html": [
+    "Warning This function has to be used with extreme care, see notes."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.mod.html": [
+    "Warning This should not be confused with: Python 3.7\u2019s math.remainder and C\u2019s remainder , which\ncomputes the IEEE remainder, which are the complement to round(x1 / x2) . The MATLAB rem function and or the C % operator which is the\ncomplement to int(x1 / x2) ."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.char.chararray.dtype.html": [
+    "Warning Setting arr.dtype is discouraged and may be deprecated in the\nfuture.  Setting will replace the dtype without modifying the\nmemory (see also ndarray.view and ndarray.astype )."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.ma.MaskedArray.resize.html": [
+    "Warning This method does nothing, except raise a ValueError exception. A\nmasked array does not own its data and therefore cannot safely be\nresized in place. Use the numpy.ma.resize function instead."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.ma.ptp.html": [
+    "Warning ptp preserves the data type of the array. This means the\nreturn value for an input of signed integers with n bits\n(e.g. np.int8 , np.int16 , etc) is also a signed integer\nwith n bits.  In that case, peak-to-peak values greater than 2**(n-1)-1 will be returned as negative values. An example\nwith a work-around is shown below."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.load.html": [
+    "Warning Loading files that contain object arrays uses the pickle module, which is not secure against erroneous or maliciously\nconstructed data. Consider passing allow_pickle=False to\nload data that is known not to contain object arrays for the\nsafer handling of untrusted sources."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.ma.MaskedArray.ptp.html": [
+    "Warning ptp preserves the data type of the array. This means the\nreturn value for an input of signed integers with n bits\n(e.g. np.int8 , np.int16 , etc) is also a signed integer\nwith n bits.  In that case, peak-to-peak values greater than 2**(n-1)-1 will be returned as negative values. An example\nwith a work-around is shown below."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.ma.MaskedArray.tofile.html": [
+    "Warning This function is not implemented yet."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.ptp.html": [
+    "Warning ptp preserves the data type of the array. This means the\nreturn value for an input of signed integers with n bits\n(e.g. numpy.int8 , numpy.int16 , etc) is also a signed integer\nwith n bits.  In that case, peak-to-peak values greater than 2**(n-1)-1 will be returned as negative values. An example\nwith a work-around is shown below."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.lib.format.html": [
+    "Warning Due to limitations in the interpretation of structured dtypes, dtypes\nwith fields with empty names will have the names replaced by \u2018f0\u2019, \u2018f1\u2019,\netc. Such arrays will not round-trip through the format entirely\naccurately. The data is intact; only the field names will differ. We are\nworking on a fix for this. This fix will not require a change in the\nfile format. The arrays with such structures can still be saved and\nrestored, and the correct dtype may be restored by using the loadedarray.view(correct_dtype) method."
+  ],
+  "https://numpy.org/doc/stable/reference/random/index.html": [
+    "Warning The pseudo-random number generators implemented in this module are designed\nfor statistical modeling and simulation. They are not suitable for security\nor cryptographic purposes. See the secrets module from the\nstandard library for such use cases."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.dtype.metadata.html": [
+    "Warning Although used in certain projects, this feature was long undocumented\nand is not well supported. Some aspects of metadata propagation\nare expected to change in the future."
+  ],
+  "https://numpy.org/doc/stable/reference/distutils_guide.html": [
+    "Warning numpy.distutils is deprecated, and will be removed for\nPython >= 3.12. For more details, see Status of numpy.distutils and migration advice"
+  ],
+  "https://numpy.org/doc/stable/reference/ufuncs.html": [
+    "Warning A reduce-like operation on an array with a data-type that has a\nrange \u201ctoo small\u201d to handle the result will silently wrap. One\nshould use dtype to increase the size of the data-type over which\nreduction takes place.",
+    "Warning Do not use the Python keywords and and or to combine\nlogical array expressions. These keywords will test the truth\nvalue of the entire array (not element-by-element as you might\nexpect). Use the bitwise operators & and | instead.",
+    "Warning The bit-wise operators & and | are the proper way to perform\nelement-by-element array comparisons. Be sure you understand the\noperator precedence: (a > 2) & (a < 5) is the proper syntax because a > 2 & a < 5 will result in an error due to the fact that 2 & a is evaluated first.",
+    "Warning the behavior of maximum(a, b) is different than that of max(a, b) .\nAs a ufunc, maximum(a, b) performs an element-by-element comparison\nof a and b and chooses each element of the result according to which\nelement in the two arrays is larger. In contrast, max(a, b) treats\nthe objects a and b as a whole, looks at the (total) truth value of a > b and uses it to return either a or b (as a whole). A similar\ndifference exists between minimum(a, b) and min(a, b) ."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.char.chararray.shape.html": [
+    "Warning Setting arr.shape is discouraged and may be deprecated in the\nfuture.  Using ndarray.reshape is the preferred approach."
+  ],
+  "https://numpy.org/doc/stable/reference/arrays.classes.html": [
+    "Warning Matrix objects over-ride multiplication, \u2018*\u2019, and power, \u2018**\u2019, to\nbe matrix-multiplication and matrix power, respectively. If your\nsubroutine can accept sub-classes and you do not convert to base-\nclass arrays, then you must use the ufuncs multiply and power to\nbe sure that you are performing the correct operation for all\ninputs."
+  ],
+  "https://numpy.org/doc/stable/reference/maskedarray.generic.html": [
+    "Warning We need to stress that this behavior may not be systematic, that masked\ndata may be affected by the operation in some cases and therefore users\nshould not rely on this data remaining unchanged."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.ma.MaskedArray.strides.html": [
+    "Warning Setting arr.strides is discouraged and may be deprecated in the\nfuture. numpy.lib.stride_tricks.as_strided should be preferred\nto create a new view of the same data in a safer way."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.matrix.strides.html": [
+    "Warning Setting arr.strides is discouraged and may be deprecated in the\nfuture. numpy.lib.stride_tricks.as_strided should be preferred\nto create a new view of the same data in a safer way."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.ma.MaskedArray.shape.html": [
+    "Warning Setting arr.shape is discouraged and may be deprecated in the\nfuture.  Using ndarray.reshape is the preferred approach."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.recarray.strides.html": [
+    "Warning Setting arr.strides is discouraged and may be deprecated in the\nfuture. numpy.lib.stride_tricks.as_strided should be preferred\nto create a new view of the same data in a safer way."
+  ],
+  "https://numpy.org/doc/stable/reference/generated/numpy.ma.MaskedArray.dtype.html": [
+    "Warning Setting arr.dtype is discouraged and may be deprecated in the\nfuture.  Setting will replace the dtype without modifying the\nmemory (see also ndarray.view and ndarray.astype )."
+  ]
+}
