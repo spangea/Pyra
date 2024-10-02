@@ -467,7 +467,7 @@ class StatisticalTypeSemantics(
                     category=CategoricalPlot,
                     stacklevel=2,
                 )
-            elif utilities.is_Array(state, arg) or utilities.is_Series(state, arg) :
+            elif utilities.is_Array(state, arg) or utilities.is_Series(state, arg) or utilities.is_Top(state, arg):
                 warnings.warn(
                     f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} could contain nominal-scale data, a bar plot should be used.",
                     category=CategoricalPlot,
