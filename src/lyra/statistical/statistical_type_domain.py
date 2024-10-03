@@ -113,7 +113,9 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
         return self.element.name
 
     def _neg(self) -> 'StatisticalTypeLattice':
-        if self.element == StatisticalTypeLattice.Status.Series:
+        if self.is_bottom() :
+            return self._replace(self.bottom())
+        elif self.element == StatisticalTypeLattice.Status.Series:
             return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Series))
         elif self.element == StatisticalTypeLattice.Status.Numeric:
             return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Numeric))
@@ -122,7 +124,9 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
         return self._replace(self.top())
 
     def _add(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
-        if self.element == other.element and other.element == StatisticalTypeLattice.Status.Series:
+        if self.is_bottom() or other.is_bottom():
+            return self._replace(self.bottom())
+        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Series:
             return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Series))
         elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Numeric:
             return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Numeric))
@@ -133,7 +137,9 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
         return self._replace(self.top())
 
     def _sub(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
-        if self.element == other.element and other.element == StatisticalTypeLattice.Status.Series:
+        if self.is_bottom() or other.is_bottom():
+            return self._replace(self.bottom())
+        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Series:
             return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Series))
         elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Numeric:
             return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Numeric))
@@ -142,7 +148,9 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
         return self._replace(self.top())
 
     def _mult(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
-        if self.element == other.element and other.element == StatisticalTypeLattice.Status.Series:
+        if self.is_bottom() or other.is_bottom():
+            return self._replace(self.bottom())
+        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Series:
             return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Series))
         elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Numeric:
             return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Numeric))
@@ -155,7 +163,9 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
         return self._replace(self.top())
 
     def _div(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
-        if self.element == other.element and other.element == StatisticalTypeLattice.Status.Series:
+        if self.is_bottom() or other.is_bottom():
+            return self._replace(self.bottom())
+        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Series:
             return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.RatioSeries))
         elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Numeric:
             return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Numeric))
@@ -164,7 +174,9 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
         return self._replace(self.top())
 
     def _mod(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
-        if self.element == other.element and other.element == StatisticalTypeLattice.Status.Series:
+        if self.is_bottom() or other.is_bottom():
+            return self._replace(self.bottom())
+        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Series:
             return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Series))
         elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Numeric:
             return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Numeric))
