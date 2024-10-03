@@ -365,6 +365,12 @@ def is_Encoder(state, caller):
     return False
 
 
+def is_Top(state, caller):
+    if caller in state.store and state.store[caller].is_top():
+        return True
+    return False
+
+
 def is_inplace(arguments):
     for arg in arguments:
         if isinstance(arg, Keyword) and arg.name == "inplace" and arg.value:
