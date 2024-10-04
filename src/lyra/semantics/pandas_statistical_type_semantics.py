@@ -146,8 +146,20 @@ class PandasStatisticalTypeSemantics:
     def unique_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
-        # TODO
-        pass
+        caller = self.get_caller(stmt, state, interpreter)
+        if utilities.is_StringSeries(state, caller) or utilities.is_CatSeries(state, caller):
+            state.result = {StatisticalTypeLattice.Status.StringArray}
+        elif utilities.is_BoolSeries(state, caller):
+            state.result = {StatisticalTypeLattice.Status.BoolArray}
+        elif (utilities.is_RatioSeries(state, caller) or
+              utilities.is_ScaledSeries(state, caller) or
+              utilities.is_NumericSeries(state, caller) or
+              utilities.is_ExpSeries(state, caller)):
+            state.result = {StatisticalTypeLattice.Status.NumericArray}
+        elif utilities.is_Series(state, caller):
+            state.result = {StatisticalTypeLattice.Status.Array}
+
+        return state
 
     def from_dict_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter

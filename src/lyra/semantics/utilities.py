@@ -133,6 +133,26 @@ def is_RatioSeries(state, caller):
         return True
     return False
 
+def is_BoolSeries(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.store[caller] == (
+                StatisticalTypeLattice(StatisticalTypeLattice.Status.BoolSeries)
+            ):
+                return True
+    elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
+        if caller in state.store and state.store[caller]._less_equal(
+            StatisticalTypeLattice(StatisticalTypeLattice.Status.BoolSeries)
+        ):
+            return True
+    elif (
+        isinstance(caller, StatisticalTypeLattice.Status)
+        and caller == StatisticalTypeLattice.Status.BoolSeries
+    ):
+        return True
+    return False
 
 def is_CatSeries(state, caller):
     if isinstance(caller, VariableAccess):
@@ -155,6 +175,47 @@ def is_CatSeries(state, caller):
         return True
     return False
 
+def is_ExpSeries(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.store[caller] == StatisticalTypeLattice(
+                StatisticalTypeLattice.Status.ExpSeries
+            ):
+                return True
+    elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
+        if caller in state.store and state.store[caller] == StatisticalTypeLattice(
+            StatisticalTypeLattice.Status.ExpSeries
+        ):
+            return True
+    elif (
+        isinstance(caller, StatisticalTypeLattice.Status)
+        and caller == StatisticalTypeLattice.Status.ExpSeries
+    ):
+        return True
+    return False
+
+def is_NumericSeries(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.store[caller] == StatisticalTypeLattice(
+                StatisticalTypeLattice.Status.NumericSeries
+            ):
+                return True
+    elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
+        if caller in state.store and state.store[caller] == StatisticalTypeLattice(
+            StatisticalTypeLattice.Status.NumericSeries
+        ):
+            return True
+    elif (
+        isinstance(caller, StatisticalTypeLattice.Status)
+        and caller == StatisticalTypeLattice.Status.NumericSeries
+    ):
+        return True
+    return False
 
 def is_ScaledSeries(state, caller):
     if isinstance(caller, VariableAccess):
