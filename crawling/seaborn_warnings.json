@@ -1,0 +1,11 @@
+{
+    "https://seaborn.pydata.org/generated/seaborn.FacetGrid.html": [
+        "Warning When using seaborn functions that infer semantic mappings from a\ndataset, care must be taken to synchronize those mappings across\nfacets (e.g., by defining the hue mapping with a palette dict or\nsetting the data type of the variables to category ). In most cases,\nit will be better to use a figure-level function (e.g. relplot() or catplot() ) than to use FacetGrid directly."
+    ],
+    "https://seaborn.pydata.org/generated/seaborn.FacetGrid.__init__.html": [
+        "Warning When using seaborn functions that infer semantic mappings from a\ndataset, care must be taken to synchronize those mappings across\nfacets (e.g., by defining the hue mapping with a palette dict or\nsetting the data type of the variables to category ). In most cases,\nit will be better to use a figure-level function (e.g. relplot() or catplot() ) than to use FacetGrid directly."
+    ],
+    "https://seaborn.pydata.org/generated/seaborn.FacetGrid.html#seaborn.FacetGrid": [
+        "Warning When using seaborn functions that infer semantic mappings from a\ndataset, care must be taken to synchronize those mappings across\nfacets (e.g., by defining the hue mapping with a palette dict or\nsetting the data type of the variables to category ). In most cases,\nit will be better to use a figure-level function (e.g. relplot() or catplot() ) than to use FacetGrid directly."
+    ]
+}

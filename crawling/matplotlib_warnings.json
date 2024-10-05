@@ -1,0 +1,98 @@
+{
+    "https://matplotlib.org/stable/api/_as_gen/mpl_toolkits.mplot3d.axes3d.Axes3D.set_zticklabels.html": [
+        "Warning This only sets the properties of the current ticks, which is\nonly sufficient for static plots. Ticks are not guaranteed to be persistent. Various operations\ncan create, delete and modify the Tick instances. There is an\nimminent risk that these settings can get lost if you work on\nthe figure further (including also panning/zooming on a\ndisplayed figure). Use set_tick_params instead if possible."
+    ],
+    "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.indicate_inset_zoom.html": [
+        "Warning This method is experimental as of 3.0, and the API may change."
+    ],
+    "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.draw_if_interactive.html": [
+        "Warning End users will typically not have to call this function because the\nthe interactive mode takes care of this."
+    ],
+    "https://matplotlib.org/stable/api/_api_api.html": [
+        "Warning This module and its submodules are for internal use only. Do not use them\nin your own code. We may change the API at any time with no warning.",
+        "Warning This module is for internal use only. Do not use it in your own code.\nWe may change the API at any time with no warning."
+    ],
+    "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.xticks.html": [
+        "Warning This only sets the properties of the current ticks, which is\nonly sufficient if you either pass ticks , resulting in a\nfixed list of ticks, or if the plot is static. Ticks are not guaranteed to be persistent. Various operations\ncan create, delete and modify the Tick instances. There is an\nimminent risk that these settings can get lost if you work on\nthe figure further (including also panning/zooming on a\ndisplayed figure). Use tick_params instead if possible."
+    ],
+    "https://matplotlib.org/stable/api/sphinxext_mathmpl_api.html": [
+        "Warning In most cases, you will likely want to use one of Sphinx's builtin Math\nextensions instead of this one. The builtin Sphinx math directive uses MathJax to\nrender mathematical expressions, and addresses accessibility concerns that mathmpl doesn't address."
+    ],
+    "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_navigate_mode.html": [
+        "Warning This is not a user-API function."
+    ],
+    "https://matplotlib.org/stable/api/cm_api.html": [
+        "Warning Colormap names are currently a shared namespace that may be used\nby multiple packages. Use unregister only if you know you\nhave registered that name before. In particular, do not\nunregister just in case to clean the name before registering a\nnew colormap."
+    ],
+    "https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.show.html": [
+        "Warning This does not manage an GUI event loop. Consequently, the figure\nmay only be shown briefly or not shown at all if you or your\nenvironment are not managing an event loop. Use cases for Figure.show include running this from a GUI\napplication (where there is persistently an event loop running) or\nfrom a shell, like IPython, that install an input hook to allow the\ninteractive shell to accept input while the figure is also being\nshown and interactive. Some, but not all, GUI toolkits will\nregister an input hook on import. See Command prompt integration for\nmore details. If you're in a shell without input hook integration or executing a\npython script, you should use matplotlib.pyplot.show with block=True instead, which takes care of starting and running\nthe event loop for you."
+    ],
+    "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.yticks.html": [
+        "Warning This only sets the properties of the current ticks, which is\nonly sufficient if you either pass ticks , resulting in a\nfixed list of ticks, or if the plot is static. Ticks are not guaranteed to be persistent. Various operations\ncan create, delete and modify the Tick instances. There is an\nimminent risk that these settings can get lost if you work on\nthe figure further (including also panning/zooming on a\ndisplayed figure). Use tick_params instead if possible."
+    ],
+    "https://matplotlib.org/stable/api/_as_gen/matplotlib.axis.Axis.get_major_ticks.html": [
+        "Warning Ticks are not guaranteed to be persistent. Various operations\ncan create, delete and modify the Tick instances. There is an\nimminent risk that changes to individual ticks will not\nsurvive if you work on the figure further (including also\npanning/zooming on a displayed figure). Working on the individual ticks is a method of last resort.\nUse set_tick_params instead if possible."
+    ],
+    "https://matplotlib.org/stable/api/ft2font.html": [
+        "Warning This API is both private and provisional: do not use it directly",
+        "Warning This API is private: do not use it directly"
+    ],
+    "https://matplotlib.org/stable/api/sphinxext_roles.html": [
+        "Warning These roles are considered semi-public. They are only intended to be used in\nthe Matplotlib documentation.",
+        "Warning Direct use of these roles in other packages is not officially supported. We\nreserve the right to modify or remove these roles without prior notification."
+    ],
+    "https://matplotlib.org/stable/api/backend_bases_api.html": [
+        "Warning Calling canvas.draw and canvas.blit in these callbacks may\nnot be safe with all backends and may cause infinite recursion.",
+        "Warning This key is currently obtained from the last 'key_press_event' or\n'key_release_event' that occurred within the canvas. Thus, if the\nlast change of keyboard state occurred while the canvas did not have\nfocus, this attribute will be wrong. On the other hand, the modifiers attribute should always be correct, but it can only\nreport on modifier keys.",
+        "Warning This is part of the backend implementation and should\nnot be called by end-users. They should instead call ToolContainerBase.add_tool .",
+        "Warning This is part of the backend implementation and should\nnot be called by end-users. They should instead call ToolManager.remove_tool .",
+        "Warning This is part of the backend implementation and should\nnot be called by end-users. They should instead call ToolManager.trigger_tool or ToolContainerBase.trigger_tool (which are equivalent)."
+    ],
+    "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.pcolorfast.html": [
+        "Warning This method is experimental. Compared to pcolor or pcolormesh it has some limitations: It supports only flat shading (no outlines) It lacks support for log scaling of the axes. It does not have a pyplot wrapper."
+    ],
+    "https://matplotlib.org/stable/api/bezier_api.html": [
+        "Warning Follows opposite convention from numpy.polyval ."
+    ],
+    "https://matplotlib.org/stable/api/_as_gen/matplotlib.axis.Axis.get_minor_ticks.html": [
+        "Warning Ticks are not guaranteed to be persistent. Various operations\ncan create, delete and modify the Tick instances. There is an\nimminent risk that changes to individual ticks will not\nsurvive if you work on the figure further (including also\npanning/zooming on a displayed figure). Working on the individual ticks is a method of last resort.\nUse set_tick_params instead if possible."
+    ],
+    "https://matplotlib.org/stable/api/transformations.html": [
+        "Warning It is recommended to always specify ignore explicitly. If not, the\ndefault value of ignore can be changed at any time by code with\naccess to your Bbox, for example using the method ignore ."
+    ],
+    "https://matplotlib.org/stable/api/ticker_api.html": [
+        "Warning Should always match the base used for LogLocator"
+    ],
+    "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.indicate_inset.html": [
+        "Warning This method is experimental as of 3.0, and the API may change."
+    ],
+    "https://matplotlib.org/stable/api/projections/polar.html": [
+        "Warning This only sets the properties of the current ticks.\nTicks are not guaranteed to be persistent. Various operations\ncan create, delete and modify the Tick instances. There is an\nimminent risk that these settings can get lost if you work on\nthe figure further (including also panning/zooming on a\ndisplayed figure). Use set_tick_params instead if possible.",
+        "Warning This only sets the properties of the current ticks.\nTicks are not guaranteed to be persistent. Various operations\ncan create, delete and modify the Tick instances. There is an\nimminent risk that these settings can get lost if you work on\nthe figure further (including also panning/zooming on a\ndisplayed figure). Use set_tick_params instead if possible."
+    ],
+    "https://matplotlib.org/stable/api/_as_gen/mpl_toolkits.mplot3d.axis3d.Axis.html": [
+        "Warning Ticks are not guaranteed to be persistent. Various operations\ncan create, delete and modify the Tick instances. There is an\nimminent risk that changes to individual ticks will not\nsurvive if you work on the figure further (including also\npanning/zooming on a displayed figure). Working on the individual ticks is a method of last resort.\nUse set_tick_params instead if possible.",
+        "Warning Ticks are not guaranteed to be persistent. Various operations\ncan create, delete and modify the Tick instances. There is an\nimminent risk that changes to individual ticks will not\nsurvive if you work on the figure further (including also\npanning/zooming on a displayed figure). Working on the individual ticks is a method of last resort.\nUse set_tick_params instead if possible."
+    ],
+    "https://matplotlib.org/stable/api/axis_api.html": [
+        "Warning Ticks are not guaranteed to be persistent. Various operations\ncan create, delete and modify the Tick instances. There is an\nimminent risk that changes to individual ticks will not\nsurvive if you work on the figure further (including also\npanning/zooming on a displayed figure). Working on the individual ticks is a method of last resort.\nUse set_tick_params instead if possible."
+    ],
+    "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_yticklabels.html": [
+        "Warning This only sets the properties of the current ticks, which is\nonly sufficient for static plots. Ticks are not guaranteed to be persistent. Various operations\ncan create, delete and modify the Tick instances. There is an\nimminent risk that these settings can get lost if you work on\nthe figure further (including also panning/zooming on a\ndisplayed figure). Use set_tick_params instead if possible."
+    ],
+    "https://matplotlib.org/stable/api/_as_gen/matplotlib.axis.Axis.set_ticklabels.html": [
+        "Warning This only sets the properties of the current ticks, which is\nonly sufficient for static plots. Ticks are not guaranteed to be persistent. Various operations\ncan create, delete and modify the Tick instances. There is an\nimminent risk that these settings can get lost if you work on\nthe figure further (including also panning/zooming on a\ndisplayed figure). Use set_tick_params instead if possible."
+    ],
+    "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.secondary_yaxis.html": [
+        "Warning This method is experimental as of 3.1, and the API may change."
+    ],
+    "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_xticklabels.html": [
+        "Warning This only sets the properties of the current ticks, which is\nonly sufficient for static plots. Ticks are not guaranteed to be persistent. Various operations\ncan create, delete and modify the Tick instances. There is an\nimminent risk that these settings can get lost if you work on\nthe figure further (including also panning/zooming on a\ndisplayed figure). Use set_tick_params instead if possible."
+    ],
+    "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.secondary_xaxis.html": [
+        "Warning This method is experimental as of 3.1, and the API may change."
+    ],
+    "https://matplotlib.org/stable/api/pylab.html": [
+        "Warning The use of pylab is discouraged for the following reasons: from pylab import * imports all the functions from matplotlib.pyplot , numpy , numpy.fft , numpy.linalg , and numpy.random , and some additional functions into\nthe global namespace. Such a pattern is considered bad practice in modern python, as it clutters the global\nnamespace. Even more severely, in the case of pylab , this will overwrite some\nbuiltin functions (e.g. the builtin sum will be replaced by numpy.sum ), which\ncan lead to unexpected behavior."
+    ]
+}

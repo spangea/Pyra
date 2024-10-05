@@ -1,0 +1,330 @@
+{
+    "https://pandas.pydata.org/docs/reference/#main-content": [
+        "Warning The pandas.core , pandas.compat , and pandas.util top-level modules are PRIVATE. Stable functionality in such modules is not guaranteed."
+    ],
+    "https://pandas.pydata.org/docs/reference/series.html#reshaping-sorting": [
+        "Warning Series.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/io.html#flat-file": [
+        "Warning One can store a subclass of DataFrame or Series to HDF5,\nbut the type of the subclass is lost upon storing."
+    ],
+    "https://pandas.pydata.org/docs/reference/io.html#html": [
+        "Warning One can store a subclass of DataFrame or Series to HDF5,\nbut the type of the subclass is lost upon storing."
+    ],
+    "https://pandas.pydata.org/docs/reference/frame.html#indexing-iteration": [
+        "Warning DataFrame.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/io.html#clipboard": [
+        "Warning One can store a subclass of DataFrame or Series to HDF5,\nbut the type of the subclass is lost upon storing."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.Flags.html": [
+        "Warning This is an experimental feature. Currently, many methods fail to\npropagate the allows_duplicate_labels value. In future versions\nit is expected that every method taking or returning one or more\nDataFrame or Series objects will propagate allows_duplicate_labels ."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.Series.var.html": [
+        "Warning The behavior of DataFrame.var with axis=None is deprecated,\nin a future version this will reduce over both axes and return a scalar\nTo retain the old behavior, pass axis=0 (or do not pass axis)."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.product.html": [
+        "Warning The behavior of DataFrame.prod with axis=None is deprecated,\nin a future version this will reduce over both axes and return a scalar\nTo retain the old behavior, pass axis=0 (or do not pass axis)."
+    ],
+    "https://pandas.pydata.org/docs/reference/frame.html#combining-comparing-joining-merging": [
+        "Warning DataFrame.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/frame.html": [
+        "Warning DataFrame.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/io.html#feather": [
+        "Warning One can store a subclass of DataFrame or Series to HDF5,\nbut the type of the subclass is lost upon storing."
+    ],
+    "https://pandas.pydata.org/docs/reference/arrays.html#objects": [
+        "Warning This feature is experimental, and the API can change in a future release without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/io.html#pickling": [
+        "Warning One can store a subclass of DataFrame or Series to HDF5,\nbut the type of the subclass is lost upon storing."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.Series.to_hdf.html": [
+        "Warning One can store a subclass of DataFrame or Series to HDF5,\nbut the type of the subclass is lost upon storing."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.HDFStore.select.html": [
+        "Warning Pandas uses PyTables for reading and writing HDF5 files, which allows\nserializing object-dtype data with pickle when using the \u00e2\u0080\u009cfixed\u00e2\u0080\u009d format.\nLoading pickled data received from untrusted sources can be unsafe. See: https://docs.python.org/3/library/pickle.html for more."
+    ],
+    "https://pandas.pydata.org/docs/reference/series.html#serialization-io-conversion": [
+        "Warning Series.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/series.html#conversion": [
+        "Warning Series.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.loc.html": [
+        "Warning Note that contrary to usual python slices, both the\nstart and the stop are included"
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.arrays.ArrowStringArray.html": [
+        "Warning ArrowStringArray is considered experimental. The implementation and\nparts of the API may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.arrays.BooleanArray.html": [
+        "Warning BooleanArray is considered experimental. The implementation and\nparts of the API may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/frame.html#reshaping-sorting-transposing": [
+        "Warning DataFrame.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/frame.html#conversion": [
+        "Warning DataFrame.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.arrays.DatetimeArray.html": [
+        "Warning DatetimeArray is currently experimental, and its API may change\nwithout warning. In particular, DatetimeArray.dtype is\nexpected to change to always be an instance of an ExtensionDtype subclass."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.Series.values.html": [
+        "Warning We recommend using Series.array or Series.to_numpy() , depending on whether you need\na reference to the underlying data or a NumPy array."
+    ],
+    "https://pandas.pydata.org/docs/reference/frame.html#serialization-io-conversion": [
+        "Warning DataFrame.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/io.html#spss": [
+        "Warning One can store a subclass of DataFrame or Series to HDF5,\nbut the type of the subclass is lost upon storing."
+    ],
+    "https://pandas.pydata.org/docs/reference/io.html": [
+        "Warning One can store a subclass of DataFrame or Series to HDF5,\nbut the type of the subclass is lost upon storing."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.attrs.html": [
+        "Warning attrs is experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/series.html#indexing-iteration": [
+        "Warning Series.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.io.formats.style.Styler.format.html": [
+        "Warning Styler.format is ignored when using the output format Styler.to_excel ,\nsince Excel and Python have inherrently different formatting structures.\nHowever, it is possible to use the number-format pseudo CSS attribute\nto force Excel permissible formatting. See examples."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.values.html": [
+        "Warning We recommend using DataFrame.to_numpy() instead."
+    ],
+    "https://pandas.pydata.org/docs/reference/frame.html#plotting": [
+        "Warning DataFrame.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.ArrowDtype.html": [
+        "Warning ArrowDtype is considered experimental. The implementation and\nparts of the API may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/io.html#sas": [
+        "Warning One can store a subclass of DataFrame or Series to HDF5,\nbut the type of the subclass is lost upon storing."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.Series.attrs.html": [
+        "Warning attrs is experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/series.html#constructor": [
+        "Warning Series.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.arrays.StringArray.html": [
+        "Warning StringArray is considered experimental. The implementation and\nparts of the API may change without warning.",
+        "Warning Currently, this expects an object-dtype ndarray\nwhere the elements are Python strings\nor nan-likes ( None , np.nan , NA ).\nThis may change without warning in the future. Use pandas.array() with dtype=\"string\" for a stable way of\ncreating a StringArray from any sequence."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.arrays.FloatingArray.html": [
+        "Warning FloatingArray is currently experimental, and its API or internal\nimplementation may change without warning. Especially the behaviour\nregarding NaN (distinct from NA missing values) is subject to change."
+    ],
+    "https://pandas.pydata.org/docs/reference/frame.html#constructor": [
+        "Warning DataFrame.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/series.html#time-series-related": [
+        "Warning Series.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/series.html#accessors": [
+        "Warning Series.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/series.html#computations-descriptive-stats": [
+        "Warning Series.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/arrays.html": [
+        "Warning This feature is experimental, and the API can change in a future release without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/series.html#attributes": [
+        "Warning Series.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.Series.product.html": [
+        "Warning The behavior of DataFrame.prod with axis=None is deprecated,\nin a future version this will reduce over both axes and return a scalar\nTo retain the old behavior, pass axis=0 (or do not pass axis)."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.tseries.api.guess_datetime_format.html": [
+        "Warning dayfirst=True is not strict, but will prefer to parse\nwith day first (this is a known bug)."
+    ],
+    "https://pandas.pydata.org/docs/reference/io.html#google-bigquery": [
+        "Warning One can store a subclass of DataFrame or Series to HDF5,\nbut the type of the subclass is lost upon storing."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.io.formats.style.Styler.format_index.html": [
+        "Warning Styler.format_index is ignored when using the output format Styler.to_excel , since Excel and Python have inherrently different\nformatting structures.\nHowever, it is possible to use the number-format pseudo CSS attribute\nto force Excel permissible formatting. See documentation for Styler.format ."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.Series.loc.html": [
+        "Warning Note that contrary to usual python slices, both the\nstart and the stop are included"
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.Series.sum.html": [
+        "Warning The behavior of DataFrame.sum with axis=None is deprecated,\nin a future version this will reduce over both axes and return a scalar\nTo retain the old behavior, pass axis=0 (or do not pass axis)."
+    ],
+    "https://pandas.pydata.org/docs/reference/frame.html#function-application-groupby-window": [
+        "Warning DataFrame.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.Index.values.html": [
+        "Warning We recommend using Index.array or Index.to_numpy() , depending on whether you need\na reference to the underlying data or a NumPy array."
+    ],
+    "https://pandas.pydata.org/docs/reference/series.html#plotting": [
+        "Warning Series.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.Series.prod.html": [
+        "Warning The behavior of DataFrame.prod with axis=None is deprecated,\nin a future version this will reduce over both axes and return a scalar\nTo retain the old behavior, pass axis=0 (or do not pass axis)."
+    ],
+    "https://pandas.pydata.org/docs/reference/io.html#xml": [
+        "Warning One can store a subclass of DataFrame or Series to HDF5,\nbut the type of the subclass is lost upon storing."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.merge.html": [
+        "Warning If both key columns contain rows where the key is a null value, those\nrows will be matched against each other. This is different from usual SQL\njoin behaviour and can lead to unexpected results."
+    ],
+    "https://pandas.pydata.org/docs/reference/series.html#reindexing-selection-label-manipulation": [
+        "Warning Series.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.arrays.ArrowExtensionArray.html": [
+        "Warning ArrowExtensionArray is considered experimental. The implementation and\nparts of the API may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/frame.html#reindexing-selection-label-manipulation": [
+        "Warning DataFrame.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.Series.std.html": [
+        "Warning The behavior of DataFrame.std with axis=None is deprecated,\nin a future version this will reduce over both axes and return a scalar\nTo retain the old behavior, pass axis=0 (or do not pass axis)."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.read_hdf.html": [
+        "Warning Pandas uses PyTables for reading and writing HDF5 files, which allows\nserializing object-dtype data with pickle when using the \u00e2\u0080\u009cfixed\u00e2\u0080\u009d format.\nLoading pickled data received from untrusted sources can be unsafe. See: https://docs.python.org/3/library/pickle.html for more."
+    ],
+    "https://pandas.pydata.org/docs/reference/io.html#excel": [
+        "Warning One can store a subclass of DataFrame or Series to HDF5,\nbut the type of the subclass is lost upon storing."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.core.groupby.SeriesGroupBy.corr.html": [
+        "Warning Note that the returned matrix from corr will have 1 along the\ndiagonals and will be symmetric regardless of the callable\u00e2\u0080\u0099s\nbehavior."
+    ],
+    "https://pandas.pydata.org/docs/reference/series.html#missing-data-handling": [
+        "Warning Series.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/series.html#combining-comparing-joining-merging": [
+        "Warning Series.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/series.html#function-application-groupby-window": [
+        "Warning Series.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/frame.html#binary-operator-functions": [
+        "Warning DataFrame.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/io.html#orc": [
+        "Warning One can store a subclass of DataFrame or Series to HDF5,\nbut the type of the subclass is lost upon storing."
+    ],
+    "https://pandas.pydata.org/docs/reference/#api-reference": [
+        "Warning The pandas.core , pandas.compat , and pandas.util top-level modules are PRIVATE. Stable functionality in such modules is not guaranteed."
+    ],
+    "https://pandas.pydata.org/docs/reference/io.html#parquet": [
+        "Warning One can store a subclass of DataFrame or Series to HDF5,\nbut the type of the subclass is lost upon storing."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.sum.html": [
+        "Warning The behavior of DataFrame.sum with axis=None is deprecated,\nin a future version this will reduce over both axes and return a scalar\nTo retain the old behavior, pass axis=0 (or do not pass axis)."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.sem.html": [
+        "Warning The behavior of DataFrame.sem with axis=None is deprecated,\nin a future version this will reduce over both axes and return a scalar\nTo retain the old behavior, pass axis=0 (or do not pass axis)."
+    ],
+    "https://pandas.pydata.org/docs/reference/io.html#stata": [
+        "Warning One can store a subclass of DataFrame or Series to HDF5,\nbut the type of the subclass is lost upon storing."
+    ],
+    "https://pandas.pydata.org/docs/reference/io.html#hdfstore-pytables-hdf5": [
+        "Warning One can store a subclass of DataFrame or Series to HDF5,\nbut the type of the subclass is lost upon storing."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.std.html": [
+        "Warning The behavior of DataFrame.std with axis=None is deprecated,\nin a future version this will reduce over both axes and return a scalar\nTo retain the old behavior, pass axis=0 (or do not pass axis)."
+    ],
+    "https://pandas.pydata.org/docs/reference/series.html": [
+        "Warning Series.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.StringDtype.html": [
+        "Warning StringDtype is considered experimental. The implementation and\nparts of the API may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.Series.corr.html": [
+        "Warning Note that the returned matrix from corr will have 1 along the\ndiagonals and will be symmetric regardless of the callable\u00e2\u0080\u0099s\nbehavior."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.prod.html": [
+        "Warning The behavior of DataFrame.prod with axis=None is deprecated,\nin a future version this will reduce over both axes and return a scalar\nTo retain the old behavior, pass axis=0 (or do not pass axis)."
+    ],
+    "https://pandas.pydata.org/docs/reference/io.html#latex": [
+        "Warning One can store a subclass of DataFrame or Series to HDF5,\nbut the type of the subclass is lost upon storing."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.to_datetime.html": [
+        "Warning dayfirst=True is not strict, but will prefer to parse\nwith day first.",
+        "Warning yearfirst=True is not strict, but will prefer to parse\nwith year first.",
+        "Warning In a future version of pandas, parsing datetimes with mixed time\nzones will raise an error unless utc=True .\nPlease specify utc=True to opt in to the new behaviour\nand silence this warning. To create a Series with mixed offsets and object dtype, please use apply and datetime.datetime.strptime .",
+        "Warning For float arg, precision rounding might happen. To prevent\nunexpected behavior use a fixed-width exact type."
+    ],
+    "https://pandas.pydata.org/docs/reference/series.html#binary-operator-functions": [
+        "Warning Series.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.ExcelFile.html": [
+        "Warning Please do not report issues when using xlrd to read .xlsx files.\nThis is not supported, switch to using openpyxl instead."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_hdf.html": [
+        "Warning One can store a subclass of DataFrame or Series to HDF5,\nbut the type of the subclass is lost upon storing."
+    ],
+    "https://pandas.pydata.org/docs/reference/arrays.html#utilities": [
+        "Warning This feature is experimental, and the API can change in a future release without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/frame.html#attributes-and-underlying-data": [
+        "Warning DataFrame.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.Series.sem.html": [
+        "Warning The behavior of DataFrame.sem with axis=None is deprecated,\nin a future version this will reduce over both axes and return a scalar\nTo retain the old behavior, pass axis=0 (or do not pass axis)."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.read_pickle.html": [
+        "Warning Loading pickled data received from untrusted sources can be\nunsafe. See here ."
+    ],
+    "https://pandas.pydata.org/docs/reference/frame.html#sparse-accessor": [
+        "Warning DataFrame.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.arrays.TimedeltaArray.html": [
+        "Warning TimedeltaArray is currently experimental, and its API may change\nwithout warning. In particular, TimedeltaArray.dtype is\nexpected to change to be an instance of an ExtensionDtype subclass."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.BooleanDtype.html": [
+        "Warning BooleanDtype is considered experimental. The implementation and\nparts of the API may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.merge.html": [
+        "Warning If both key columns contain rows where the key is a null value, those\nrows will be matched against each other. This is different from usual SQL\njoin behaviour and can lead to unexpected results."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.arrays.IntegerArray.html": [
+        "Warning IntegerArray is currently experimental, and its API or internal\nimplementation may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.io.formats.style.Styler.concat.html": [
+        "Warning Only the output methods to_html , to_string and to_latex currently work with concatenated Stylers. Other output methods, including to_excel , do not work with\nconcatenated Stylers."
+    ],
+    "https://pandas.pydata.org/docs/reference/io.html#json": [
+        "Warning One can store a subclass of DataFrame or Series to HDF5,\nbut the type of the subclass is lost upon storing."
+    ],
+    "https://pandas.pydata.org/docs/reference/frame.html#computations-descriptive-stats": [
+        "Warning DataFrame.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/frame.html#metadata": [
+        "Warning DataFrame.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/frame.html#flags": [
+        "Warning DataFrame.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/frame.html#time-series-related": [
+        "Warning DataFrame.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.io.formats.style.Styler.hide.html": [
+        "Warning This method only works with the output methods to_html , to_string and to_latex . Other output methods, including to_excel , ignore this hiding method\nand will display all data."
+    ],
+    "https://pandas.pydata.org/docs/reference/frame.html#missing-data-handling": [
+        "Warning DataFrame.attrs is considered experimental and may change without warning."
+    ],
+    "https://pandas.pydata.org/docs/reference/": [
+        "Warning The pandas.core , pandas.compat , and pandas.util top-level modules are PRIVATE. Stable functionality in such modules is not guaranteed."
+    ],
+    "https://pandas.pydata.org/docs/reference/io.html#sql": [
+        "Warning One can store a subclass of DataFrame or Series to HDF5,\nbut the type of the subclass is lost upon storing."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.var.html": [
+        "Warning The behavior of DataFrame.var with axis=None is deprecated,\nin a future version this will reduce over both axes and return a scalar\nTo retain the old behavior, pass axis=0 (or do not pass axis)."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.Series.dt.to_pydatetime.html": [
+        "Warning Python\u00e2\u0080\u0099s datetime uses microsecond resolution, which is lower than\npandas (nanosecond). The values are truncated."
+    ],
+    "https://pandas.pydata.org/docs/reference/api/pandas.IntervalIndex.values.html": [
+        "Warning We recommend using Index.array or Index.to_numpy() , depending on whether you need\na reference to the underlying data or a NumPy array."
+    ],
+    "https://pandas.pydata.org/docs/reference/index.html": [
+        "Warning The pandas.core , pandas.compat , and pandas.util top-level modules are PRIVATE. Stable functionality in such modules is not guaranteed."
+    ]
+}
