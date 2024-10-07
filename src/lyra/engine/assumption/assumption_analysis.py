@@ -26,8 +26,12 @@ from lyra.semantics.statistical_type_semantics import StatisticalTypeSemantics
 
 class ForwardStatisticalTypeAnalysis(Runner):
 
+    def __init__(self, warning_level):
+        super().__init__()
+        self.warning_level = warning_level
+
     def interpreter(self):
-        return ForwardInterpreter(self.cfgs, self.fargs, StatisticalTypeSemantics(), 3)
+        return ForwardInterpreter(self.cfgs, self.fargs, StatisticalTypeSemantics(), 3, warning_level=self.warning_level)
 
     def state(self):
         return StatisticalTypeState(self.variables)

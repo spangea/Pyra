@@ -15,7 +15,7 @@ import warnings
 class StatisticalTypeTest(TestRunner):
 
     def interpreter(self):
-        return ForwardInterpreter(self.cfgs, self.fargs, StatisticalTypeSemantics(), 3)
+        return ForwardInterpreter(self.cfgs, self.fargs, StatisticalTypeSemantics(), 3, warning_level="possible")
 
     def state(self):
         return StatisticalTypeState(self.variables)
