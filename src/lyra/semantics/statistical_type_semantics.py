@@ -24,7 +24,6 @@ from lyra.core.statements import (
 
 from lyra.engine.interpreter import Interpreter
 
-
 from lyra.statistical.statistical_type_domain import (
     StatisticalTypeState,
     StatisticalTypeLattice,
@@ -53,6 +52,7 @@ class StatisticalTypeSemantics(
     SelfUtilitiesSemantics,
 ):
     """Forward semantics of statements with support for Pandas library calls for dataframe column usage analysis."""
+
     def relaxed_open_call_policy(
             self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
@@ -72,7 +72,7 @@ class StatisticalTypeSemantics(
             return StatisticalTypeLattice.Status.Top
 
     def attribute_access_semantics(
-        self, access: AttributeAccess, state: StatisticalTypeState, interpreter: Interpreter, is_lhs = False
+            self, access: AttributeAccess, state: StatisticalTypeState, interpreter: Interpreter, is_lhs=False
     ) -> StatisticalTypeState:
         if is_lhs:
             return {access.target}
@@ -90,7 +90,7 @@ class StatisticalTypeSemantics(
                 else:
                     state.result = {StatisticalTypeLattice.Status.Series}
             elif StatisticalTypeLattice(state.get_type(id))._less_equal(
-                StatisticalTypeLattice(StatisticalTypeLattice.Status.Series)
+                    StatisticalTypeLattice(StatisticalTypeLattice.Status.Series)
             ):
                 state.result = {Input(typ=typing.Any)}
         elif isinstance(access.target, Call):
@@ -98,7 +98,7 @@ class StatisticalTypeSemantics(
             eval = self.semantics(access.target, state, interpreter)
             for v in eval.variables:
                 if v == access.target.arguments[0].variable and isinstance(
-                    v, VariableIdentifier
+                        v, VariableIdentifier
                 ):
                     access_field = AttributeAccess(
                         state.pp, access.target.arguments[0], access.attr
@@ -114,24 +114,24 @@ class StatisticalTypeSemantics(
         return state
 
     def _summarized_view(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         dfs = self.semantics(stmt.arguments[0], state, interpreter).result
         return state.output(dfs)
 
     def lambda_expression_semantics(self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
-    ) -> StatisticalTypeState:
+                                    ) -> StatisticalTypeState:
         return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def subscription_access_semantics(
-        self,
-        stmt: SubscriptionAccess,
-        state: StatisticalTypeState,
-        interpreter: Interpreter,
+            self,
+            stmt: SubscriptionAccess,
+            state: StatisticalTypeState,
+            interpreter: Interpreter,
     ) -> StatisticalTypeState:
         # Check and resolution for AttributeAccess in scenarios like df.loc[0]
         if isinstance(stmt.target, AttributeAccess) and hasattr(
-            self, "{}_semantics".format(stmt.target.attr)
+                self, "{}_semantics".format(stmt.target.attr)
         ):
             return getattr(self, "{}_semantics".format(stmt.target.attr))(
                 stmt, state, interpreter
@@ -157,7 +157,7 @@ class StatisticalTypeSemantics(
                 # df = df[df["Score"] != 3]
                 # should be implemented
                 result.add(StatisticalTypeLattice.Status.Top)
-            elif isinstance(index, StatisticalTypeLattice.Status) and index==StatisticalTypeLattice.Status.BoolSeries:
+            elif isinstance(index, StatisticalTypeLattice.Status) and index == StatisticalTypeLattice.Status.BoolSeries:
                 result.add(StatisticalTypeLattice.Status.DataFrame)
             else:
                 error = f"Semantics for subscription of {primary} and {index} is not yet implemented!"
@@ -167,7 +167,7 @@ class StatisticalTypeSemantics(
         return state
 
     def min_call_semantics(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         # Suppose that min is called either on a single DataFrame or Series
         dfs = self.semantics(stmt.arguments[0], state, interpreter).result
@@ -183,7 +183,7 @@ class StatisticalTypeSemantics(
         return state
 
     def max_call_semantics(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         # Suppose that max is called either on a single DataFrame or Series
         dfs = self.semantics(stmt.arguments[0], state, interpreter).result
@@ -199,7 +199,7 @@ class StatisticalTypeSemantics(
         return state
 
     def median_call_semantics(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         # Suppose that median is called either on a single DataFrame or Series
         dfs = self.semantics(stmt.arguments[0], state, interpreter).result
@@ -228,7 +228,7 @@ class StatisticalTypeSemantics(
         return state
 
     def replace_call_semantics(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         if utilities.is_inplace(stmt.arguments):
             self.semantics_without_inplace(stmt, state, interpreter)
@@ -237,7 +237,7 @@ class StatisticalTypeSemantics(
         return self.return_same_type_as_caller(stmt, state, interpreter)
 
     def concat_call_semantics(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         if utilities.is_axis_eq_1(stmt.arguments):
             state.result = {StatisticalTypeLattice.Status.DataFrame}
@@ -254,7 +254,7 @@ class StatisticalTypeSemantics(
         return state
 
     def mean_call_semantics(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         # Suppose that mean is called either on a single DataFrame or Series
         dfs = self.semantics(stmt.arguments[0], state, interpreter).result
@@ -305,12 +305,12 @@ class StatisticalTypeSemantics(
         return state
 
     def gmean_call_semantics(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         # Suppose that gmean is called on a single Series
         dfs = self.semantics(stmt.arguments[0], state, interpreter).result
         assert (
-            len(dfs) == 1
+                len(dfs) == 1
         ), "Function gmean is supposed to be called on a single or Series element"
         caller = list(dfs)[0]
         if utilities.is_Series(state, caller):
@@ -318,24 +318,24 @@ class StatisticalTypeSemantics(
         return state
 
     def print_call_semantics(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         state.result = {StatisticalTypeLattice.Status.NoneRet}
         return state
 
     def round_call_semantics(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         return self.return_same_type_as_caller(stmt, state, interpreter)
 
     def insert_call_semantics(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         state.result = {StatisticalTypeLattice.Status.NoneRet}
         return state
 
     def count_call_semantics(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         caller = self.get_caller(stmt, state, interpreter)
         if utilities.is_Series(state, caller):
@@ -347,7 +347,7 @@ class StatisticalTypeSemantics(
         return state
 
     def join_call_semantics(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         caller = self.get_caller(stmt, state, interpreter)
         if utilities.is_DataFrame(state, caller):
@@ -359,20 +359,20 @@ class StatisticalTypeSemantics(
         return state
 
     def abs_call_semantics(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         caller = self.get_caller(stmt, state, interpreter)
         if (
-            utilities.is_Series(state, caller)
-            or utilities.is_DataFrame(state, caller)
-            or utilities.is_Numeric(state, caller)
+                utilities.is_Series(state, caller)
+                or utilities.is_DataFrame(state, caller)
+                or utilities.is_Numeric(state, caller)
         ):
             return self.return_same_type_as_caller(stmt, state, interpreter)
         else:
             return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def add_call_semantics(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         caller = self.get_caller(stmt, state, interpreter)
         if utilities.is_Series(state, caller) or utilities.is_DataFrame(state, caller):
@@ -384,13 +384,13 @@ class StatisticalTypeSemantics(
             return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def any_call_semantics(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         state.result = {StatisticalTypeLattice.Status.Boolean}
         return state
 
     def sum_call_semantics(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         caller = self.get_caller(stmt, state, interpreter)
         if utilities.is_Series(state, caller) or utilities.is_List(state, caller):
@@ -403,7 +403,7 @@ class StatisticalTypeSemantics(
             return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def append_call_semantics(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         # DEPRECATED METHOD FOR SERIES AND DATAFRAME
         caller = self.get_caller(stmt, state, interpreter)
@@ -416,7 +416,7 @@ class StatisticalTypeSemantics(
             return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def equals_call_semantics(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         caller = self.get_caller(stmt, state, interpreter)
         if utilities.is_Series(state, caller) or utilities.is_DataFrame(state, caller):
@@ -426,13 +426,13 @@ class StatisticalTypeSemantics(
             return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def len_call_semantics(
-        self, stmt: Call, state: State, interpreter: Interpreter
+            self, stmt: Call, state: State, interpreter: Interpreter
     ) -> State:
         state.result = {StatisticalTypeLattice.Status.Numeric}
         return state
 
     def plot_call_semantics(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         for arg in stmt.arguments:
             arg_to_print = arg if not isinstance(arg, StatisticalTypeLattice.Status) else stmt
@@ -480,7 +480,8 @@ class StatisticalTypeSemantics(
             self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         caller = self.get_caller(stmt, state, interpreter)
-        if utilities.is_Series(state, caller) or utilities.is_DataFrame(state, caller) or utilities.is_Numeric(state, caller):
+        if utilities.is_Series(state, caller) or utilities.is_DataFrame(state, caller) or utilities.is_Numeric(state,
+                                                                                                               caller):
             return self.return_same_type_as_caller(stmt, state, interpreter)
         else:
             return self.relaxed_open_call_policy(stmt, state, interpreter)
@@ -491,17 +492,10 @@ class StatisticalTypeSemantics(
 
         eval = list(self.semantics(stmt.arguments[0], state, interpreter).result)[0]
 
-        if isinstance(eval, ListDisplay):
-            if utilities.is_StringDisplayList(state, eval):
-                state.result = {StatisticalTypeLattice.Status.StringArray}
-            elif utilities.is_NumericDisplayList(state, eval):
+        if utilities.is_List(state, eval):
+            if utilities.is_NumericList(state, eval):
                 state.result = {StatisticalTypeLattice.Status.NumericArray}
-            else:
-                state.result = {StatisticalTypeLattice.Status.Array}
-        elif utilities.is_List(state, eval):
-            if state.get_type(eval) == StatisticalTypeLattice.Status.NumericList:
-                state.result = {StatisticalTypeLattice.Status.NumericArray}
-            elif state.get_type(eval) == StatisticalTypeLattice.Status.StringList:
+            elif utilities.is_StringList(state, eval):
                 state.result = {StatisticalTypeLattice.Status.StringArray}
             else:
                 state.result = {StatisticalTypeLattice.Status.Array}
@@ -554,11 +548,11 @@ class StatisticalTypeSemantics(
         return state
 
     def accuracy_score_call_semantics(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         state.result = {StatisticalTypeLattice.Status.Numeric}
         return state
-        
+
     def linspace_call_semantics(
             self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
@@ -575,23 +569,23 @@ class StatisticalTypeSemantics(
             elif dtype is not None:
                 if utilities.is_dtype_bool(stmt.arguments):
                     state.result = {(StatisticalTypeLattice.Status.BoolArray,
-                                    StatisticalTypeLattice.Status.Numeric)}
+                                     StatisticalTypeLattice.Status.Numeric)}
                 elif utilities.is_dtype_string(stmt.arguments):
                     state.result = {(StatisticalTypeLattice.Status.StringArray,
-                                    StatisticalTypeLattice.Status.Numeric)}
+                                     StatisticalTypeLattice.Status.Numeric)}
                 elif utilities.is_dtype_numeric(stmt.arguments):
                     state.result = {(StatisticalTypeLattice.Status.NumericArray,
-                                    StatisticalTypeLattice.Status.Numeric)}
+                                     StatisticalTypeLattice.Status.Numeric)}
                 else:
                     state.result = {(StatisticalTypeLattice.Status.Top,
-                                    StatisticalTypeLattice.Status.Numeric)}
+                                     StatisticalTypeLattice.Status.Numeric)}
             else:
                 state.result = {(StatisticalTypeLattice.Status.NumericArray,
                                  StatisticalTypeLattice.Status.Numeric)}
         else:
             if (utilities.is_Series(state, start) or utilities.is_Series(state, stop) or
-                utilities.is_List(state, start) or utilities.is_List(state, stop) or
-                utilities.is_Array(state, start) or utilities.is_Array(state, stop)):
+                    utilities.is_List(state, start) or utilities.is_List(state, stop) or
+                    utilities.is_Array(state, start) or utilities.is_Array(state, stop)):
                 state.result = {StatisticalTypeLattice.Status.Array}
             elif dtype is not None:
                 if utilities.is_dtype_bool(stmt.arguments):
@@ -662,8 +656,8 @@ class StatisticalTypeSemantics(
         booltypes = {"np.bool_", "bool"}
 
         if (utilities.is_NumericArray(state, caller) or
-            utilities.is_NumericDisplayList(state, caller) or
-            utilities.is_Series(state, caller)):
+                utilities.is_NumericList(state, caller) or
+                utilities.is_Series(state, caller)):
             if dtype in booltypes:
                 state.result = {StatisticalTypeLattice.Status.Boolean}
             else:
@@ -692,15 +686,16 @@ class StatisticalTypeSemantics(
 
         if utilities.is_Numeric(state, x):
             state.result = {StatisticalTypeLattice.Status.Numeric}
-        elif (utilities.is_Series(state, x) or utilities.is_NumericArray(state, x) or
-             utilities.is_NumericDisplayList(state, x)):
+        elif (utilities.is_Series(state, x) or
+              utilities.is_NumericArray(state, x) or
+              utilities.is_NumericList(state, x)):
             state.result = {StatisticalTypeLattice.Status.NumericArray}
         else:
             state.result = {StatisticalTypeLattice.Status.Top}
         return state
 
     def seed_call_semantics(
-      self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         state.result = {StatisticalTypeLattice.Status.NoneRet}
         return state
@@ -712,7 +707,7 @@ class StatisticalTypeSemantics(
         return state
 
     def reset_index_call_semantics(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         caller = self.get_caller(stmt, state, interpreter)
 
@@ -742,7 +737,7 @@ class StatisticalTypeSemantics(
         return state
 
     def copy_call_semantics(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+            self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
 
         caller = self.get_caller(stmt, state, interpreter)
@@ -767,23 +762,15 @@ class StatisticalTypeSemantics(
         caller = self.get_caller(stmt, state, interpreter)
 
         if utilities.is_List(state, caller):
-            if isinstance(caller, ListDisplay):
-                if utilities.is_StringDisplayList(state, caller):
-                    state.result = {StatisticalTypeLattice.Status.StringArray}
-                elif utilities.is_NumericDisplayList(state, caller):
-                    state.result = {StatisticalTypeLattice.Status.NumericArray}
-                else:
-                    state.result = {StatisticalTypeLattice.Status.Array}
-            elif utilities.is_List(state, caller):
-                if state.get_type(caller) == StatisticalTypeLattice.Status.NumericList:
-                    state.result = {StatisticalTypeLattice.Status.NumericArray}
-                elif state.get_type(caller) == StatisticalTypeLattice.Status.StringList:
-                    state.result = {StatisticalTypeLattice.Status.StringArray}
-                else:
-                    state.result = {StatisticalTypeLattice.Status.Array}
+            if utilities.is_NumericList(state, caller):
+                state.result = {StatisticalTypeLattice.Status.NumericArray}
+            elif utilities.is_StringList(state, caller):
+                state.result = {StatisticalTypeLattice.Status.StringArray}
+            else:
+                state.result = {StatisticalTypeLattice.Status.Array}
         elif utilities.is_StringArray(state, caller) or utilities.is_NumericArray(state, caller):
             return self.return_same_type_as_caller(stmt, state, interpreter)
-        elif utilities.is_Numeric(state,caller):
+        elif utilities.is_Numeric(state, caller):
             state.result = {StatisticalTypeLattice.Status.NumericArray}
         elif utilities.is_String(state, caller):
             state.result = {StatisticalTypeLattice.Status.StringArray}
@@ -804,9 +791,7 @@ class StatisticalTypeSemantics(
             first_argument = list(self.semantics(stmt.arguments[1], state, interpreter).result)[0]
 
         if first_argument is not None and utilities.is_Numeric(state, first_argument):
-            if utilities.is_StringDisplayList(state, caller) or utilities.is_NumericDisplayList(state, caller): # Example: argmax([1,2,3], 0)
-                state.result = {StatisticalTypeLattice.Status.Numeric}
-            elif state.get_type(caller) == StatisticalTypeLattice.Status.NumericList or state.get_type(caller) == StatisticalTypeLattice.Status.StringList:
+            if utilities.is_StringList(state, caller) or utilities.is_NumericList(state, caller):
                 state.result = {StatisticalTypeLattice.Status.Numeric}
             else:
                 # case where the caller is a ndarray where n > 1
@@ -822,15 +807,12 @@ class StatisticalTypeSemantics(
         caller = self.get_caller(stmt, state, interpreter)
 
         if utilities.is_List(state, caller):
-            if isinstance(caller, ListDisplay):
-                if utilities.is_StringDisplayList(state, caller):
-                    state.result = {StatisticalTypeLattice.Status.StringList}
-                elif utilities.is_NumericDisplayList(state, caller):
-                    state.result = {StatisticalTypeLattice.Status.NumericList}
-                else:
-                    state.result = {StatisticalTypeLattice.Status.List}
+            if utilities.is_StringList(state, caller):
+                state.result = {StatisticalTypeLattice.Status.StringList}
+            elif utilities.is_NumericList(state, caller):
+                state.result = {StatisticalTypeLattice.Status.NumericList}
             else:
-                return self.return_same_type_as_caller(stmt, state, interpreter)
+                state.result = {StatisticalTypeLattice.Status.List}
         elif utilities.is_Array(state, caller):
             if utilities.is_StringArray(state, caller):
                 state.result = {StatisticalTypeLattice.Status.StringList}
@@ -846,8 +828,8 @@ class StatisticalTypeSemantics(
             self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
 
-        average = 'binary' # Default=’binary’
-        zero_division = 'warn' # Default='warn'
+        average = 'binary'  # Default=’binary’
+        zero_division = 'warn'  # Default='warn'
 
         if len(stmt.arguments) > 2:
             for arg in stmt.arguments:
@@ -887,7 +869,7 @@ class StatisticalTypeSemantics(
             state.result = {StatisticalTypeLattice.Status.Numeric}
         return state
 
-    def confusion_matrix_call_semantics (
+    def confusion_matrix_call_semantics(
             self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         state.result = {StatisticalTypeLattice.Status.Array}
@@ -909,20 +891,13 @@ class StatisticalTypeSemantics(
                 state.result = {StatisticalTypeLattice.Status.BoolArray}
             else:
                 state.result = {StatisticalTypeLattice.Status.Array}
-        else: # The shape and data-type of caller define the same attributes of the returned array.
-            if isinstance(caller, ListDisplay):
-                if utilities.is_StringDisplayList(state, caller):
-                    state.result = {StatisticalTypeLattice.Status.StringArray}
-                elif utilities.is_NumericDisplayList(state, caller):
+        else:  # The shape and data-type of caller define the same attributes of the returned array.
+            if utilities.is_List(state, caller):
+                if utilities.is_NumericList(state, caller):
                     state.result = {StatisticalTypeLattice.Status.NumericArray}
-                else:
-                    state.result = {StatisticalTypeLattice.Status.Array}
-            elif utilities.is_List(state, caller):
-                if state.get_type(caller) == StatisticalTypeLattice.Status.NumericList:
-                    state.result = {StatisticalTypeLattice.Status.NumericArray}
-                elif state.get_type(caller) == StatisticalTypeLattice.Status.StringList:
+                elif utilities.is_StringList(state, caller):
                     state.result = {StatisticalTypeLattice.Status.StringArray}
-                elif state.get_type(caller) == StatisticalTypeLattice.Status.BoolList:
+                elif utilities.is_BoolList(state, caller):
                     state.result = {StatisticalTypeLattice.Status.BoolArray}
                 else:
                     state.result = {StatisticalTypeLattice.Status.Array}
@@ -932,7 +907,7 @@ class StatisticalTypeSemantics(
                 state.result = {StatisticalTypeLattice.Status.Array}
         return state
 
-    def arange_call_semantics (
+    def arange_call_semantics(
             self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
 
@@ -957,25 +932,25 @@ class StatisticalTypeSemantics(
             self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         state.result = {StatisticalTypeLattice.Status.Top}
-        return state # Returns an object of the SVC class from the Sklearn library
+        return state  # Returns an object of the SVC class from the Sklearn library
 
     def KNeighborsClassifier_call_semantics(
             self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         state.result = {StatisticalTypeLattice.Status.Top}
-        return state # Returns an object of the KNeighborsClassifier class from the Sklearn library
+        return state  # Returns an object of the KNeighborsClassifier class from the Sklearn library
 
     def GaussianNB_call_semantics(
             self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         state.result = {StatisticalTypeLattice.Status.Top}
-        return state # Returns an object of the GaussianNB class from the Sklearn library
+        return state  # Returns an object of the GaussianNB class from the Sklearn library
 
     def KMeans_call_semantics(
             self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         state.result = {StatisticalTypeLattice.Status.Top}
-        return state # Returns an object of the KMeans class from the Sklearn library.
+        return state  # Returns an object of the KMeans class from the Sklearn library.
 
     def RandomizedSearchCV_call_semantics(
             self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
@@ -987,17 +962,16 @@ class StatisticalTypeSemantics(
             self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         state.result = {StatisticalTypeLattice.Status.Top}
-        return state # Returns an object of the RandomForestClassifier class from the Sklearn library.
+        return state  # Returns an object of the RandomForestClassifier class from the Sklearn library.
 
     def GridSearchCV_call_semantics(
             self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         state.result = {StatisticalTypeLattice.Status.Top}
-        return state # Returns an object of the GridSearchCV class from the Sklearn library.
+        return state  # Returns an object of the GridSearchCV class from the Sklearn library.
 
     def download_call_semantics(
             self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:
         state.result = {StatisticalTypeLattice.Status.Boolean}
         return state
-
