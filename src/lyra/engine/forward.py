@@ -21,7 +21,7 @@ from lyra.core.cfg import Basic, Loop, Conditional, Edge, Node, ControlFlowGraph
 class ForwardInterpreter(Interpreter):
     """Forward control flow graph interpreter."""
 
-    def __init__(self, cfgs, fargs, semantics: ForwardSemantics, widening, precursory=None):
+    def __init__(self, cfgs, fargs, semantics: ForwardSemantics, widening, precursory=None, warning_level=None):
         """Forward control flow graph interpreter construction.
 
         :param cfgs: control flow graphs to analyze
@@ -31,6 +31,7 @@ class ForwardInterpreter(Interpreter):
         :param precursory: precursory control flow graph interpreter
         """
         super().__init__(cfgs, fargs, semantics, widening, precursory)
+        self.warning_level = warning_level
 
     def analyze(self, cfg: ControlFlowGraph, initial: State) -> AnalysisResult:
         from lyra.engine.backward import BackwardInterpreter
