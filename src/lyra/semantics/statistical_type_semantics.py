@@ -360,7 +360,7 @@ class StatisticalTypeSemantics(
             return self.relaxed_open_call_policy(stmt, state, interpreter)
         return state
 
-    def split_call_semantics(self, stmt: Call, state: State, interpreter: Interpreter) -> State:
+    def split_call_semantics(self, stmt: Call, state: State, interpreter: ForwardInterpreter) -> State:
         caller = self.get_caller(stmt, state, interpreter)
         if utilities.is_String(state, caller):
             state.result = {StatisticalTypeLattice.Status.StringList}
