@@ -29,3 +29,10 @@ class TorchStatisticalTypeSemantics:
     ) -> StatisticalTypeState:
         state.result = {StatisticalTypeLattice.Status.NoneRet}
         return state
+
+    def save_call_semantics(
+        self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.NoneRet}
+        return state
+
