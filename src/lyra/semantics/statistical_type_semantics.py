@@ -42,6 +42,7 @@ from lyra.core.statistical_warnings import (
 from lyra.semantics.forward import DefaultForwardSemantics
 from lyra.semantics.sklearn_statistical_type_semantics import SklearnTypeSemantics
 from lyra.semantics.pandas_statistical_type_semantics import PandasStatisticalTypeSemantics
+from lyra.semantics.torch_statistical_type_semantics import TorchStatisticalTypeSemantics
 import lyra.semantics.utilities as utilities
 from lyra.semantics.utilities import SelfUtilitiesSemantics
 
@@ -51,6 +52,7 @@ class StatisticalTypeSemantics(
     PandasStatisticalTypeSemantics,
     SklearnTypeSemantics,
     SelfUtilitiesSemantics,
+    TorchStatisticalTypeSemantics
 ):
     """Forward semantics of statements with support for Pandas library calls for dataframe column usage analysis."""
     def relaxed_open_call_policy(
