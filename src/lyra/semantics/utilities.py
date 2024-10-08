@@ -21,6 +21,7 @@ from lyra.core.types import (
     IntegerLyraType,
     FloatLyraType,
     SeriesLyraType,
+    BooleanLyraType,
 )
 from lyra.engine.forward import ForwardInterpreter
 
@@ -289,8 +290,21 @@ def is_List(state, caller):
         return True
     return False
 
-def is_NumericDisplayList(state, caller):
+def is_NumericList(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.store[caller]._less_equal(
+                StatisticalTypeLattice(StatisticalTypeLattice.Status.NumericList)
+            ):
+                return True
     if isinstance(caller, ListDisplay):
+        for x in caller.items:
+            if not isinstance(x.typ, FloatLyraType) and not isinstance(x.typ, IntegerLyraType):
+                return False
+        return True
+    if isinstance(caller, ListDisplayAccess):
         for x in caller.items:
             if not isinstance(x.typ, FloatLyraType) and not isinstance(x.typ, IntegerLyraType):
                 return False
@@ -318,15 +332,23 @@ def is_StringList(state, caller):
         return True
     return False
 
-def is_StringDisplayList(state, caller):
+def is_BoolList(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.store[caller]._less_equal(
+                StatisticalTypeLattice(StatisticalTypeLattice.Status.BoolList)
+            ):
+                return True
     if isinstance(caller, ListDisplay):
         for x in caller.items:
-            if not isinstance(x.typ, StringLyraType):
+            if not isinstance(x.typ, BooleanLyraType):
                 return False
         return True
     if isinstance(caller, ListDisplayAccess):
         for x in caller.items:
-            if not isinstance(x.literal.typ, StringLyraType):
+            if not isinstance(x.literal.typ, BooleanLyraType):
                 return False
         return True
     return False

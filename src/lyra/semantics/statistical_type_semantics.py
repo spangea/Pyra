@@ -506,17 +506,10 @@ class StatisticalTypeSemantics(
 
         eval = list(self.semantics(stmt.arguments[0], state, interpreter).result)[0]
 
-        if isinstance(eval, ListDisplay):
-            if utilities.is_StringDisplayList(state, eval):
-                state.result = {StatisticalTypeLattice.Status.StringArray}
-            elif utilities.is_NumericDisplayList(state, eval):
+        if utilities.is_List(state, eval):
+            if utilities.is_NumericList(state,eval):
                 state.result = {StatisticalTypeLattice.Status.NumericArray}
-            else:
-                state.result = {StatisticalTypeLattice.Status.Array}
-        elif utilities.is_List(state, eval):
-            if state.get_type(eval) == StatisticalTypeLattice.Status.NumericList:
-                state.result = {StatisticalTypeLattice.Status.NumericArray}
-            elif state.get_type(eval) == StatisticalTypeLattice.Status.StringList:
+            elif utilities.is_StringList(state,eval):
                 state.result = {StatisticalTypeLattice.Status.StringArray}
             else:
                 state.result = {StatisticalTypeLattice.Status.Array}
@@ -573,7 +566,7 @@ class StatisticalTypeSemantics(
     ) -> StatisticalTypeState:
         state.result = {StatisticalTypeLattice.Status.Numeric}
         return state
-        
+
     def linspace_call_semantics(
             self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
@@ -677,7 +670,7 @@ class StatisticalTypeSemantics(
         booltypes = {"np.bool_", "bool"}
 
         if (utilities.is_NumericArray(state, caller) or
-            utilities.is_NumericDisplayList(state, caller) or
+            utilities.is_NumericList(state, caller) or
             utilities.is_Series(state, caller)):
             if dtype in booltypes:
                 state.result = {StatisticalTypeLattice.Status.Boolean}
@@ -708,7 +701,7 @@ class StatisticalTypeSemantics(
         if utilities.is_Numeric(state, x):
             state.result = {StatisticalTypeLattice.Status.Numeric}
         elif (utilities.is_Series(state, x) or utilities.is_NumericArray(state, x) or
-             utilities.is_NumericDisplayList(state, x)):
+             utilities.is_NumericList(state, x)):
             state.result = {StatisticalTypeLattice.Status.NumericArray}
         else:
             state.result = {StatisticalTypeLattice.Status.Top}
@@ -782,20 +775,12 @@ class StatisticalTypeSemantics(
         caller = self.get_caller(stmt, state, interpreter)
 
         if utilities.is_List(state, caller):
-            if isinstance(caller, ListDisplay):
-                if utilities.is_StringDisplayList(state, caller):
-                    state.result = {StatisticalTypeLattice.Status.StringArray}
-                elif utilities.is_NumericDisplayList(state, caller):
-                    state.result = {StatisticalTypeLattice.Status.NumericArray}
-                else:
-                    state.result = {StatisticalTypeLattice.Status.Array}
-            elif utilities.is_List(state, caller):
-                if state.get_type(caller) == StatisticalTypeLattice.Status.NumericList:
-                    state.result = {StatisticalTypeLattice.Status.NumericArray}
-                elif state.get_type(caller) == StatisticalTypeLattice.Status.StringList:
-                    state.result = {StatisticalTypeLattice.Status.StringArray}
-                else:
-                    state.result = {StatisticalTypeLattice.Status.Array}
+            if utilities.is_NumericList(state,caller):
+                state.result = {StatisticalTypeLattice.Status.NumericArray}
+            elif utilities.is_StringList(state,caller):
+                state.result = {StatisticalTypeLattice.Status.StringArray}
+            else:
+                state.result = {StatisticalTypeLattice.Status.Array}
         elif utilities.is_StringArray(state, caller) or utilities.is_NumericArray(state, caller):
             return self.return_same_type_as_caller(stmt, state, interpreter)
         elif utilities.is_Numeric(state,caller):
@@ -819,9 +804,7 @@ class StatisticalTypeSemantics(
             first_argument = list(self.semantics(stmt.arguments[1], state, interpreter).result)[0]
 
         if first_argument is not None and utilities.is_Numeric(state, first_argument):
-            if utilities.is_StringDisplayList(state, caller) or utilities.is_NumericDisplayList(state, caller): # Example: argmax([1,2,3], 0)
-                state.result = {StatisticalTypeLattice.Status.Numeric}
-            elif state.get_type(caller) == StatisticalTypeLattice.Status.NumericList or state.get_type(caller) == StatisticalTypeLattice.Status.StringList:
+            if utilities.is_StringList(state, caller) or utilities.is_NumericList(state, caller):
                 state.result = {StatisticalTypeLattice.Status.Numeric}
             else:
                 # case where the caller is a ndarray where n > 1
@@ -837,15 +820,12 @@ class StatisticalTypeSemantics(
         caller = self.get_caller(stmt, state, interpreter)
 
         if utilities.is_List(state, caller):
-            if isinstance(caller, ListDisplay):
-                if utilities.is_StringDisplayList(state, caller):
-                    state.result = {StatisticalTypeLattice.Status.StringList}
-                elif utilities.is_NumericDisplayList(state, caller):
-                    state.result = {StatisticalTypeLattice.Status.NumericList}
-                else:
-                    state.result = {StatisticalTypeLattice.Status.List}
+            if utilities.is_StringList(state, caller):
+                state.result = {StatisticalTypeLattice.Status.StringList}
+            elif utilities.is_NumericList(state, caller):
+                state.result = {StatisticalTypeLattice.Status.NumericList}
             else:
-                return self.return_same_type_as_caller(stmt, state, interpreter)
+                state.result = {StatisticalTypeLattice.Status.List}
         elif utilities.is_Array(state, caller):
             if utilities.is_StringArray(state, caller):
                 state.result = {StatisticalTypeLattice.Status.StringList}
@@ -925,19 +905,12 @@ class StatisticalTypeSemantics(
             else:
                 state.result = {StatisticalTypeLattice.Status.Array}
         else: # The shape and data-type of caller define the same attributes of the returned array.
-            if isinstance(caller, ListDisplay):
-                if utilities.is_StringDisplayList(state, caller):
-                    state.result = {StatisticalTypeLattice.Status.StringArray}
-                elif utilities.is_NumericDisplayList(state, caller):
+            if utilities.is_List(state, caller):
+                if utilities.is_NumericList(state, caller):
                     state.result = {StatisticalTypeLattice.Status.NumericArray}
-                else:
-                    state.result = {StatisticalTypeLattice.Status.Array}
-            elif utilities.is_List(state, caller):
-                if state.get_type(caller) == StatisticalTypeLattice.Status.NumericList:
-                    state.result = {StatisticalTypeLattice.Status.NumericArray}
-                elif state.get_type(caller) == StatisticalTypeLattice.Status.StringList:
+                elif utilities.is_StringList(state, caller):
                     state.result = {StatisticalTypeLattice.Status.StringArray}
-                elif state.get_type(caller) == StatisticalTypeLattice.Status.BoolList:
+                elif utilities.is_BoolList(state, caller):
                     state.result = {StatisticalTypeLattice.Status.BoolArray}
                 else:
                     state.result = {StatisticalTypeLattice.Status.Array}
