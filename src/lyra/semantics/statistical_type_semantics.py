@@ -358,6 +358,17 @@ class StatisticalTypeSemantics(
             return self.relaxed_open_call_policy(stmt, state, interpreter)
         return state
 
+    def split_call_semantics(self, stmt: Call, state: State, interpreter: Interpreter) -> State:
+        caller = self.get_caller(stmt, state, interpreter)
+        if utilities.is_String(state, caller):
+            state.result = {StatisticalTypeLattice.Status.StringList}
+        elif utilities.is_Array(state, caller):
+            state.result = {StatisticalTypeLattice.Status.List}
+        else:
+            state.result = {StatisticalTypeLattice.Status.Top}
+
+        return state
+
     def abs_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
     ) -> StatisticalTypeState:

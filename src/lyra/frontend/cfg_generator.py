@@ -729,8 +729,8 @@ class CFGVisitor(ast.NodeVisitor):
                 else:
                     _typ = typ
                 # assert isinstance(_typ, ListLyraType)  # we expect type to be a ListLyraType
-                arguments = [self.visit(node.func.value, types, libraries, _typ.typ, fname=fname)]  # target
-                args_typs = zip(node.args, [_typ.typ, IntegerLyraType()])
+                arguments = [self.visit(node.func.value, types, libraries, typing.Any, fname=fname)]  # target
+                args_typs = zip(node.args, [typing.Any, IntegerLyraType()])
                 args = [self.visit(arg, types, libraries, arg_typ, fname=fname) for arg, arg_typ in args_typs]
                 arguments.extend(args)
                 if isinstance(arguments[0].typ, DictLyraType):
