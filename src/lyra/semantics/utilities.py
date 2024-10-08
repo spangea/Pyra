@@ -22,7 +22,7 @@ from lyra.core.types import (
     FloatLyraType,
     SeriesLyraType,
 )
-from lyra.engine.interpreter import Interpreter
+from lyra.engine.forward import ForwardInterpreter
 
 from lyra.statistical.statistical_type_domain import (
     StatisticalTypeState,
@@ -537,7 +537,7 @@ def is_zero_division_NaN(arguments):
 
 class SelfUtilitiesSemantics:
     def get_caller(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+        self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ):
         dfs = self.semantics(stmt.arguments[0], state, interpreter).result
         assert len(dfs) == 1, (
@@ -548,7 +548,7 @@ class SelfUtilitiesSemantics:
         return caller
 
     def semantics_without_inplace(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+        self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
         caller = self.get_caller(stmt, state, interpreter)
         remove_inplace(stmt.arguments)
@@ -582,7 +582,7 @@ class SelfUtilitiesSemantics:
                 self.forget_arg(caller, arg, state)
 
     def return_same_type_as_caller(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: Interpreter
+        self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
         caller = self.get_caller(stmt, state, interpreter)
         if caller in state.store:

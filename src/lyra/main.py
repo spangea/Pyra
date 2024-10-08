@@ -24,6 +24,11 @@ def main():
         '--analysis',
         help='analysis to be used (interval, liveness, or usage)',
         default='usage')
+    parser.add_argument(
+        '--warning-level',
+        help='warning level to be used (values: possible, definite)',
+        default='possible')
+
     args = parser.parse_args()
 
     if args.analysis == 'intervals':
@@ -37,7 +42,10 @@ def main():
     if args.analysis == "sign":
         ForwardSignAnalysis().main(args.python_file)
     if args.analysis == 'type-statistical':
-        ForwardStatisticalTypeAnalysis().main(args.python_file)
+        # The value of the warning level has to be either 'possible' or 'definite'
+        if args.warning_level not in ['possible', 'definite']:
+            raise ValueError('Warning level must be either possible or definite')
+        ForwardStatisticalTypeAnalysis(args.warning_level).main(args.python_file)
     if args.analysis == 'type-vanilla':
         ForwardTypeAnalysis().main(args.python_file)
 
