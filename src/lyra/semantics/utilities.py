@@ -14,7 +14,7 @@ from lyra.core.statements import (
     ListDisplayAccess,
 )
 from lyra.core.types import (
-    StringLyraType,
+    DictLyraType, StringLyraType,
     ListLyraType,
     SetLyraType,
     DataFrameLyraType,
@@ -364,6 +364,20 @@ def is_Set(state, caller):
                 return True
         else:
             if isinstance(caller.typ, SetLyraType):
+                return True
+    return False
+
+def is_Dict(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.store[caller]._less_equal(
+                StatisticalTypeLattice(StatisticalTypeLattice.Status.Dict)
+            ):
+                return True
+        else:
+            if isinstance(caller.typ, DictLyraType):
                 return True
     return False
 

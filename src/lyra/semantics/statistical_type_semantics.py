@@ -991,3 +991,18 @@ class StatisticalTypeSemantics(
         state.result = {StatisticalTypeLattice.Status.Boolean}
         return state
 
+    def pop_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        caller = self.get_caller(stmt, state, interpreter)
+        if utilities.is_NumericList(state, caller):
+            state.result = {StatisticalTypeLattice.Status.Numeric}
+        elif utilities.is_StringList(state, caller):
+            state.result = {StatisticalTypeLattice.Status.String}
+        elif utilities.is_BoolList(state, caller):
+            state.result = {StatisticalTypeLattice.Status.Boolean}
+        else:
+            state.result = {StatisticalTypeLattice.Status.Top}
+        return state
+
+
