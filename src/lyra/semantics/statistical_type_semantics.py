@@ -9,7 +9,7 @@ from lyra.core.expressions import (
     Subscription,
     Literal,
     BinaryComparisonOperation,
-    UnaryOperation
+    UnaryOperation, BinaryArithmeticOperation
 )
 
 from lyra.core.statements import (
@@ -56,7 +56,7 @@ class StatisticalTypeSemantics(
     def relaxed_open_call_policy(
             self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
-        raise Exception(f"Semantics for {stmt} at line  {stmt.pp.line} not yes implemented")
+        raise Exception(f"Semantics for {stmt} at line  {stmt.pp.line} not yet implemented")
         state.result = {StatisticalTypeLattice.Status.Top}
         return state
 
@@ -394,7 +394,7 @@ class StatisticalTypeSemantics(
             state.result = {StatisticalTypeLattice.Status.NoneRet}
             return state
         else:
-            return self.relaxed_open_call_policy(stmt, state, interpreter)
+            return self._binary_operation(stmt, BinaryArithmeticOperation.Operator.Add, state, interpreter)
 
     def any_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
