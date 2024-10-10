@@ -280,6 +280,10 @@ class TestStatisticalTypeLattice(unittest.TestCase):
         self._test_meet_same_type(StatisticalTypeLattice._array_types(),
                                        StatisticalTypeLattice.Status.Array)
 
+        # Test meet within primitive types
+        self._test_meet_same_type(StatisticalTypeLattice._scalar_types(),
+                                  StatisticalTypeLattice.Status.Scalar)
+
         # Test meet within list types
         self._test_meet_same_type(StatisticalTypeLattice._list_types(),
                                        StatisticalTypeLattice.Status.List)
@@ -295,6 +299,7 @@ class TestStatisticalTypeLattice(unittest.TestCase):
             StatisticalTypeLattice._array_types(),
             StatisticalTypeLattice._list_types(),
             StatisticalTypeLattice._atom_types(),
+            StatisticalTypeLattice._scalar_types(),
             {StatisticalTypeLattice.Status.BoolSeries}
         ]
 
@@ -304,27 +309,32 @@ class TestStatisticalTypeLattice(unittest.TestCase):
         """Test the join operator for types that are neither the bottom type nor the top type."""
         operation = lambda x, y: x._join(y)
 
-        # Testing meet within string series types
+        # Testing join within string series types
         self._test_join_same_type(StatisticalTypeLattice._string_series_types(),
                                        StatisticalTypeLattice.Status.StringSeries)
 
-        # Test meet within numeric series types
+        # Test join within numeric series types
         self._test_join_same_type(StatisticalTypeLattice._numeric_series_types(),
                                        StatisticalTypeLattice.Status.NumericSeries)
 
-        # Test meet within array types
+        # Test join within array types
         self._test_join_same_type(StatisticalTypeLattice._array_types(),
                                        StatisticalTypeLattice.Status.Array)
 
-        # Test meet within atom types
-        self._test_meet_same_type(StatisticalTypeLattice._atom_types(),
-                                  self.top_el())
+        # Test join within primitive types
+        self._test_join_same_type(StatisticalTypeLattice._scalar_types(),
+                                  StatisticalTypeLattice.Status.Scalar)
 
-        # Test meet across different type groups
+        # Test join within atom types
+        self._test_join_same_type(StatisticalTypeLattice._atom_types(),
+                                  StatisticalTypeLattice.Status.Top)
+
+        # Test join across different type groups
         groups = [
             StatisticalTypeLattice._string_series_types(),
             StatisticalTypeLattice._array_types(),
             StatisticalTypeLattice._list_types(),
+            StatisticalTypeLattice._scalar_types(),
             StatisticalTypeLattice._atom_types()
         ]
 
@@ -334,6 +344,7 @@ class TestStatisticalTypeLattice(unittest.TestCase):
             StatisticalTypeLattice._numeric_series_types(),
             StatisticalTypeLattice._array_types(),
             StatisticalTypeLattice._list_types(),
+            StatisticalTypeLattice._scalar_types(),
             StatisticalTypeLattice._atom_types()
         ]
 
