@@ -1,6 +1,6 @@
 from lyra.core.expressions import (
     Subscription,
-    Input,
+    Input, VariableIdentifier,
 )
 from lyra.core.statements import (
     Call,
@@ -147,17 +147,24 @@ class PandasStatisticalTypeSemantics:
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
         caller = self.get_caller(stmt, state, interpreter)
-        if utilities.is_StringSeries(state, caller) or utilities.is_CatSeries(state, caller):
-            state.result = {StatisticalTypeLattice.Status.StringArray}
-        elif utilities.is_BoolSeries(state, caller):
-            state.result = {StatisticalTypeLattice.Status.BoolArray}
-        elif (utilities.is_RatioSeries(state, caller) or
-              utilities.is_ScaledSeries(state, caller) or
-              utilities.is_NumericSeries(state, caller) or
-              utilities.is_ExpSeries(state, caller)):
-            state.result = {StatisticalTypeLattice.Status.NumericArray}
-        elif utilities.is_Series(state, caller):
-            state.result = {StatisticalTypeLattice.Status.Array}
+
+        # FIXME: This is a temporary way to separate the pandas unique and numpy unique semantics
+        if hasattr(caller, 'target') or isinstance(caller, VariableIdentifier):
+            # pandas unique semantics
+            if utilities.is_StringSeries(state, caller) or utilities.is_CatSeries(state, caller):
+                state.result = {StatisticalTypeLattice.Status.StringArray}
+            elif utilities.is_BoolSeries(state, caller):
+                state.result = {StatisticalTypeLattice.Status.BoolArray}
+            elif (utilities.is_RatioSeries(state, caller) or
+                  utilities.is_ScaledSeries(state, caller) or
+                  utilities.is_NumericSeries(state, caller) or
+                  utilities.is_ExpSeries(state, caller)):
+                state.result = {StatisticalTypeLattice.Status.NumericArray}
+            elif utilities.is_Series(state, caller):
+                state.result = {StatisticalTypeLattice.Status.Array}
+        else:
+            # numpy unique semantics
+            state.result = {StatisticalTypeLattice.Status.NoneRet}
 
         return state
 
