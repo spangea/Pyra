@@ -1180,6 +1180,28 @@ class CFGVisitor(ast.NodeVisitor):
         expressions = self.visit(node.value, typ=typ, types=types, libraries=libraries, fname=fname)
         return Return(ProgramPoint(node.lineno, node.col_offset), [expressions])
 
+    def visit_With(self, node, types=None, libraries=None, typ=None, fname=''):
+        """Visitor function for a with statement."""
+        factory = CFGFactory(self._id_gen)
+        #factory.complete_basic_block()
+
+        for item in node.items:
+            factory.complete_basic_block()
+            asg = self.visit_withitem(item, types, libraries, typ, fname)
+            factory.add_stmts(asg)
+            #factory.complete_basic_block()
+
+        with_body = self._visit_body(node.body, types=types, libraries=libraries, fname=fname)
+        factory.append_cfg(with_body)
+        #factory.complete_basic_block()
+        return factory.cfg
+
+    def visit_withitem(self, node, types=None, libraries=None, typ=None, fname=''):
+        id = self.visit(node.optional_vars,types, libraries, typ, fname)
+        exp = self.visit(node.context_expr, types, libraries, typ, fname)
+        return Assignment(ProgramPoint(node.optional_vars.lineno, node.optional_vars.col_offset), id, exp)
+
+
     def _visit_body(self, body, types, libraries, loose_in_edges=False, loose_out_edges=False, fname=''):
         factory = CFGFactory(self._id_gen)
 
@@ -1255,6 +1277,9 @@ class CFGVisitor(ast.NodeVisitor):
                 factory.add_stmts(self.visit(child, types, libraries))
             elif isinstance(child, ast.Delete):
                 factory.add_stmts(self.visit(child, types, libraries))
+            elif isinstance(child, ast.With):
+                factory.complete_basic_block()
+                factory.append_cfg(self.visit(child, types, libraries))
             else:
                 error = "The statement {} is not yet translatable to CFG!".format(child)
                 raise NotImplementedError(error)
