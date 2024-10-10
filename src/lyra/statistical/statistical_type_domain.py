@@ -126,14 +126,21 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
     def _add(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
         if self.is_bottom() or other.is_bottom():
             return self._replace(self.bottom())
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Series:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Series))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Numeric:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Numeric))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.DataFrame:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.String:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.String))
+        elif self.element == other.element:
+            if (self.element == StatisticalTypeLattice.Status.Series
+                    or self.element == StatisticalTypeLattice.Status.Numeric
+                    or self.element == StatisticalTypeLattice.Status.String
+                    or self.element == StatisticalTypeLattice.Status.DataFrame):
+                return self
+
+        elif self.element == StatisticalTypeLattice.Status.Series and other.element == StatisticalTypeLattice.Status.Numeric:
+            return self
+        elif (self.element == StatisticalTypeLattice.Status.DataFrame and
+              other.element in {StatisticalTypeLattice.Status.Numeric,
+                                StatisticalTypeLattice.Status.Series,
+                                StatisticalTypeLattice.Status.Dict,
+                                StatisticalTypeLattice.Status.List}):
+            return self
         return self._replace(self.top())
 
     def _sub(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':

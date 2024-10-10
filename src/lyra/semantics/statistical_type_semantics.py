@@ -388,9 +388,7 @@ class StatisticalTypeSemantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
         caller = self.get_caller(stmt, state, interpreter)
-        if utilities.is_Series(state, caller) or utilities.is_DataFrame(state, caller):
-            return self.return_same_type_as_caller(stmt, state, interpreter)
-        elif utilities.is_Set(state, caller):
+        if utilities.is_Set(state, caller):
             state.result = {StatisticalTypeLattice.Status.NoneRet}
             return state
         else:
