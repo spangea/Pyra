@@ -404,6 +404,16 @@ class StatisticalTypeSemantics(
         state.result = {StatisticalTypeLattice.Status.Boolean}
         return state
 
+    def to_numpy_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        caller = self.get_caller(stmt, state, interpreter)
+        if utilities.is_Series(state, caller) or utilities.is_DataFrame(state, caller):
+            state.result = {StatisticalTypeLattice.Status.Array}
+        else:
+            state.result = {None}
+        return state
+
     def sum_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
