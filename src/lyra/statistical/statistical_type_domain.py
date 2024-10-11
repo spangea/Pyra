@@ -126,14 +126,21 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
     def _add(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
         if self.is_bottom() or other.is_bottom():
             return self._replace(self.bottom())
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Series:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Series))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Numeric:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Numeric))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.DataFrame:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.String:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.String))
+        elif self.element == other.element:
+            if (self.element == StatisticalTypeLattice.Status.Series
+                    or self.element == StatisticalTypeLattice.Status.Numeric
+                    or self.element == StatisticalTypeLattice.Status.String
+                    or self.element == StatisticalTypeLattice.Status.DataFrame):
+                return self
+
+        elif self.element == StatisticalTypeLattice.Status.Series and other.element == StatisticalTypeLattice.Status.Numeric:
+            return self
+        elif (self.element == StatisticalTypeLattice.Status.DataFrame and
+              other.element in {StatisticalTypeLattice.Status.Numeric,
+                                StatisticalTypeLattice.Status.Series,
+                                StatisticalTypeLattice.Status.Dict,
+                                StatisticalTypeLattice.Status.List}):
+            return self
         return self._replace(self.top())
 
     def _sub(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
@@ -279,6 +286,8 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
             return True
         elif self.element in self._list_types() and other.element == StatisticalTypeLattice.Status.List:
             return True
+        elif self.element in self._scalar_types() and other.element == StatisticalTypeLattice.Status.Scalar:
+            return True
         elif (self.element in {StatisticalTypeLattice.Status.NumericSeries, StatisticalTypeLattice.Status.StringSeries,
                                StatisticalTypeLattice.Status.BoolSeries}
               and other.element == StatisticalTypeLattice.Status.Series):
@@ -295,6 +304,14 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
              StatisticalTypeLattice.Status.BoolList,
              StatisticalTypeLattice.Status.NumericList,
              StatisticalTypeLattice.Status.StringList)
+        return s
+
+    @classmethod
+    def _scalar_types(cls):
+        s = (StatisticalTypeLattice.Status.Boolean,
+             StatisticalTypeLattice.Status.Numeric,
+             StatisticalTypeLattice.Status.Scalar,
+             StatisticalTypeLattice.Status.String)
         return s
 
     @classmethod
@@ -351,14 +368,10 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
              StatisticalTypeLattice.Status.MaxAbsScaler,
              StatisticalTypeLattice.Status.MinMaxScaler,
              StatisticalTypeLattice.Status.StandardScaler,
-             StatisticalTypeLattice.Status.Scalar,
              StatisticalTypeLattice.Status.DataFrame,
              StatisticalTypeLattice.Status.Tuple,
              StatisticalTypeLattice.Status.Set,
-             StatisticalTypeLattice.Status.Dict,
-             StatisticalTypeLattice.Status.String,
-             StatisticalTypeLattice.Status.Numeric,
-             StatisticalTypeLattice.Status.Boolean
+             StatisticalTypeLattice.Status.Dict
              )
         return s
 
@@ -390,6 +403,9 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
         # List
         elif self.element in self._list_types() and other.element in self._list_types():
             return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.List))
+        # Scalar values
+        elif self.element in self._scalar_types() and other.element in self._scalar_types():
+            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Scalar))
 
         # Computes the join between types of different series groups
         elif self._is_series_type(self.element) and self._is_series_type(other.element):
