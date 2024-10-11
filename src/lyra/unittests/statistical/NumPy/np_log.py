@@ -1,3 +1,6 @@
 import numpy as np
-x = np.log([1, np.e, np.e**2, 0])
-#FINAL: x -> Array
+a = [1, 2, 3, 4]
+b = 5
+x = np.log(a)
+y = np.log(b)
+#FINAL: a -> NumericList; b -> Numeric; x -> Array; y -> Numeric

@@ -20,5 +20,11 @@ class NumPyStatisticalTypeSemantics:
     def log_call_semantics(
             self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
-        state.result = {StatisticalTypeLattice.Status.Array}
+        if utilities.is_Array(state, stmt.arguments[0]) or utilities.is_List(state, stmt.arguments[0]):
+            state.result = {StatisticalTypeLattice.Status.Array}
+        elif utilities.is_Numeric(state, stmt.arguments[0]):
+            state.result = {StatisticalTypeLattice.Status.Numeric}
+        else:
+            state.result = {StatisticalTypeLattice.Status.Top}
+
         return state
