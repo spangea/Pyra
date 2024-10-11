@@ -16,3 +16,9 @@ class NumPyStatisticalTypeSemantics:
     ) -> StatisticalTypeState:
         state.result = {StatisticalTypeLattice.Status.Array}
         return state
+
+    def log_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.Array}
+        return state
