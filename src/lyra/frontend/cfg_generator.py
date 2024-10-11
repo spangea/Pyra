@@ -1183,17 +1183,16 @@ class CFGVisitor(ast.NodeVisitor):
     def visit_With(self, node, types=None, libraries=None, typ=None, fname=''):
         """Visitor function for a with statement."""
         factory = CFGFactory(self._id_gen)
-        #factory.complete_basic_block()
 
         for item in node.items:
             factory.complete_basic_block()
             asg = self.visit_withitem(item, types, libraries, typ, fname)
             factory.add_stmts(asg)
-            #factory.complete_basic_block()
+            factory.complete_basic_block()
 
         with_body = self._visit_body(node.body, types=types, libraries=libraries, fname=fname)
         factory.append_cfg(with_body)
-        #factory.complete_basic_block()
+        factory.complete_basic_block()
         return factory.cfg
 
     def visit_withitem(self, node, types=None, libraries=None, typ=None, fname=''):
