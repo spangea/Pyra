@@ -274,6 +274,17 @@ def is_StringArray(state, caller):
                 return True
     return False
 
+def is_BoolArray(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.store[caller]._less_equal(
+                StatisticalTypeLattice(StatisticalTypeLattice.Status.BoolArray)
+            ):
+                return True
+    return False
+
 def is_List(state, caller):
     if isinstance(caller, VariableAccess):
         caller = caller.variable
@@ -420,6 +431,27 @@ def is_Numeric(state, caller):
     return False
 
 
+def is_Boolean(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, BooleanLyraType):
+        return True
+    elif (
+        isinstance(caller, VariableIdentifier)
+        and state.get_type(caller) == StatisticalTypeLattice.Status.Boolean
+    ):
+        return True
+    elif isinstance(caller, Literal) and (
+        isinstance(caller.typ, BooleanLyraType)
+    ):
+        return True
+    elif isinstance(caller, Input) and (
+        isinstance(caller.typ, BooleanLyraType)
+    ):
+        return True
+    return False
+
+
 def is_Scaler(state, caller):
     if isinstance(caller, VariableAccess):
         caller = caller.variable
@@ -505,6 +537,27 @@ def remove_inplace(arguments):
 def has_to_retstep(arguments):
     for arg in arguments:
         if isinstance(arg, Keyword) and arg.name == "retstep" and arg.value:
+            return True
+    return False
+
+
+def has_to_return_index(arguments):
+    for arg in arguments:
+        if isinstance(arg, Keyword) and arg.name == "return_index" and arg.value:
+            return True
+    return False
+
+
+def has_to_return_inverse(arguments):
+    for arg in arguments:
+        if isinstance(arg, Keyword) and arg.name == "return_inverse" and arg.value:
+            return True
+    return False
+
+
+def has_to_return_counts(arguments):
+    for arg in arguments:
+        if isinstance(arg, Keyword) and arg.name == "return_counts" and arg.value:
             return True
     return False
 
