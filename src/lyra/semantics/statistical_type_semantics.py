@@ -44,7 +44,9 @@ from lyra.semantics.sklearn_statistical_type_semantics import SklearnTypeSemanti
 from lyra.semantics.pandas_statistical_type_semantics import PandasStatisticalTypeSemantics
 from lyra.semantics.torch_statistical_type_semantics import TorchStatisticalTypeSemantics
 import lyra.semantics.utilities as utilities
+from lyra.semantics.numpy_statistical_type_semantics import NumPyStatisticalTypeSemantics
 from lyra.semantics.utilities import SelfUtilitiesSemantics
+
 
 
 class StatisticalTypeSemantics(
@@ -52,7 +54,8 @@ class StatisticalTypeSemantics(
     PandasStatisticalTypeSemantics,
     SklearnTypeSemantics,
     SelfUtilitiesSemantics,
-    TorchStatisticalTypeSemantics
+    TorchStatisticalTypeSemantics,
+    NumPyStatisticalTypeSemantics
 ):
     """Forward semantics of statements with support for Pandas library calls for dataframe column usage analysis."""
     def relaxed_open_call_policy(
