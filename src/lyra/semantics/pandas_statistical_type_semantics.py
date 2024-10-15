@@ -1,6 +1,6 @@
 from lyra.core.expressions import (
     Subscription,
-    Input,
+    Input, VariableIdentifier,
 )
 from lyra.core.statements import (
     Call,
@@ -147,6 +147,7 @@ class PandasStatisticalTypeSemantics:
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
         caller = self.get_caller(stmt, state, interpreter)
+
         if utilities.is_StringSeries(state, caller) or utilities.is_CatSeries(state, caller):
             state.result = {StatisticalTypeLattice.Status.StringArray}
         elif utilities.is_BoolSeries(state, caller):
@@ -158,7 +159,6 @@ class PandasStatisticalTypeSemantics:
             state.result = {StatisticalTypeLattice.Status.NumericArray}
         elif utilities.is_Series(state, caller):
             state.result = {StatisticalTypeLattice.Status.Array}
-
         return state
 
     def from_dict_call_semantics(

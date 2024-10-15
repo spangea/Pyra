@@ -17,6 +17,122 @@ class NumPyStatisticalTypeSemantics:
         state.result = {StatisticalTypeLattice.Status.Array}
         return state
 
+    def unique_numpy_library_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        caller = self.get_caller(stmt, state, interpreter)
+
+        if (utilities.is_NumericArray(state, caller) or utilities.is_NumericList(state, caller) or utilities.is_Numeric(
+                state, caller)):
+            if (utilities.has_to_return_index(stmt.arguments) and
+                    utilities.has_to_return_inverse(stmt.arguments) and
+                    utilities.has_to_return_counts(stmt.arguments)):
+                state.result = {(StatisticalTypeLattice.Status.NumericArray,
+                                 StatisticalTypeLattice.Status.NumericArray,
+                                 StatisticalTypeLattice.Status.NumericArray,
+                                 StatisticalTypeLattice.Status.NumericArray)}
+            elif ((utilities.has_to_return_index(stmt.arguments) and
+                   utilities.has_to_return_inverse(stmt.arguments))
+                  or
+                  (utilities.has_to_return_index(stmt.arguments) and
+                   utilities.has_to_return_counts(stmt.arguments))
+                  or
+                  (utilities.has_to_return_inverse(stmt.arguments) and
+                   utilities.has_to_return_counts(stmt.arguments))):
+                state.result = {(StatisticalTypeLattice.Status.NumericArray,
+                                 StatisticalTypeLattice.Status.NumericArray,
+                                 StatisticalTypeLattice.Status.NumericArray)}
+            elif (utilities.has_to_return_index(stmt.arguments) or
+                  utilities.has_to_return_inverse(stmt.arguments) or
+                  utilities.has_to_return_counts(stmt.arguments)):
+                state.result = {(StatisticalTypeLattice.Status.NumericArray,
+                                 StatisticalTypeLattice.Status.NumericArray)}
+            else:
+                state.result = {StatisticalTypeLattice.Status.NumericArray}
+        elif (utilities.is_StringArray(state, caller) or utilities.is_StringList(state, caller) or utilities.is_String(
+                state, caller)):
+            if (utilities.has_to_return_index(stmt.arguments) and
+                    utilities.has_to_return_inverse(stmt.arguments) and
+                    utilities.has_to_return_counts(stmt.arguments)):
+                state.result = {(StatisticalTypeLattice.Status.StringArray,
+                                 StatisticalTypeLattice.Status.NumericArray,
+                                 StatisticalTypeLattice.Status.NumericArray,
+                                 StatisticalTypeLattice.Status.NumericArray)}
+            elif ((utilities.has_to_return_index(stmt.arguments) and
+                   utilities.has_to_return_inverse(stmt.arguments))
+                  or
+                  (utilities.has_to_return_index(stmt.arguments) and
+                   utilities.has_to_return_counts(stmt.arguments))
+                  or
+                  (utilities.has_to_return_inverse(stmt.arguments) and
+                   utilities.has_to_return_counts(stmt.arguments))):
+                state.result = {(StatisticalTypeLattice.Status.StringArray,
+                                 StatisticalTypeLattice.Status.NumericArray,
+                                 StatisticalTypeLattice.Status.NumericArray)}
+            elif (utilities.has_to_return_index(stmt.arguments) or
+                  utilities.has_to_return_inverse(stmt.arguments) or
+                  utilities.has_to_return_counts(stmt.arguments)):
+                state.result = {(StatisticalTypeLattice.Status.StringArray,
+                                 StatisticalTypeLattice.Status.NumericArray)}
+            else:
+                state.result = {StatisticalTypeLattice.Status.StringArray}
+        elif (utilities.is_BoolArray(state, caller) or utilities.is_BoolList(state, caller) or utilities.is_Boolean(
+                state, caller)):
+            if (utilities.has_to_return_index(stmt.arguments) and
+                    utilities.has_to_return_inverse(stmt.arguments) and
+                    utilities.has_to_return_counts(stmt.arguments)):
+                state.result = {(StatisticalTypeLattice.Status.BoolArray,
+                                 StatisticalTypeLattice.Status.NumericArray,
+                                 StatisticalTypeLattice.Status.NumericArray,
+                                 StatisticalTypeLattice.Status.NumericArray)}
+            elif ((utilities.has_to_return_index(stmt.arguments) and
+                   utilities.has_to_return_inverse(stmt.arguments))
+                  or
+                  (utilities.has_to_return_index(stmt.arguments) and
+                   utilities.has_to_return_counts(stmt.arguments))
+                  or
+                  (utilities.has_to_return_inverse(stmt.arguments) and
+                   utilities.has_to_return_counts(stmt.arguments))):
+                state.result = {(StatisticalTypeLattice.Status.BoolArray,
+                                 StatisticalTypeLattice.Status.NumericArray,
+                                 StatisticalTypeLattice.Status.NumericArray)}
+            elif (utilities.has_to_return_index(stmt.arguments) or
+                  utilities.has_to_return_inverse(stmt.arguments) or
+                  utilities.has_to_return_counts(stmt.arguments)):
+                state.result = {(StatisticalTypeLattice.Status.BoolArray,
+                                 StatisticalTypeLattice.Status.NumericArray)}
+            else:
+                state.result = {StatisticalTypeLattice.Status.BoolArray}
+        elif (utilities.is_Array(state, caller) or utilities.is_List(state, caller)):
+            if (utilities.has_to_return_index(stmt.arguments) and
+                    utilities.has_to_return_inverse(stmt.arguments) and
+                    utilities.has_to_return_counts(stmt.arguments)):
+                state.result = {(StatisticalTypeLattice.Status.Array,
+                                 StatisticalTypeLattice.Status.NumericArray,
+                                 StatisticalTypeLattice.Status.NumericArray,
+                                 StatisticalTypeLattice.Status.NumericArray)}
+            elif ((utilities.has_to_return_index(stmt.arguments) and
+                   utilities.has_to_return_inverse(stmt.arguments))
+                  or
+                  (utilities.has_to_return_index(stmt.arguments) and
+                   utilities.has_to_return_counts(stmt.arguments))
+                  or
+                  (utilities.has_to_return_inverse(stmt.arguments) and
+                   utilities.has_to_return_counts(stmt.arguments))):
+                state.result = {(StatisticalTypeLattice.Status.Array,
+                                 StatisticalTypeLattice.Status.NumericArray,
+                                 StatisticalTypeLattice.Status.NumericArray)}
+            elif (utilities.has_to_return_index(stmt.arguments) or
+                  utilities.has_to_return_inverse(stmt.arguments) or
+                  utilities.has_to_return_counts(stmt.arguments)):
+                state.result = {(StatisticalTypeLattice.Status.Array,
+                                 StatisticalTypeLattice.Status.NumericArray)}
+            else:
+                state.result = {StatisticalTypeLattice.Status.Array}
+        else:
+            state.result = {StatisticalTypeLattice.Status.Top}
+        return state
+
     def log_call_semantics(
             self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:

@@ -257,7 +257,7 @@ class CallSemantics(Semantics):
                 if hasattr(numpy, stmt.arguments[0].name):     # Class call
                     name = '{}_class_call_semantics'.format(stmt.name)
                 elif hasattr(numpy, stmt.name):                # Library call
-                    name = '{}_library_call_semantics'.format(stmt.name)
+                    name = '{}_numpy_library_call_semantics'.format(stmt.name)
                 stmt.arguments.pop(0)
             elif stmt.arguments[0].library == "matplotlib.pyplot":
                 if hasattr(matplotlib.pyplot, stmt.arguments[0].name):     # Class call
