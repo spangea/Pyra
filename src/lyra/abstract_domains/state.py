@@ -19,7 +19,7 @@ from lyra.core.expressions import Expression, VariableIdentifier, Subscription, 
     AttributeReference, Literal, \
     NegationFreeExpression, UnaryBooleanOperation, BinaryBooleanOperation, \
     BinaryComparisonOperation, TupleDisplay
-from lyra.core.statements import ProgramPoint, AccessField
+from lyra.core.statements import ProgramPoint, AttributeAccess
 from lyra.core.types import BooleanLyraType, IntegerLyraType, FloatLyraType, StringLyraType, \
     ContainerLyraType, DictLyraType
 from lyra.core.utils import copy_docstring
@@ -125,8 +125,8 @@ class State(Lattice, metaclass=ABCMeta):
             return self._assign_slicing(left, right)
         elif isinstance(left, TupleDisplay):
             return self._assign_tuple(left, right)
-        elif isinstance(left, AccessField):
-            return self._assign_accessfield(left, right)
+        elif isinstance(left, AttributeAccess):
+            return self._assign_attributeaccess(left, right)
         raise ValueError(f"Unexpected assignment to {left}!")
 
     def assign(self, left: Set[Expression], right: Set[Expression]) -> 'State':

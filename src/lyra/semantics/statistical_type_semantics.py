@@ -61,7 +61,7 @@ class StatisticalTypeSemantics(
     def relaxed_open_call_policy(
             self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
-        raise Exception(f"Semantics for {stmt} at line  {stmt.pp.line} not yet implemented")
+        # raise Exception(f"Semantics for {stmt} at line  {stmt.pp.line} not yet implemented")
         state.result = {StatisticalTypeLattice.Status.Top}
         return state
 
@@ -80,7 +80,7 @@ class StatisticalTypeSemantics(
         self, access: AttributeAccess, state: StatisticalTypeState, interpreter: ForwardInterpreter, is_lhs = False
     ) -> StatisticalTypeState:
         if is_lhs:
-            return {access.target}
+            return {access.left}
         if isinstance(access.target, VariableAccess):
             id = access.target.variable
             # FIXME: Access on fields of df or series can return specific types
