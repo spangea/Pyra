@@ -1016,4 +1016,21 @@ class StatisticalTypeSemantics(
             state.result = {StatisticalTypeLattice.Status.Top}
         return state
 
-
+    def train_test_split_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        types: tuple = ()
+        for arg in stmt.arguments:
+            if not isinstance(arg, Keyword):
+                # caller = self.semantics(arg, state, interpreter).result
+                if utilities.is_List(state, arg):
+                    types += tuple({StatisticalTypeLattice.Status.List})
+                    types += tuple({StatisticalTypeLattice.Status.List})
+                elif utilities.is_Array(state, arg):
+                    types += tuple({StatisticalTypeLattice.Status.Array})
+                    types += tuple({StatisticalTypeLattice.Status.Array})
+                else:
+                    types += tuple(self.semantics(arg, state, interpreter).result)
+                    types += tuple(self.semantics(arg, state, interpreter).result)
+        state.result = {types}
+        return state

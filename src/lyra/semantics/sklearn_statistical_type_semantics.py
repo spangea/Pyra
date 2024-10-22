@@ -8,6 +8,9 @@ from lyra.statistical.statistical_type_domain import (
 )
 import lyra.semantics.utilities as utilities
 
+from lyra.core.statements import (
+    Keyword
+)
 
 class SklearnTypeSemantics:
     def MaxAbsScaler_call_semantics(
