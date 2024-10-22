@@ -553,6 +553,11 @@ class CFGVisitor(ast.NodeVisitor):
                 _name = name
             else:
                 _name = name.replace(fname + '#', '')
+            if name not in types:
+                if typ:
+                    types[name] = typ
+                else:
+                    types[name] = Any
             # assert _name in types
             # assert types[name] == typ or typ is None
             expr = VariableIdentifier(types[_name], _name)
