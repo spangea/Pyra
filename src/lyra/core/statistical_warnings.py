@@ -24,3 +24,6 @@ class SpecialAttributeAccessWarning(UserWarning):
 
 class CategoricalPlot(UserWarning):
     pass
+
+class NormalizedData(UserWarning):
+    pass

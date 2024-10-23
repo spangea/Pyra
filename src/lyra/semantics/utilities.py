@@ -224,8 +224,10 @@ def is_ScaledSeries(state, caller):
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
             if state.store[caller] in {
-                StatisticalTypeLattice.Status.NormSeries,
-                StatisticalTypeLattice.Status.StdSeries,
+                # StatisticalTypeLattice.Status.NormSeries,
+                # StatisticalTypeLattice.Status.StdSeries,
+                StatisticalTypeLattice(StatisticalTypeLattice.Status.NormSeries),
+                StatisticalTypeLattice(StatisticalTypeLattice.Status.StdSeries),
             }:
                 return True
     elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
@@ -238,6 +240,19 @@ def is_ScaledSeries(state, caller):
         StatisticalTypeLattice.Status.NormSeries,
         StatisticalTypeLattice.Status.StdSeries,
     }:
+        return True
+    return False
+
+def is_NormSeries(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.store[caller]._less_equal(
+                StatisticalTypeLattice(StatisticalTypeLattice.Status.NormSeries)
+            ):
+                return True
+    if state.get_type(caller) == {StatisticalTypeLattice.Status.NormSeries}:
         return True
     return False
 
