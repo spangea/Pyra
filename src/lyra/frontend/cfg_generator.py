@@ -11,7 +11,7 @@ from lyra.core.types import IntegerLyraType, BooleanLyraType, resolve_type_annot
     FloatLyraType, ListLyraType, TupleLyraType, StringLyraType, DictLyraType, SetLyraType, \
     DataFrameLyraType, AttributeAccessLyraType, NoneLyraType, TopLyraType
 from lyra.visualization.graph_renderer import CFGRenderer
-from lyra.core.statements import AccessField, Assert
+from lyra.core.statements import AttributeAccess, Assert
 
 
 class LooseControlFlowGraph:
@@ -860,7 +860,7 @@ class CFGVisitor(ast.NodeVisitor):
             else:
                 _typ = TopLyraType
             target = self.visit(node.value, types, libraries, [_typ, typ], fname=fname)
-            if isinstance(target, AccessField):
+            if isinstance(target, AttributeAccess):
                 return SubscriptionAccess(pp, None, target, key)
             if isinstance(target.typ, DictLyraType):
                 return SubscriptionAccess(pp, target.typ.val_typ, target, key)
@@ -1096,7 +1096,7 @@ class CFGVisitor(ast.NodeVisitor):
                 target_typ = TopLyraType
                 # error = "The type of the target {} is not yet determinable!".format(iterated)
                 # raise NotImplementedError(error)
-        elif isinstance(iterated, AccessField):
+        elif isinstance(iterated, AttributeAccess):
             target_typ = TopLyraType
         elif isinstance(iterated, SlicingAccess):
             target_typ = TopLyraType
