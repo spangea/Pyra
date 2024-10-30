@@ -713,22 +713,28 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
                 return evaluation  # nothing to be done
             evaluated = evaluation
             value: StatisticalTypeLattice = StatisticalTypeLattice().bottom()
-            for item in expr.items:
-                evaluated = self.visit(item, state, evaluated)
-                value = value.join(evaluated[item])
-            if value.element == StatisticalTypeLattice.Status.String:
-                evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.StringList)
-            elif value.element == StatisticalTypeLattice.Status.Numeric:
-                evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.NumericList)
-            elif value.element == StatisticalTypeLattice.Status.Boolean:
-                evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.BoolList)
-            else:
+            if isinstance(expr, tuple):
                 evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.List)
+            else:
+                for item in expr.items:
+                    evaluated = self.visit(item, state, evaluated)
+                    value = value.join(evaluated[item])
+                if value.element == StatisticalTypeLattice.Status.String:
+                    evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.StringList)
+                elif value.element == StatisticalTypeLattice.Status.Numeric:
+                    evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.NumericList)
+                elif value.element == StatisticalTypeLattice.Status.Boolean:
+                    evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.BoolList)
+                else:
+                    evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.List)
             return evaluation
 
         @copy_docstring(ExpressionVisitor.visit_TupleDisplay)
         def visit_TupleDisplay(self, expr: TupleDisplay, state=None, evaluation=None):
-            evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.Tuple)
+            if len(state.variables) == 1:
+                evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.List)
+            else:
+                evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.Tuple)
             return evaluation
 
         @copy_docstring(ExpressionVisitor.visit_DictDisplay)

@@ -128,7 +128,7 @@ class ExpressionVisitor(metaclass=ABCMeta):
         method = 'visit_' + expr.__class__.__name__
 
         if method == 'visit_tuple':
-            method = 'visit_TupleDisplay'
+            method = 'visit_ListDisplay'
 
         if hasattr(self, method):
             return getattr(self, method)(expr, *args, **kwargs)
