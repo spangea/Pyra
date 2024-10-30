@@ -27,3 +27,6 @@ class CategoricalPlot(UserWarning):
 
 class NormalizedData(UserWarning):
     pass
+
+class StandardizedData(UserWarning):
+    pass

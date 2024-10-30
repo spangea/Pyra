@@ -37,7 +37,8 @@ from lyra.core.statistical_warnings import (
     CategoricalConversionMean,
     ScaledMean,
     CategoricalPlot,
-    NormalizedData
+    NormalizedData,
+    StandardizedData
 )
 
 from lyra.semantics.forward import DefaultForwardSemantics
@@ -1029,20 +1030,24 @@ class StatisticalTypeSemantics(
                         category=NormalizedData,
                         stacklevel=2,
                     )
-                elif utilities.is_ScaledSeries(state, arg):
+                elif utilities.is_StdSeries(state, arg):
                     warnings.warn(
-                        f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> Data could be normalized before the execution of the split method",
-                        category=NormalizedData,
+                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> Data should be standardized after the split method",
+                        category=StandardizedData,
                         stacklevel=2,
                     )
-                if utilities.is_List(state, arg):
+
+                if utilities.is_Series(state, arg):
+                    types += tuple({StatisticalTypeLattice.Status.Series})
+                    types += tuple({StatisticalTypeLattice.Status.Series})
+                elif utilities.is_List(state, arg):
                     types += tuple({StatisticalTypeLattice.Status.List})
                     types += tuple({StatisticalTypeLattice.Status.List})
                 elif utilities.is_Array(state, arg):
                     types += tuple({StatisticalTypeLattice.Status.Array})
                     types += tuple({StatisticalTypeLattice.Status.Array})
                 else:
-                    types += tuple(self.semantics(arg, state, interpreter).result)
-                    types += tuple(self.semantics(arg, state, interpreter).result)
+                    types += tuple({StatisticalTypeLattice.Status.Top})
+                    types += tuple({StatisticalTypeLattice.Status.Top})
         state.result = {types}
         return state

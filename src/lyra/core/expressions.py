@@ -126,6 +126,10 @@ class ExpressionVisitor(metaclass=ABCMeta):
     def visit(self, expr, *args, **kwargs):
         """Visit of an expression."""
         method = 'visit_' + expr.__class__.__name__
+
+        if method == 'visit_tuple':
+            method = 'visit_TupleDisplay'
+
         if hasattr(self, method):
             return getattr(self, method)(expr, *args, **kwargs)
         error = f"Missing visitor for {expr.__class__.__name__} in {self.__class__.__qualname__}!"

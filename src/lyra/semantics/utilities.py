@@ -256,6 +256,19 @@ def is_NormSeries(state, caller):
         return True
     return False
 
+def is_StdSeries(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.store[caller]._less_equal(
+                StatisticalTypeLattice(StatisticalTypeLattice.Status.StdSeries)
+            ):
+                return True
+    if state.get_type(caller) == {StatisticalTypeLattice.Status.StdSeries}:
+        return True
+    return False
+
 def is_Array(state, caller):
     if isinstance(caller, VariableAccess):
         caller = caller.variable
