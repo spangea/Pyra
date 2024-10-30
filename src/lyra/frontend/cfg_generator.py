@@ -5,7 +5,7 @@ import typing
 from typing import Any
 
 from lyra.core.cfg import *
-from lyra.core.expressions import Literal, Identifier, AttributeIdentifier
+from lyra.core.expressions import *
 from lyra.core.statements import *
 from lyra.core.types import IntegerLyraType, BooleanLyraType, resolve_type_annotation, \
     FloatLyraType, ListLyraType, TupleLyraType, StringLyraType, DictLyraType, SetLyraType, \
@@ -426,12 +426,7 @@ class CFGVisitor(ast.NodeVisitor):
         the args attribute stores the arguments of the lambda expression.
         the body attribute stores the body of the lambda expression."""
         pp = ProgramPoint(node.lineno, node.col_offset)
-        args = []
-        for arg in node.args.args:
-            types[arg.arg] = TopLyraType
-            args.append(arg.arg)
-        body = self.visit(node.body, types, libraries, typ, fname)
-        return LambdaExpression(pp, args, body)
+        return LambdaExpression(pp)
 
     def visit_Slice(self, node, types=None, libraries=None, typ=None, fname=''):
         pp = ProgramPoint(node.lineno, node.col_offset)
