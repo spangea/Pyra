@@ -542,20 +542,3 @@ class Delete(Statement):
 
     def __repr__(self):
         return "delete {}".format(", ".join("{}".format(target) for target in self._targets))
-
-
-class LambdaExpression(Statement):
-    # TODO: Check if this should be a statement or an expression
-    def __init__(self, pp, args, body):
-        """Lambda expression statement representation.
-
-        :param pp: program point associated with the raise
-        :param args: the formal parameters of the lambda expression
-        :param body: the body of the lambda expression
-        """
-        super().__init__(pp)
-        self._args = args
-        self._body = body
-
-    def __repr__(self):
-        return "lambda {} : {}".format(", ".join("{}".format(arg) for arg in self._args), self._body)
