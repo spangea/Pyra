@@ -133,7 +133,8 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
             if (self.element == StatisticalTypeLattice.Status.Series
                     or self.element == StatisticalTypeLattice.Status.Numeric
                     or self.element == StatisticalTypeLattice.Status.String
-                    or self.element == StatisticalTypeLattice.Status.DataFrame):
+                    or self.element == StatisticalTypeLattice.Status.DataFrame
+                    or self.element == StatisticalTypeLattice.Status.Tensor):
                 return self
 
         elif self.element == StatisticalTypeLattice.Status.Series and other.element == StatisticalTypeLattice.Status.Numeric:
