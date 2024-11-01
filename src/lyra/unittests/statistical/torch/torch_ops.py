@@ -13,4 +13,6 @@ h = torch.arccos(f)
 i = torch.acosh(f)
 l = torch.arccosh(f)
 m = torch.add(a, b)
-#FINAL: a -> Tensor; b -> Tensor; c -> Tensor; d -> Tensor; e -> Tensor; f -> Tensor; g -> Tensor; h -> Tensor; i -> Tensor; l -> Tensor; m -> Tensor
+n = torch.sub(a, b)
+o = torch.div(a, b)
+#FINAL: a -> Tensor; b -> Tensor; c -> Tensor; d -> Tensor; e -> Tensor; f -> Tensor; g -> Tensor; h -> Tensor; i -> Tensor; l -> Tensor; m -> Tensor; n -> Tensor; o -> Tensor

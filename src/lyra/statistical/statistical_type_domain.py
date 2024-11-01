@@ -150,12 +150,13 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
     def _sub(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
         if self.is_bottom() or other.is_bottom():
             return self._replace(self.bottom())
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Series:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Series))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Numeric:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Numeric))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.DataFrame:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame))
+        elif self.element == other.element:
+            if (self.element == StatisticalTypeLattice.Status.Series
+                    or self.element == StatisticalTypeLattice.Status.Numeric
+                    or self.element == StatisticalTypeLattice.Status.String
+                    or self.element == StatisticalTypeLattice.Status.DataFrame
+                    or self.element == StatisticalTypeLattice.Status.Tensor):
+                return self
         return self._replace(self.top())
 
     def _mult(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
@@ -176,23 +177,23 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
     def _div(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
         if self.is_bottom() or other.is_bottom():
             return self._replace(self.bottom())
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Series:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.RatioSeries))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Numeric:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Numeric))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.DataFrame:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame))
+        elif self.element == other.element:
+            if self.element == StatisticalTypeLattice.Status.Series:
+                return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.RatioSeries))
+            elif (self.element == StatisticalTypeLattice.Status.Numeric
+                    or self.element == StatisticalTypeLattice.Status.DataFrame
+                    or self.element == StatisticalTypeLattice.Status.Tensor):
+                return self
         return self._replace(self.top())
 
     def _mod(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
         if self.is_bottom() or other.is_bottom():
             return self._replace(self.bottom())
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Series:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Series))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Numeric:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Numeric))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.DataFrame:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame))
+        elif self.element == other.element:
+            if (self.element == StatisticalTypeLattice.Status.Series
+                    or self.element == StatisticalTypeLattice.Status.Numeric
+                    or self.element == StatisticalTypeLattice.Status.DataFrame):
+                return self
         return self._replace(self.top())
 
     def _concat(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
