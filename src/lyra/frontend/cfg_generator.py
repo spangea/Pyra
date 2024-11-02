@@ -421,6 +421,22 @@ class CFGVisitor(ast.NodeVisitor):
                 itm_typ = None
         return ListDisplayAccess(pp, ListLyraType(itm_typ), items)
 
+    def visit_GeneratorExp(self, node, types=None, libraries=None, typ=None, fname=''):
+        pp = ProgramPoint(node.lineno, node.col_offset)
+        expr = Literal(TopLyraType(), "LYRA: GENERATOR EXPR NOT REPRESENTED")
+        items = [LiteralEvaluation(pp, expr)]
+        if len(items) == 0:
+            itm_typ = None
+        else:
+            if (hasattr(items[0], "literal") and hasattr(items[0].literal, "typ")) or hasattr(items[0], "typ"):
+                if isinstance(items[0], LiteralEvaluation):
+                    itm_typ = items[0].literal.typ
+                else:
+                    itm_typ = items[0].typ
+            else:
+                itm_typ = None
+        return TupleDisplayAccess(pp, TupleLyraType(itm_typ), items)
+
     def visit_Lambda(self, node, types=None, libraries=None, typ=None, fname=''):
         """Visitor function for a lambda expression.
         the args attribute stores the arguments of the lambda expression.
