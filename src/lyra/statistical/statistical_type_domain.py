@@ -31,7 +31,10 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
     from enum import IntEnum
 
     class Status(IntEnum):
-        Top = 34
+        Top = 35
+
+        # Tensor
+        Tensor = 34
 
         # None
         NoneRet = 33
@@ -130,7 +133,8 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
             if (self.element == StatisticalTypeLattice.Status.Series
                     or self.element == StatisticalTypeLattice.Status.Numeric
                     or self.element == StatisticalTypeLattice.Status.String
-                    or self.element == StatisticalTypeLattice.Status.DataFrame):
+                    or self.element == StatisticalTypeLattice.Status.DataFrame
+                    or self.element == StatisticalTypeLattice.Status.Tensor):
                 return self
 
         elif self.element == StatisticalTypeLattice.Status.Series and other.element == StatisticalTypeLattice.Status.Numeric:
@@ -146,12 +150,13 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
     def _sub(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
         if self.is_bottom() or other.is_bottom():
             return self._replace(self.bottom())
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Series:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Series))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Numeric:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Numeric))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.DataFrame:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame))
+        elif self.element == other.element:
+            if (self.element == StatisticalTypeLattice.Status.Series
+                    or self.element == StatisticalTypeLattice.Status.Numeric
+                    or self.element == StatisticalTypeLattice.Status.String
+                    or self.element == StatisticalTypeLattice.Status.DataFrame
+                    or self.element == StatisticalTypeLattice.Status.Tensor):
+                return self
         return self._replace(self.top())
 
     def _mult(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
@@ -172,23 +177,23 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
     def _div(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
         if self.is_bottom() or other.is_bottom():
             return self._replace(self.bottom())
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Series:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.RatioSeries))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Numeric:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Numeric))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.DataFrame:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame))
+        elif self.element == other.element:
+            if self.element == StatisticalTypeLattice.Status.Series:
+                return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.RatioSeries))
+            elif (self.element == StatisticalTypeLattice.Status.Numeric
+                    or self.element == StatisticalTypeLattice.Status.DataFrame
+                    or self.element == StatisticalTypeLattice.Status.Tensor):
+                return self
         return self._replace(self.top())
 
     def _mod(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
         if self.is_bottom() or other.is_bottom():
             return self._replace(self.bottom())
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Series:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Series))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Numeric:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Numeric))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.DataFrame:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame))
+        elif self.element == other.element:
+            if (self.element == StatisticalTypeLattice.Status.Series
+                    or self.element == StatisticalTypeLattice.Status.Numeric
+                    or self.element == StatisticalTypeLattice.Status.DataFrame):
+                return self
         return self._replace(self.top())
 
     def _concat(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
@@ -259,6 +264,8 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.OneHotEncoder)
         elif json == 'LabelEncoder':
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.LabelEncoder)
+        elif json == 'Tensor':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.Tensor)
         elif json == 'Top':
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.Top)
         return StatisticalTypeLattice()
@@ -371,7 +378,8 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
              StatisticalTypeLattice.Status.DataFrame,
              StatisticalTypeLattice.Status.Tuple,
              StatisticalTypeLattice.Status.Set,
-             StatisticalTypeLattice.Status.Dict
+             StatisticalTypeLattice.Status.Dict,
+             StatisticalTypeLattice.Status.Tensor
              )
         return s
 

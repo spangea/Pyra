@@ -10,6 +10,7 @@ Lyra's internal semantics of statements.
 
 import itertools
 import re
+import torch
 from copy import deepcopy
 import pandas
 import numpy
@@ -258,6 +259,12 @@ class CallSemantics(Semantics):
                     name = '{}_class_call_semantics'.format(stmt.name)
                 elif hasattr(numpy, stmt.name):                # Library call
                     name = '{}_numpy_library_call_semantics'.format(stmt.name)
+                stmt.arguments.pop(0)
+            elif stmt.arguments[0].library == "torch":
+                if hasattr(torch, stmt.arguments[0].name):  # Class call
+                    name = '{}_class_call_semantics'.format(stmt.name)
+                elif hasattr(torch, stmt.name):  # Library call
+                    name = '{}_torch_library_call_semantics'.format(stmt.name)
                 stmt.arguments.pop(0)
             elif stmt.arguments[0].library == "matplotlib.pyplot":
                 if hasattr(matplotlib.pyplot, stmt.arguments[0].name):     # Class call
