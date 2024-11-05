@@ -14,6 +14,7 @@ import torch
 from copy import deepcopy
 import pandas
 import numpy
+import seaborn
 import matplotlib.pyplot
 
 from lyra.abstract_domains.state import State
@@ -259,6 +260,12 @@ class CallSemantics(Semantics):
                     name = '{}_class_call_semantics'.format(stmt.name)
                 elif hasattr(numpy, stmt.name):                # Library call
                     name = '{}_numpy_library_call_semantics'.format(stmt.name)
+                stmt.arguments.pop(0)
+            elif stmt.arguments[0].library == "seaborn":
+                if hasattr(seaborn, stmt.arguments[0].name):     # Class call
+                    name = '{}_class_call_semantics'.format(stmt.name)
+                elif hasattr(seaborn, stmt.name):                # Library call
+                    name = '{}_seaborn_library_call_semantics'.format(stmt.name)
                 stmt.arguments.pop(0)
             elif stmt.arguments[0].library == "torch":
                 if hasattr(torch, stmt.arguments[0].name):  # Class call
