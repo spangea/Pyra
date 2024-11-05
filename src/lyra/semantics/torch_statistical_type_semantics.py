@@ -88,5 +88,11 @@ class TorchStatisticalTypeSemantics:
     ) -> StatisticalTypeState:
         return self.acosh_call_semantics(stmt, state, interpreter)
 
+    def backward_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.NoneRet}
+        return state
+
 
 
