@@ -94,5 +94,11 @@ class TorchStatisticalTypeSemantics:
         state.result = {StatisticalTypeLattice.Status.NoneRet}
         return state
 
+    def clip_grad_norm__call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.Tensor}
+        return state
+
 
 
