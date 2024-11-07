@@ -1618,3 +1618,22 @@ class BinaryComparisonOperation(BinaryOperation):
         :param forloop: whether the call happens in a for loop condition (default: False)
         """
         super().__init__(typ, left, operator, right, forloop)
+
+
+class LambdaExpression(Expression):
+    def __init__(self, pp):
+        """Lambda expression representation.
+
+        :param args: the formal parameters of the lambda expression
+        """
+        self._pp = pp
+
+    def __eq__(self, other: 'LambdaExpression'):
+        return self._pp == other._pp
+
+    def __hash__(self):
+        return hash(self._pp)
+
+    def __str__(self):
+        return "LYRA: LAMBDA EXPRESSION NOT REPRESENTED"
+

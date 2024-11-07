@@ -497,6 +497,7 @@ class PandasStatisticalTypeSemantics:
             utilities.is_Series(state, caller)
             or utilities.is_DataFrame(state, caller)
             or utilities.is_Numeric(state, caller)
+            or utilities.is_Tensor(state, caller)
         ):
             return self.return_same_type_as_caller(stmt, state, interpreter)
         else:

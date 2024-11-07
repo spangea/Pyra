@@ -5,13 +5,13 @@ import typing
 from typing import Any
 
 from lyra.core.cfg import *
-from lyra.core.expressions import Literal, Identifier, AttributeIdentifier
+from lyra.core.expressions import *
 from lyra.core.statements import *
 from lyra.core.types import IntegerLyraType, BooleanLyraType, resolve_type_annotation, \
     FloatLyraType, ListLyraType, TupleLyraType, StringLyraType, DictLyraType, SetLyraType, \
     DataFrameLyraType, AttributeAccessLyraType, NoneLyraType, TopLyraType
 from lyra.visualization.graph_renderer import CFGRenderer
-from lyra.core.statements import AccessField, Assert
+from lyra.core.statements import AttributeAccess, Assert
 
 
 class LooseControlFlowGraph:
@@ -421,17 +421,28 @@ class CFGVisitor(ast.NodeVisitor):
                 itm_typ = None
         return ListDisplayAccess(pp, ListLyraType(itm_typ), items)
 
+    def visit_GeneratorExp(self, node, types=None, libraries=None, typ=None, fname=''):
+        pp = ProgramPoint(node.lineno, node.col_offset)
+        expr = Literal(TopLyraType(), "LYRA: GENERATOR EXPR NOT REPRESENTED")
+        items = [LiteralEvaluation(pp, expr)]
+        if len(items) == 0:
+            itm_typ = None
+        else:
+            if (hasattr(items[0], "literal") and hasattr(items[0].literal, "typ")) or hasattr(items[0], "typ"):
+                if isinstance(items[0], LiteralEvaluation):
+                    itm_typ = items[0].literal.typ
+                else:
+                    itm_typ = items[0].typ
+            else:
+                itm_typ = None
+        return TupleDisplayAccess(pp, TupleLyraType(itm_typ), items)
+
     def visit_Lambda(self, node, types=None, libraries=None, typ=None, fname=''):
         """Visitor function for a lambda expression.
         the args attribute stores the arguments of the lambda expression.
         the body attribute stores the body of the lambda expression."""
         pp = ProgramPoint(node.lineno, node.col_offset)
-        args = []
-        for arg in node.args.args:
-            types[arg.arg] = TopLyraType
-            args.append(arg.arg)
-        body = self.visit(node.body, types, libraries, typ, fname)
-        return LambdaExpression(pp, args, body)
+        return LambdaExpression(pp)
 
     def visit_Slice(self, node, types=None, libraries=None, typ=None, fname=''):
         pp = ProgramPoint(node.lineno, node.col_offset)
@@ -553,6 +564,11 @@ class CFGVisitor(ast.NodeVisitor):
                 _name = name
             else:
                 _name = name.replace(fname + '#', '')
+            if name not in types:
+                if typ:
+                    types[name] = typ
+                else:
+                    types[name] = Any
             # assert _name in types
             # assert types[name] == typ or typ is None
             expr = VariableIdentifier(types[_name], _name)
@@ -855,7 +871,7 @@ class CFGVisitor(ast.NodeVisitor):
             else:
                 _typ = TopLyraType
             target = self.visit(node.value, types, libraries, [_typ, typ], fname=fname)
-            if isinstance(target, AccessField):
+            if isinstance(target, AttributeAccess):
                 return SubscriptionAccess(pp, None, target, key)
             if isinstance(target.typ, DictLyraType):
                 return SubscriptionAccess(pp, target.typ.val_typ, target, key)
@@ -1091,7 +1107,7 @@ class CFGVisitor(ast.NodeVisitor):
                 target_typ = TopLyraType
                 # error = "The type of the target {} is not yet determinable!".format(iterated)
                 # raise NotImplementedError(error)
-        elif isinstance(iterated, AccessField):
+        elif isinstance(iterated, AttributeAccess):
             target_typ = TopLyraType
         elif isinstance(iterated, SlicingAccess):
             target_typ = TopLyraType

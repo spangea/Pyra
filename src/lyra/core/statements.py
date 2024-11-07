@@ -333,6 +333,7 @@ class AttributeAccess(ExpressionAccess):
         super().__init__(pp, typ)
         self._target: Statement = target
         self._attr: AttributeIdentifier = attr
+        self.name = str(target) + "." + str(attr)
 
     @property
     def target(self):
@@ -516,32 +517,6 @@ class Keyword(Statement):
         return "{}={}".format(self.name, self.value)
 
 
-class AccessField(Statement):
-    # TODO: check if compatible with AttributeAccess
-    def __init__(self, pp, left: Statement, right: str, typ: LyraType=Any):
-        """Access field representation.
-
-        :param pp: program point associated with the access field expression
-        :param left: the left-hand side expression
-        :param right: the right-hand side expression
-        """
-        super().__init__(pp)
-        self._left: Statement = left
-        self._right: str = right
-        self.typ: LyraType = typ
-        self.name = str(left) + "." + str(right)
-
-    @property
-    def left(self):
-        return self._left
-
-    @property
-    def right(self):
-        return self._right
-
-    def __repr__(self):
-        return "{}.{}".format(self.left, self.right)
-
 class Assert(Statement):
     def __init__(self, pp):
         """Assert statement representation.
@@ -567,20 +542,3 @@ class Delete(Statement):
 
     def __repr__(self):
         return "delete {}".format(", ".join("{}".format(target) for target in self._targets))
-
-
-class LambdaExpression(Statement):
-    # TODO: Check if this should be a statement or an expression
-    def __init__(self, pp, args, body):
-        """Lambda expression statement representation.
-
-        :param pp: program point associated with the raise
-        :param args: the formal parameters of the lambda expression
-        :param body: the body of the lambda expression
-        """
-        super().__init__(pp)
-        self._args = args
-        self._body = body
-
-    def __repr__(self):
-        return "lambda {} : {}".format(", ".join("{}".format(arg) for arg in self._args), self._body)

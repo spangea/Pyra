@@ -176,6 +176,27 @@ def is_CatSeries(state, caller):
         return True
     return False
 
+def is_Tensor(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.store[caller] == StatisticalTypeLattice(
+                StatisticalTypeLattice.Status.Tensor
+            ):
+                return True
+    elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
+        if caller in state.store and state.store[caller] == StatisticalTypeLattice(
+            StatisticalTypeLattice.Status.Tensor
+        ):
+            return True
+    elif (
+        isinstance(caller, StatisticalTypeLattice.Status)
+        and caller == StatisticalTypeLattice.Status.Tensor
+    ):
+        return True
+    return False
+
 def is_ExpSeries(state, caller):
     if isinstance(caller, VariableAccess):
         caller = caller.variable

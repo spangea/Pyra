@@ -18,6 +18,7 @@ from lyra.core.types import LyraType, SequenceLyraType, ContainerLyraType, DictL
     IntegerLyraType, DataFrameLyraType
 from lyra.core.utils import copy_docstring
 
+import copy
 
 class Store(EnvironmentMixin):
     """Mutable element of a store ``Var -> L``,
@@ -177,7 +178,39 @@ class Store(EnvironmentMixin):
 
     @copy_docstring(Lattice._join)
     def _join(self, other: 'Store') -> 'Store':
-        """The join is performed point-wise for each variable."""
+        """The join is performed point-wise for each variable,
+        if a variable is not in one of the store,
+        it will be added it."""
+
+        # Get variables in store
+        store_vars = set(self.store.keys())
+        other_vars = set(other.store.keys())
+        length_vars = set(self.lengths.keys())
+        other_length_vars = set(other.lengths.keys())
+        key_vars = set(self.keys.keys())
+        other_key_vars = set(other.keys.keys())
+        value_vars = set(self.values.keys())
+        other_value_vars = set(other.values.keys())
+
+        # Add relative missing variables to both self and other
+        for var in other_vars - store_vars:
+            self.store[var] = copy.deepcopy(other.store[var])
+        for var in other_length_vars - length_vars:
+            self.lengths[var] = copy.deepcopy(other.lengths[var])
+        for var in other_key_vars - key_vars:
+            self.keys[var] = copy.deepcopy(other.keys[var])
+        for var in other_value_vars - value_vars:
+            self.values[var] = copy.deepcopy(other.values[var])
+
+        for var in store_vars - other_vars:
+            other.store[var] = copy.deepcopy(self.store[var])
+        for var in length_vars - other_length_vars:
+            other.lengths[var] = copy.deepcopy(self.lengths[var])
+        for var in key_vars - other_key_vars:
+            other.keys[var] = copy.deepcopy(self.keys[var])
+        for var in value_vars - other_value_vars:
+            other.values[var] = copy.deepcopy(self.values[var])
+
         for var in self.store:
             self.store[var].join(other.store[var])
         for var in self.lengths:

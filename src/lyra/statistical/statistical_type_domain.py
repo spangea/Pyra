@@ -17,7 +17,7 @@ from lyra.core.expressions import VariableIdentifier, Expression, ExpressionVisi
     KeysIdentifier, ValuesIdentifier, CastOperation
 from lyra.core.types import LyraType, BooleanLyraType, IntegerLyraType, FloatLyraType, \
     StringLyraType, ListLyraType, SequenceLyraType, SetLyraType, TupleLyraType, DictLyraType, \
-    ContainerLyraType, DataFrameLyraType, SeriesLyraType, NoneLyraType
+    ContainerLyraType, DataFrameLyraType, SeriesLyraType, NoneLyraType, TopLyraType
 from lyra.core.utils import copy_docstring
 
 from lyra.abstract_domains.basis import BasisWithSummarization
@@ -31,7 +31,10 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
     from enum import IntEnum
 
     class Status(IntEnum):
-        Top = 34
+        Top = 35
+
+        # Tensor
+        Tensor = 34
 
         # None
         NoneRet = 33
@@ -130,7 +133,8 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
             if (self.element == StatisticalTypeLattice.Status.Series
                     or self.element == StatisticalTypeLattice.Status.Numeric
                     or self.element == StatisticalTypeLattice.Status.String
-                    or self.element == StatisticalTypeLattice.Status.DataFrame):
+                    or self.element == StatisticalTypeLattice.Status.DataFrame
+                    or self.element == StatisticalTypeLattice.Status.Tensor):
                 return self
 
         elif self.element == StatisticalTypeLattice.Status.Series and other.element == StatisticalTypeLattice.Status.Numeric:
@@ -146,12 +150,13 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
     def _sub(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
         if self.is_bottom() or other.is_bottom():
             return self._replace(self.bottom())
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Series:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Series))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Numeric:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Numeric))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.DataFrame:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame))
+        elif self.element == other.element:
+            if (self.element == StatisticalTypeLattice.Status.Series
+                    or self.element == StatisticalTypeLattice.Status.Numeric
+                    or self.element == StatisticalTypeLattice.Status.String
+                    or self.element == StatisticalTypeLattice.Status.DataFrame
+                    or self.element == StatisticalTypeLattice.Status.Tensor):
+                return self
         return self._replace(self.top())
 
     def _mult(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
@@ -172,23 +177,23 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
     def _div(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
         if self.is_bottom() or other.is_bottom():
             return self._replace(self.bottom())
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Series:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.RatioSeries))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Numeric:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Numeric))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.DataFrame:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame))
+        elif self.element == other.element:
+            if self.element == StatisticalTypeLattice.Status.Series:
+                return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.RatioSeries))
+            elif (self.element == StatisticalTypeLattice.Status.Numeric
+                    or self.element == StatisticalTypeLattice.Status.DataFrame
+                    or self.element == StatisticalTypeLattice.Status.Tensor):
+                return self
         return self._replace(self.top())
 
     def _mod(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
         if self.is_bottom() or other.is_bottom():
             return self._replace(self.bottom())
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Series:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Series))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Numeric:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Numeric))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.DataFrame:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame))
+        elif self.element == other.element:
+            if (self.element == StatisticalTypeLattice.Status.Series
+                    or self.element == StatisticalTypeLattice.Status.Numeric
+                    or self.element == StatisticalTypeLattice.Status.DataFrame):
+                return self
         return self._replace(self.top())
 
     def _concat(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
@@ -259,6 +264,8 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.OneHotEncoder)
         elif json == 'LabelEncoder':
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.LabelEncoder)
+        elif json == 'Tensor':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.Tensor)
         elif json == 'Top':
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.Top)
         return StatisticalTypeLattice()
@@ -371,7 +378,8 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
              StatisticalTypeLattice.Status.DataFrame,
              StatisticalTypeLattice.Status.Tuple,
              StatisticalTypeLattice.Status.Set,
-             StatisticalTypeLattice.Status.Dict
+             StatisticalTypeLattice.Status.Dict,
+             StatisticalTypeLattice.Status.Tensor
              )
         return s
 
@@ -537,10 +545,17 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
                           stacklevel=2)
         return self
 
-    def _assign_accessfield(self, left: Subscription, right: Expression) -> 'StatisticalTypeState':
+    def _assign_attributeaccess(self, left: Subscription, right: Expression) -> 'StatisticalTypeState':
         evaluation = self._evaluation.visit(right, self, dict())
         typ = StatisticalTypeLattice.from_lyra_type(left.typ)
-        self.store[left] = evaluation[right].meet(typ)
+        if left.target.variable in self.store and self.store[left.target.variable].element == StatisticalTypeLattice.Status.DataFrame \
+            and left.attr.name == "columns" and evaluation[right]._less_equal(StatisticalTypeLattice(StatisticalTypeLattice.Status.List)):
+            for c in right.items:
+                # Create subscription for each column and save them as Series in the abstract state
+                if Subscription(TopLyraType, left.target, c) not in self.store:
+                    self.store[Subscription(TopLyraType, left.target, c)] = StatisticalTypeLattice(StatisticalTypeLattice.Status.Series)
+        else:
+            self.store[left] = evaluation[right].meet(typ)
         if evaluation[right].element == StatisticalTypeLattice.Status.NoneRet:
             warnings.warn(f"Assignment to None type for variable {left.name} @ line {self.pp}",
                           NoneRetAssignmentWarning,
