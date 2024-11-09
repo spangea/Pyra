@@ -1028,13 +1028,13 @@ class StatisticalTypeSemantics(
             if not isinstance(arg, Keyword):
                 if utilities.is_NormSeries(state, arg):
                     warnings.warn(
-                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> Data should be normalized after the split method",
+                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} @ column {stmt.pp.column} -> Data should be normalized after the split method",
                         category=NormalizedData,
                         stacklevel=2,
                     )
                 elif utilities.is_StdSeries(state, arg):
                     warnings.warn(
-                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> Data should be standardized after the split method",
+                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} @ column {stmt.pp.column} -> Data should be standardized after the split method",
                         category=StandardizedData,
                         stacklevel=2,
                     )
