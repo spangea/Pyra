@@ -197,6 +197,29 @@ def is_Tensor(state, caller):
         return True
     return False
 
+def is_SplittedData(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.store[caller] in {
+                StatisticalTypeLattice(StatisticalTypeLattice.Status.SplittedTrainData),
+                StatisticalTypeLattice(StatisticalTypeLattice.Status.SplittedTestData),
+            }:
+                return True
+    elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
+        if caller in state.store and state.store[caller] in {
+            StatisticalTypeLattice(StatisticalTypeLattice.Status.SplittedTrainData),
+            StatisticalTypeLattice(StatisticalTypeLattice.Status.SplittedTestData),
+        }:
+            return True
+    elif isinstance(caller, StatisticalTypeLattice.Status) and caller in {
+        StatisticalTypeLattice.Status.SplittedTrainData,
+        StatisticalTypeLattice.Status.SplittedTestData,
+    }:
+        return True
+    return False
+
 def is_ExpSeries(state, caller):
     if isinstance(caller, VariableAccess):
         caller = caller.variable

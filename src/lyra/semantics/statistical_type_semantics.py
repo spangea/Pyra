@@ -1038,18 +1038,7 @@ class StatisticalTypeSemantics(
                         category=StandardizedData,
                         stacklevel=2,
                     )
-
-                if utilities.is_Series(state, arg):
-                    types += tuple({StatisticalTypeLattice.Status.Series})
-                    types += tuple({StatisticalTypeLattice.Status.Series})
-                elif utilities.is_List(state, arg):
-                    types += tuple({StatisticalTypeLattice.Status.List})
-                    types += tuple({StatisticalTypeLattice.Status.List})
-                elif utilities.is_Array(state, arg):
-                    types += tuple({StatisticalTypeLattice.Status.Array})
-                    types += tuple({StatisticalTypeLattice.Status.Array})
-                else:
-                    types += tuple({StatisticalTypeLattice.Status.Top})
-                    types += tuple({StatisticalTypeLattice.Status.Top})
+                types += tuple({StatisticalTypeLattice.Status.SplittedTrainData})
+                types += tuple({StatisticalTypeLattice.Status.SplittedTestData})
         state.result = {types}
         return state

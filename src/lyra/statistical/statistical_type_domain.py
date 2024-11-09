@@ -31,10 +31,14 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
     from enum import IntEnum
 
     class Status(IntEnum):
-        Top = 35
+        Top = 37
 
         # Tensor
-        Tensor = 34
+        Tensor = 36
+
+        # Split Data
+        SplittedTestData = 35
+        SplittedTrainData = 34
 
         # None
         NoneRet = 33
@@ -266,6 +270,10 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.LabelEncoder)
         elif json == 'Tensor':
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.Tensor)
+        elif json == 'SplittedTestData':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.SplittedTestData)
+        elif json == 'SplittedTrainData':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.SplittedTrainData)
         elif json == 'Top':
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.Top)
         return StatisticalTypeLattice()
@@ -379,7 +387,9 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
              StatisticalTypeLattice.Status.Tuple,
              StatisticalTypeLattice.Status.Set,
              StatisticalTypeLattice.Status.Dict,
-             StatisticalTypeLattice.Status.Tensor
+             StatisticalTypeLattice.Status.Tensor,
+             StatisticalTypeLattice.Status.SplittedTrainData,
+             StatisticalTypeLattice.Status.SplittedTestData
              )
         return s
 
