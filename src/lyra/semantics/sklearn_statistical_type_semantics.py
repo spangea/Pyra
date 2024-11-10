@@ -1,4 +1,5 @@
 from lyra.core.statements import Call
+from lyra.core.statistical_warnings import FittedTestData
 
 from lyra.engine.forward import ForwardInterpreter
 
@@ -11,6 +12,10 @@ import lyra.semantics.utilities as utilities
 from lyra.core.statements import (
     Keyword
 )
+from lyra.semantics.utilities import SelfUtilitiesSemantics
+
+import warnings
+
 
 class SklearnTypeSemantics:
     def MaxAbsScaler_call_semantics(
@@ -34,6 +39,13 @@ class SklearnTypeSemantics:
     def fit_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
+        data = list(self.semantics(stmt.arguments[1], state, interpreter).result)[0]
+        if utilities.is_SplittedTestData(state, data):
+            warnings.warn(
+                f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> The fit method should be used on train data only.",
+                category=FittedTestData,
+                stacklevel=2,
+            )
         return self.return_same_type_as_caller(stmt, state, interpreter)
 
     def transform_call_semantics(
@@ -56,6 +68,15 @@ class SklearnTypeSemantics:
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
         caller = self.get_caller(stmt, state, interpreter)
+
+        data = list(self.semantics(stmt.arguments[1], state, interpreter).result)[0]
+        if utilities.is_SplittedTestData(state, data):
+            warnings.warn(
+                f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> The fit method should be used on train data only.",
+                category=FittedTestData,
+                stacklevel=2,
+            )
+
         if utilities.is_Scaler(state, caller):
             if state.get_type(caller) in {
                 StatisticalTypeLattice.Status.MinMaxScaler,

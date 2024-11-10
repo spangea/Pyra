@@ -37,8 +37,8 @@ from lyra.core.statistical_warnings import (
     CategoricalConversionMean,
     ScaledMean,
     CategoricalPlot,
-    NormalizedData,
-    StandardizedData
+    SplittedNormalizedData,
+    SplittedStandardizedData
 )
 
 from lyra.semantics.forward import DefaultForwardSemantics
@@ -1029,13 +1029,13 @@ class StatisticalTypeSemantics(
                 if utilities.is_NormSeries(state, arg):
                     warnings.warn(
                         f"Warning [definite]: in {stmt} @ line {stmt.pp.line} @ column {stmt.pp.column} -> Data should be normalized after the split method",
-                        category=NormalizedData,
+                        category=SplittedNormalizedData,
                         stacklevel=2,
                     )
                 elif utilities.is_StdSeries(state, arg):
                     warnings.warn(
                         f"Warning [definite]: in {stmt} @ line {stmt.pp.line} @ column {stmt.pp.column} -> Data should be standardized after the split method",
-                        category=StandardizedData,
+                        category=SplittedStandardizedData,
                         stacklevel=2,
                     )
                 types += tuple({StatisticalTypeLattice.Status.SplittedTrainData})
