@@ -574,6 +574,7 @@ def is_Encoder(state, caller):
                 StatisticalTypeLattice.Status.OneHotEncoder,
                 StatisticalTypeLattice.Status.LabelEncoder,
                 StatisticalTypeLattice.Status.LabelBinarizer,
+                StatisticalTypeLattice.Status.Encoder,
             }:
                 return True
     elif isinstance(caller, StatisticalTypeLattice.Status) and caller in {
@@ -581,6 +582,7 @@ def is_Encoder(state, caller):
         StatisticalTypeLattice.Status.OneHotEncoder,
         StatisticalTypeLattice.Status.LabelEncoder,
         StatisticalTypeLattice.Status.LabelBinarizer,
+        StatisticalTypeLattice.Status.Encoder,
     }:
         return True
     return False

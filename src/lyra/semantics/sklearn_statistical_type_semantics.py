@@ -120,3 +120,9 @@ class SklearnTypeSemantics:
     ) -> StatisticalTypeState:
         state.result = {StatisticalTypeLattice.Status.LabelBinarizer}
         return state
+
+    def Binarizer_call_semantics(
+        self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.Encoder}
+        return state
