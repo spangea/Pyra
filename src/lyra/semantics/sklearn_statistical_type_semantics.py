@@ -120,3 +120,75 @@ class SklearnTypeSemantics:
     ) -> StatisticalTypeState:
         state.result = {StatisticalTypeLattice.Status.LabelBinarizer}
         return state
+
+    def Binarizer_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.Binarizer}
+        return state
+
+    def FunctionTransformer_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.FunctionTransformer}
+        return state
+
+    def KBinsDiscretizer_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.KBinsDiscretizer}
+        return state
+
+    def KernelCenterer_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.KernelCenterer}
+        return state
+
+    def MultiLabelBinarizer_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.MultiLabelBinarizer}
+        return state
+
+    def Normalizer_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.Normalizer}
+        return state
+
+    def PolynomialFeatures_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.PolynomialFeatures}
+        return state
+
+    def PowerTransformer_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.PowerTransformer}
+        return state
+
+    def QuantileTransformer_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.QuantileTransformer}
+        return state
+
+    def RobustScaler_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.RobustScaler}
+        return state
+
+    def SplineTransformer_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.SplineTransformer}
+        return state
+
+    def TargetEncoder_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.TargetEncoder}
+        return state

@@ -553,12 +553,28 @@ def is_Scaler(state, caller):
                 StatisticalTypeLattice.Status.MinMaxScaler,
                 StatisticalTypeLattice.Status.MaxAbsScaler,
                 StatisticalTypeLattice.Status.StandardScaler,
+                StatisticalTypeLattice.Status.FunctionTransformer,
+                StatisticalTypeLattice.Status.KernelCenterer,
+                StatisticalTypeLattice.Status.Normalizer,
+                StatisticalTypeLattice.Status.PolynomialFeatures,
+                StatisticalTypeLattice.Status.PowerTransformer,
+                StatisticalTypeLattice.Status.QuantileTransformer,
+                StatisticalTypeLattice.Status.RobustScaler,
+                StatisticalTypeLattice.Status.SplineTransformer,
             }:
                 return True
     elif isinstance(caller, StatisticalTypeLattice.Status) and caller in {
         StatisticalTypeLattice.Status.MinMaxScaler,
         StatisticalTypeLattice.Status.MaxAbsScaler,
         StatisticalTypeLattice.Status.StandardScaler,
+        StatisticalTypeLattice.Status.FunctionTransformer,
+        StatisticalTypeLattice.Status.KernelCenterer,
+        StatisticalTypeLattice.Status.Normalizer,
+        StatisticalTypeLattice.Status.PolynomialFeatures,
+        StatisticalTypeLattice.Status.PowerTransformer,
+        StatisticalTypeLattice.Status.QuantileTransformer,
+        StatisticalTypeLattice.Status.RobustScaler,
+        StatisticalTypeLattice.Status.SplineTransformer,
     }:
         return True
     return False
@@ -574,6 +590,9 @@ def is_Encoder(state, caller):
                 StatisticalTypeLattice.Status.OneHotEncoder,
                 StatisticalTypeLattice.Status.LabelEncoder,
                 StatisticalTypeLattice.Status.LabelBinarizer,
+                StatisticalTypeLattice.Status.KBinsDiscretizer,
+                StatisticalTypeLattice.Status.MultiLabelBinarizer,
+                StatisticalTypeLattice.Status.TargetEncoder,
             }:
                 return True
     elif isinstance(caller, StatisticalTypeLattice.Status) and caller in {
@@ -581,6 +600,9 @@ def is_Encoder(state, caller):
         StatisticalTypeLattice.Status.OneHotEncoder,
         StatisticalTypeLattice.Status.LabelEncoder,
         StatisticalTypeLattice.Status.LabelBinarizer,
+        StatisticalTypeLattice.Status.KBinsDiscretizer,
+        StatisticalTypeLattice.Status.MultiLabelBinarizer,
+        StatisticalTypeLattice.Status.TargetEncoder,
     }:
         return True
     return False
