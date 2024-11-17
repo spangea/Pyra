@@ -31,28 +31,40 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
     from enum import IntEnum
 
     class Status(IntEnum):
-        Top = 37
+        Top = 49
 
         # Tensor
-        Tensor = 36
+        Tensor = 48
 
         # Split Data
-        SplittedTestData = 35
-        SplittedTrainData = 34
+        SplittedTestData = 47
+        SplittedTrainData = 46
 
         # None
-        NoneRet = 33
+        NoneRet = 45
 
         # Plot
-        Plot = 32
+        Plot = 44
 
         # Encoders
-        LabelBinarizer = 31
-        OrdinalEncoder = 30
-        OneHotEncoder = 29
-        LabelEncoder = 28
+        KBinsDiscretizer = 43
+        MultiLabelBinarizer = 42
+        TargetEncoder = 41
+        Binarizer = 40
+        LabelBinarizer = 39
+        OrdinalEncoder = 38
+        OneHotEncoder = 37
+        LabelEncoder = 36
 
         # Scalers
+        FunctionTransformer = 35
+        KernelCenterer = 34
+        Normalizer = 33
+        PolynomialFeatures = 32
+        PowerTransformer = 31
+        QuantileTransformer = 30
+        RobustScaler = 29
+        SplineTransformer = 28
         MaxAbsScaler = 27
         MinMaxScaler = 26
         StandardScaler = 25
@@ -262,12 +274,36 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.MinMaxScaler)
         elif json == 'StandardScaler':
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.StandardScaler)
+        elif json == 'KBinsDiscretizer':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.KBinsDiscretizer)
+        elif json == 'MultiLabelBinarizer':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.MultiLabelBinarizer)
+        elif json == 'TargetEncoder':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.TargetEncoder)
         elif json == 'OrdinalEncoder':
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.OrdinalEncoder)
+        elif json == 'Binarizer':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.Binarizer)
         elif json == 'OneHotEncoder':
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.OneHotEncoder)
         elif json == 'LabelEncoder':
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.LabelEncoder)
+        elif json == 'FunctionTransformer':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.FunctionTransformer)
+        elif json == 'KernelCenterer':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.KernelCenterer)
+        elif json == 'Normalizer':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.Normalizer)
+        elif json == 'PolynomialFeatures':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.PolynomialFeatures)
+        elif json == 'PowerTransformer':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.PowerTransformer)
+        elif json == 'QuantileTransformer':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.QuantileTransformer)
+        elif json == 'RobustScaler':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.RobustScaler)
+        elif json == 'SplineTransformer':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.SplineTransformer)
         elif json == 'Tensor':
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.Tensor)
         elif json == 'SplittedTestData':
@@ -376,13 +412,25 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
     def _atom_types(cls):
         s = (StatisticalTypeLattice.Status.NoneRet,
              StatisticalTypeLattice.Status.Plot,
+             StatisticalTypeLattice.Status.Binarizer,
              StatisticalTypeLattice.Status.LabelBinarizer,
              StatisticalTypeLattice.Status.OrdinalEncoder,
              StatisticalTypeLattice.Status.OneHotEncoder,
              StatisticalTypeLattice.Status.LabelEncoder,
+             StatisticalTypeLattice.Status.KBinsDiscretizer,
+             StatisticalTypeLattice.Status.MultiLabelBinarizer,
+             StatisticalTypeLattice.Status.TargetEncoder,
              StatisticalTypeLattice.Status.MaxAbsScaler,
              StatisticalTypeLattice.Status.MinMaxScaler,
              StatisticalTypeLattice.Status.StandardScaler,
+             StatisticalTypeLattice.Status.FunctionTransformer,
+             StatisticalTypeLattice.Status.KernelCenterer,
+             StatisticalTypeLattice.Status.Normalizer,
+             StatisticalTypeLattice.Status.PolynomialFeatures,
+             StatisticalTypeLattice.Status.PowerTransformer,
+             StatisticalTypeLattice.Status.QuantileTransformer,
+             StatisticalTypeLattice.Status.RobustScaler,
+             StatisticalTypeLattice.Status.SplineTransformer,
              StatisticalTypeLattice.Status.DataFrame,
              StatisticalTypeLattice.Status.Tuple,
              StatisticalTypeLattice.Status.Set,
