@@ -10,10 +10,10 @@ scaler = KernelCenterer()
 scaler.fit(df[['x']])
 # STATE: deanormalized_mean -> Top; df -> DataFrame; scaler -> KernelCenterer; wrong_normalized_mean -> Top; x -> NumericList
 df['x_normalized'] = scaler.transform(df[['x']])
-# STATE: deanormalized_mean -> Top; df -> DataFrame; df["x_normalized"] -> NormSeries; scaler -> KernelCenterer; wrong_normalized_mean -> Top; x -> NumericList
+# STATE: deanormalized_mean -> Top; df -> DataFrame; df["x_normalized"] -> StdSeries; scaler -> KernelCenterer; wrong_normalized_mean -> Top; x -> NumericList
 wrong_normalized_mean = df['x_normalized'].mean()
-# STATE: deanormalized_mean -> Top; df -> DataFrame; df["x_normalized"] -> NormSeries; scaler -> KernelCenterer; wrong_normalized_mean -> Numeric; x -> NumericList
+# STATE: deanormalized_mean -> Top; df -> DataFrame; df["x_normalized"] -> StdSeries; scaler -> KernelCenterer; wrong_normalized_mean -> Numeric; x -> NumericList
 deanormalized_mean = scaler.inverse_transform(df[['x_normalized']]).mean()
-# FINAL: deanormalized_mean -> Numeric; df -> DataFrame; df["x_normalized"] -> NormSeries; scaler -> KernelCenterer; wrong_normalized_mean -> Numeric; x -> NumericList
+# FINAL: deanormalized_mean -> Numeric; df -> DataFrame; df["x_normalized"] -> StdSeries; scaler -> KernelCenterer; wrong_normalized_mean -> Numeric; x -> NumericList
 
 # FIXME: check if transform and fit can be called like this

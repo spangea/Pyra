@@ -53,15 +53,16 @@ class SklearnTypeSemantics:
     ) -> StatisticalTypeState:
         caller = self.get_caller(stmt, state, interpreter)
         if utilities.is_Scaler(state, caller):
-            if state.get_type(caller) in {
-                StatisticalTypeLattice.Status.MinMaxScaler,
-                StatisticalTypeLattice.Status.MaxAbsScaler,
-            }:
+            if utilities.is_Normalizer(state, caller):
                 state.result = {StatisticalTypeLattice.Status.NormSeries}
-            elif state.get_type(caller) == StatisticalTypeLattice.Status.StandardScaler:
+            elif utilities.is_Standardizer(state, caller):
                 state.result = {StatisticalTypeLattice.Status.StdSeries}
+            else:
+                state.result = {StatisticalTypeLattice.Status.Series}
         elif utilities.is_Encoder(state, caller):  # FIXME: to_array might me needed
             state.result = {StatisticalTypeLattice.Status.CatSeries}
+        else:
+            state.result = {StatisticalTypeLattice.Status.Top}
         return state
 
     def fit_transform_call_semantics(
@@ -78,15 +79,16 @@ class SklearnTypeSemantics:
             )
 
         if utilities.is_Scaler(state, caller):
-            if state.get_type(caller) in {
-                StatisticalTypeLattice.Status.MinMaxScaler,
-                StatisticalTypeLattice.Status.MaxAbsScaler,
-            }:
+            if utilities.is_Normalizer(state, caller):
                 state.result = {StatisticalTypeLattice.Status.NormSeries}
-            elif state.get_type(caller) == StatisticalTypeLattice.Status.StandardScaler:
+            elif utilities.is_Standardizer(state, caller):
                 state.result = {StatisticalTypeLattice.Status.StdSeries}
+            else:
+                state.result = {StatisticalTypeLattice.Status.Series}
         elif utilities.is_Encoder(state, caller):  # FIXME: to_array might me needed
             state.result = {StatisticalTypeLattice.Status.CatSeries}
+        else:
+            state.result = {StatisticalTypeLattice.Status.Top}
         return state
 
     def inverse_transform_call_semantics(

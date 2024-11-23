@@ -580,6 +580,50 @@ def is_Scaler(state, caller):
     return False
 
 
+def is_Standardizer(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.get_type(caller) in {
+                StatisticalTypeLattice.Status.PowerTransformer,
+                StatisticalTypeLattice.Status.RobustScaler,
+                StatisticalTypeLattice.Status.StandardScaler,
+                StatisticalTypeLattice.Status.QuantileTransformer,
+                StatisticalTypeLattice.Status.KernelCenterer,
+            }:
+                return True
+    elif isinstance(caller, StatisticalTypeLattice.Status) and caller in {
+        StatisticalTypeLattice.Status.PowerTransformer,
+        StatisticalTypeLattice.Status.RobustScaler,
+        StatisticalTypeLattice.Status.StandardScaler,
+        StatisticalTypeLattice.Status.QuantileTransformer,
+        StatisticalTypeLattice.Status.KernelCenterer,
+    }:
+        return True
+    return False
+
+
+def is_Normalizer(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.get_type(caller) in {
+                StatisticalTypeLattice.Status.MaxAbsScaler,
+                StatisticalTypeLattice.Status.MinMaxScaler,
+                StatisticalTypeLattice.Status.Normalizer,
+            }:
+                return True
+    elif isinstance(caller, StatisticalTypeLattice.Status) and caller in {
+        StatisticalTypeLattice.Status.MaxAbsScaler,
+        StatisticalTypeLattice.Status.MinMaxScaler,
+        StatisticalTypeLattice.Status.Normalizer,
+    }:
+        return True
+    return False
+
+
 def is_Encoder(state, caller):
     if isinstance(caller, VariableAccess):
         caller = caller.variable
