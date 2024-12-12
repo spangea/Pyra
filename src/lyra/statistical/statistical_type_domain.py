@@ -31,43 +31,48 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
     from enum import IntEnum
 
     class Status(IntEnum):
-        Top = 49
+        Top = 52
 
         # Tensor
-        Tensor = 48
+        Tensor = 51
 
         # Split Data
-        SplittedTestData = 47
-        SplittedTrainData = 46
+        SplittedTestData = 50
+        SplittedTrainData = 49
 
         # None
-        NoneRet = 45
+        NoneRet = 48
 
         # Plot
-        Plot = 44
+        Plot = 47
+
+        # Feature Selection
+        FeatureSelector = 46
+        FeatureSelected = 45
 
         # Encoders
-        KBinsDiscretizer = 43
-        MultiLabelBinarizer = 42
-        TargetEncoder = 41
-        Binarizer = 40
-        LabelBinarizer = 39
-        OrdinalEncoder = 38
-        OneHotEncoder = 37
-        LabelEncoder = 36
+        KBinsDiscretizer = 44
+        MultiLabelBinarizer = 43
+        TargetEncoder = 42
+        Binarizer = 41
+        LabelBinarizer = 40
+        OrdinalEncoder = 39
+        OneHotEncoder = 38
+        LabelEncoder = 37
 
         # Scalers
-        FunctionTransformer = 35
-        KernelCenterer = 34
-        Normalizer = 33
-        PolynomialFeatures = 32
-        PowerTransformer = 31
-        QuantileTransformer = 30
-        RobustScaler = 29
-        SplineTransformer = 28
-        MaxAbsScaler = 27
-        MinMaxScaler = 26
-        StandardScaler = 25
+        FunctionTransformer = 36
+        KernelCenterer = 35
+        Normalizer = 34
+        PolynomialFeatures = 33
+        PowerTransformer = 32
+        QuantileTransformer = 31
+        RobustScaler = 30
+        SplineTransformer = 29
+        MaxAbsScaler = 28
+        MinMaxScaler = 27
+        StandardScaler = 26
+        Scaled = 25
 
         # Scalar
         Scalar = 24
@@ -304,12 +309,18 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.RobustScaler)
         elif json == 'SplineTransformer':
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.SplineTransformer)
+        elif json == 'Scaled':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.Scaled)
         elif json == 'Tensor':
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.Tensor)
         elif json == 'SplittedTestData':
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.SplittedTestData)
         elif json == 'SplittedTrainData':
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.SplittedTrainData)
+        elif json == ('FeatureSelector'):
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.FeatureSelector)
+        elif json == 'FeatureSelected':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.FeatureSelected)
         elif json == 'Top':
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.Top)
         return StatisticalTypeLattice()
@@ -431,13 +442,16 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
              StatisticalTypeLattice.Status.QuantileTransformer,
              StatisticalTypeLattice.Status.RobustScaler,
              StatisticalTypeLattice.Status.SplineTransformer,
+             StatisticalTypeLattice.Status.Scaled,
              StatisticalTypeLattice.Status.DataFrame,
              StatisticalTypeLattice.Status.Tuple,
              StatisticalTypeLattice.Status.Set,
              StatisticalTypeLattice.Status.Dict,
              StatisticalTypeLattice.Status.Tensor,
              StatisticalTypeLattice.Status.SplittedTrainData,
-             StatisticalTypeLattice.Status.SplittedTestData
+             StatisticalTypeLattice.Status.SplittedTestData,
+             StatisticalTypeLattice.Status.FeatureSelector,
+             StatisticalTypeLattice.Status.FeatureSelected
              )
         return s
 

@@ -25,11 +25,5 @@ class SpecialAttributeAccessWarning(UserWarning):
 class CategoricalPlot(UserWarning):
     pass
 
-class SplittedNormalizedData(UserWarning):
-    pass
-
-class SplittedStandardizedData(UserWarning):
-    pass
-
-class FittedTestData(UserWarning):
+class DataLeakage(UserWarning):
     pass

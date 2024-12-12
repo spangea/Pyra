@@ -651,6 +651,50 @@ def is_Encoder(state, caller):
         return True
     return False
 
+def is_FeatureSelected(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.get_type(caller) in {
+                StatisticalTypeLattice.Status.FeatureSelected
+            }:
+                return True
+    elif isinstance(caller, StatisticalTypeLattice.Status) and caller in {
+        StatisticalTypeLattice.Status.FeatureSelected
+    }:
+        return True
+    return False
+
+def is_FeatureSelector(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.get_type(caller) in {
+                StatisticalTypeLattice.Status.FeatureSelector
+            }:
+                return True
+    elif isinstance(caller, StatisticalTypeLattice.Status) and caller in {
+        StatisticalTypeLattice.Status.FeatureSelector
+    }:
+        return True
+    return False
+
+def is_Scaled(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.get_type(caller) in {
+                StatisticalTypeLattice.Status.Scaled
+            }:
+                return True
+    elif isinstance(caller, StatisticalTypeLattice.Status) and caller in {
+        StatisticalTypeLattice.Status.Scaled
+    }:
+        return True
+    return False
 
 def is_Top(state, caller):
     if caller in state.store and state.store[caller].is_top():

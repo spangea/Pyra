@@ -1,5 +1,5 @@
 from lyra.core.statements import Call
-from lyra.core.statistical_warnings import FittedTestData
+
 
 from lyra.engine.forward import ForwardInterpreter
 
@@ -13,6 +13,10 @@ from lyra.core.statements import (
     Keyword
 )
 from lyra.semantics.utilities import SelfUtilitiesSemantics
+
+from lyra.core.statistical_warnings import (
+    DataLeakage
+)
 
 import warnings
 
@@ -43,7 +47,7 @@ class SklearnTypeSemantics:
         if utilities.is_SplittedTestData(state, data):
             warnings.warn(
                 f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> The fit method should be used on train data only.",
-                category=FittedTestData,
+                category=DataLeakage,
                 stacklevel=2,
             )
         return self.return_same_type_as_caller(stmt, state, interpreter)
@@ -58,9 +62,11 @@ class SklearnTypeSemantics:
             elif utilities.is_Standardizer(state, caller):
                 state.result = {StatisticalTypeLattice.Status.StdSeries}
             else:
-                state.result = {StatisticalTypeLattice.Status.Series}
+                state.result = {StatisticalTypeLattice.Status.Scaled}
         elif utilities.is_Encoder(state, caller):  # FIXME: to_array might me needed
             state.result = {StatisticalTypeLattice.Status.CatSeries}
+        elif utilities.is_FeatureSelector(state, caller):
+            state.result = {StatisticalTypeLattice.Status.FeatureSelected}
         else:
             state.result = {StatisticalTypeLattice.Status.Top}
         return state
@@ -74,7 +80,7 @@ class SklearnTypeSemantics:
         if utilities.is_SplittedTestData(state, data):
             warnings.warn(
                 f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> The fit method should be used on train data only.",
-                category=FittedTestData,
+                category=DataLeakage,
                 stacklevel=2,
             )
 
@@ -84,9 +90,11 @@ class SklearnTypeSemantics:
             elif utilities.is_Standardizer(state, caller):
                 state.result = {StatisticalTypeLattice.Status.StdSeries}
             else:
-                state.result = {StatisticalTypeLattice.Status.Series}
+                state.result = {StatisticalTypeLattice.Status.Scaled}
         elif utilities.is_Encoder(state, caller):  # FIXME: to_array might me needed
             state.result = {StatisticalTypeLattice.Status.CatSeries}
+        elif utilities.is_FeatureSelector(state, caller):
+            state.result = {StatisticalTypeLattice.Status.FeatureSelected}
         else:
             state.result = {StatisticalTypeLattice.Status.Top}
         return state
@@ -193,4 +201,76 @@ class SklearnTypeSemantics:
             self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
         state.result = {StatisticalTypeLattice.Status.TargetEncoder}
+        return state
+
+    def GenericUnivariateSelect_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.FeatureSelector}
+        return state
+
+    def RFE_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.FeatureSelector}
+        return state
+
+    def RFECV_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.FeatureSelector}
+        return state
+
+    def SelectFdr_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.FeatureSelector}
+        return state
+
+    def SelectFpr_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.FeatureSelector}
+        return state
+
+    def SelectFromModel_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.FeatureSelector}
+        return state
+
+    def SelectFwe_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.FeatureSelector}
+        return state
+
+    def SelectKBest_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.FeatureSelector}
+        return state
+
+    def SelectPercentile_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.FeatureSelector}
+        return state
+
+    def SelectorMixin_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.FeatureSelector}
+        return state
+
+    def SequentialFeatureSelector_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.FeatureSelector}
+        return state
+
+    def VarianceThreshold_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        state.result = {StatisticalTypeLattice.Status.FeatureSelector}
         return state
