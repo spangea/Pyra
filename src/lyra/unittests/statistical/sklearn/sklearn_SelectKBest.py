@@ -7,5 +7,5 @@ df = pd.DataFrame(x, columns=['x'])
 # STATE: df -> DataFrame; featureSelector -> Top; featureSelectorFitted -> Top; x -> NumericList
 featureSelector = SelectKBest()
 # STATE: df -> DataFrame; featureSelector -> FeatureSelector; featureSelectorFitted -> Top; x -> NumericList
-featureSelectorFitted = featureSelector.fit_transform(df[['x']])
+featureSelectorFitted = featureSelector.fit_transform(df[['x']], [0,1,0,0,0])
 # FINAL: df -> DataFrame; featureSelector -> FeatureSelector; featureSelectorFitted -> FeatureSelected; x -> NumericList

@@ -74,30 +74,14 @@ class SklearnTypeSemantics:
     def fit_transform_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
-        caller = self.get_caller(stmt, state, interpreter)
-
         data = list(self.semantics(stmt.arguments[1], state, interpreter).result)[0]
         if utilities.is_SplittedTestData(state, data):
             warnings.warn(
-                f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> The fit method should be used on train data only.",
+                f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> The fit_transform method should be used on train data only.",
                 category=DataLeakage,
                 stacklevel=2,
             )
-
-        if utilities.is_Scaler(state, caller):
-            if utilities.is_Normalizer(state, caller):
-                state.result = {StatisticalTypeLattice.Status.NormSeries}
-            elif utilities.is_Standardizer(state, caller):
-                state.result = {StatisticalTypeLattice.Status.StdSeries}
-            else:
-                state.result = {StatisticalTypeLattice.Status.Scaled}
-        elif utilities.is_Encoder(state, caller):  # FIXME: to_array might me needed
-            state.result = {StatisticalTypeLattice.Status.CatSeries}
-        elif utilities.is_FeatureSelector(state, caller):
-            state.result = {StatisticalTypeLattice.Status.FeatureSelected}
-        else:
-            state.result = {StatisticalTypeLattice.Status.Top}
-        return state
+        return self.transform_call_semantics(stmt, state, interpreter)
 
     def inverse_transform_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
