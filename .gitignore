@@ -99,7 +99,7 @@ ENV/
 # examples
 /src/lyra/tests/example.py
 /src/lyra/tests/tmp_test.py
-
+/src/lyra/tests/data.csv
 
 # mac
 .DS_Store
