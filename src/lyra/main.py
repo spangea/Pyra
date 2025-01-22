@@ -13,7 +13,7 @@ from lyra.engine.numerical.sign_analysis import ForwardSignAnalysis
 from lyra.engine.assumption.assumption_analysis import ForwardTypeAnalysis
 from lyra.engine.assumption.assumption_analysis import ForwardStatisticalTypeAnalysis
 from lyra.statistical.annotate import annotate
-
+import lyra.config as config
 
 def main():
     """Static analyzer entry point."""
@@ -34,6 +34,7 @@ def main():
         help='use the results of the ForwardStatisticalTypeAnalysis to annotate the code',
         action='store_true')
     args = parser.parse_args()
+    config.args = args
 
     if args.analysis == 'intervals':
         ForwardIntervalAnalysisWithSummarization().main(args.python_file)
