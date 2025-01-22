@@ -667,6 +667,26 @@ class PandasStatisticalTypeSemantics:
     def read_csv_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
+        try:
+            dir = Path(config.args.python_file).parent
+            fun_args = []
+            fun_kwargs = {}
+            for a in stmt.arguments:
+                if hasattr(a, "literal"):
+                    fun_args.append(a.literal.val)
+                elif "=" in str(a):
+                    key, value = str(a).split("=")
+                    fun_kwargs[key] = value
+                else:
+                    raise Exception("Unexpected argument type")
+            fun_args[0] = os.path.join(dir, fun_args[0])
+            concrete_df = pd.read_csv(fun_args[0], **fun_kwargs)
+            info = concrete_df.dtypes
+        except:
+            print("It was not possible to read the concrete DataFrame")
+        # TODO: Use concrete_df to update the state of each column
+        # dtypes for the type of each column
+        # and .describe() for a descriptive statistics
         state.result = {StatisticalTypeLattice.Status.DataFrame}
         return state
 
