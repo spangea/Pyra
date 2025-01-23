@@ -442,7 +442,7 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
 def resolve(typ: LyraType) -> StatisticalTypeLattice.Status:
     _typ = typ
     # FIXME: this part is useless for our domain
-    """ 
+    """
     while isinstance(_typ, (ListLyraType, TupleLyraType, SetLyraType, DictLyraType)):
         if isinstance(_typ, (ListLyraType, SetLyraType)):
             _typ = _typ.typ
@@ -505,7 +505,21 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
     def replace(self, variable: VariableIdentifier, expression: Expression) -> 'StatisticalTypeState':
         pass
 
+    def _add_series_with_dtypes(self, df_info, caller):
+        df_info = dict(df_info)
+        for col, dtype in df_info.items():
+            if str(dtype) in ['int64', 'float64']:
+                self._assign(Subscription(None, caller, Literal(StringLyraType(), col)), StatisticalTypeLattice.Status.NumericSeries)
+            elif str(dtype) == 'object':
+                self._assign(Subscription(None, caller, Literal(StringLyraType(), col)), StatisticalTypeLattice.Status.CatSeries)
+            else:
+                raise ValueError(f"Unexpected dtype: {dtype}")
+
     def _assign_variable(self, left: VariableIdentifier, right: Expression) -> 'StatisticalTypeState':
+        if type(right) == tuple:    # Only used to gather concrete information about DataFrames when read_csv is called
+            assert len(right) == 2 and type(right[1]) == frozenset
+            self._add_series_with_dtypes(right[1], left)    # No return, just side effect
+            right = right[0]                                # Continue with the actual assignment as usual
         evaluation = self._evaluation.visit(right, self, dict())
         typ = StatisticalTypeLattice.from_lyra_type(left.typ)
         # Deep copy are needed because meet has side effects
@@ -693,7 +707,7 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
             return evaluation
 
         """
-        Using BasisWithSummarization.ExpressionEvaluation 
+        Using BasisWithSummarization.ExpressionEvaluation
         per non essere forzato ad implementare i metodi che seguono
         (altrimenti estendere ExpressionVisitor)
 

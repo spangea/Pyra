@@ -681,13 +681,13 @@ class PandasStatisticalTypeSemantics:
                     raise Exception("Unexpected argument type")
             fun_args[0] = os.path.join(dir, fun_args[0])
             concrete_df = pd.read_csv(fun_args[0], **fun_kwargs)
-            info = concrete_df.dtypes
-        except:
-            print("It was not possible to read the concrete DataFrame")
-        # TODO: Use concrete_df to update the state of each column
-        # dtypes for the type of each column
-        # and .describe() for a descriptive statistics
-        state.result = {StatisticalTypeLattice.Status.DataFrame}
+            info = {}
+            for col in concrete_df.columns:
+                info[col] = concrete_df[col].dtype
+            state.result = {(StatisticalTypeLattice.Status.DataFrame, frozenset(info.items()))}
+        except Exception as e:
+            print("It was not possible to read the concrete DataFrame due to error: ", e)
+            state.result = {StatisticalTypeLattice.Status.DataFrame}
         return state
 
     def DataFrame_call_semantics(
