@@ -14,7 +14,7 @@ from lyra.core.expressions import VariableIdentifier, Expression, ExpressionVisi
     Input, ListDisplay, Range, AttributeReference, Subscription, Slicing, \
     UnaryArithmeticOperation, BinaryArithmeticOperation, LengthIdentifier, TupleDisplay, \
     SetDisplay, DictDisplay, BinarySequenceOperation, BinaryComparisonOperation, Keys, Values, \
-    KeysIdentifier, ValuesIdentifier, CastOperation
+    KeysIdentifier, ValuesIdentifier, CastOperation, Status
 from lyra.core.types import LyraType, BooleanLyraType, IntegerLyraType, FloatLyraType, \
     StringLyraType, ListLyraType, SequenceLyraType, SetLyraType, TupleLyraType, DictLyraType, \
     ContainerLyraType, DataFrameLyraType, SeriesLyraType, NoneLyraType, TopLyraType
@@ -505,11 +505,22 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
     def replace(self, variable: VariableIdentifier, expression: Expression) -> 'StatisticalTypeState':
         pass
 
-    def _add_series_with_dtypes(self, df_info, caller):
-        df_info = dict(df_info)
-        for col, dtype in df_info.items():
+    def _add_series_with_dtypes(self, caller, df_info_dtypes, df_info_sorting):
+        df_info_dtypes = dict(df_info_dtypes)
+        df_info_sorting = dict(df_info_sorting)
+        for col, dtype in df_info_dtypes.items():
             if str(dtype) in ['int64', 'float64']:
-                self._assign(Subscription(None, caller, Literal(StringLyraType(), col)), StatisticalTypeLattice.Status.NumericSeries)
+                if col in df_info_sorting:
+                    if df_info_sorting[col] == "constant":
+                        self._assign(Subscription(None, caller, Literal(StringLyraType(), col),Status.YES, Status.YES), StatisticalTypeLattice.Status.NumericSeries)
+                    elif df_info_sorting[col] == "increasing":
+                        self._assign(Subscription(None, caller, Literal(StringLyraType(), col),Status.YES, Status.NO), StatisticalTypeLattice.Status.NumericSeries)
+                    elif df_info_sorting[col] == "decreasing":
+                        self._assign(Subscription(None, caller, Literal(StringLyraType(), col), Status.NO, Status.YES), StatisticalTypeLattice.Status.NumericSeries)
+                    elif df_info_sorting[col] == "not_sorted":
+                        self._assign(Subscription(None, caller, Literal(StringLyraType(), col), Status.NO, Status.NO), StatisticalTypeLattice.Status.NumericSeries)
+                else:
+                    self._assign(Subscription(None, caller, Literal(StringLyraType(), col)), StatisticalTypeLattice.Status.NumericSeries)
             elif str(dtype) == 'object':
                 self._assign(Subscription(None, caller, Literal(StringLyraType(), col)), StatisticalTypeLattice.Status.CatSeries)
             else:
@@ -517,8 +528,18 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
 
     def _assign_variable(self, left: VariableIdentifier, right: Expression) -> 'StatisticalTypeState':
         if type(right) == tuple:    # Only used to gather concrete information about DataFrames when read_csv is called
-            assert len(right) == 2 and type(right[1]) == frozenset
-            self._add_series_with_dtypes(right[1], left)    # No return, just side effect
+            # It tuple has the following structure
+            # {(StatisticalTypeLattice.Status.DataFrame, frozenset(dtype_info.items()), is_high_dim, has_duplicates, frozenset(sorting_info.items()))}
+            assert len(right) == 5
+            self._add_series_with_dtypes(left, right[1], right[4])    # No return, just side effect
+            if right[2] == True:
+                left.is_high_dimensionality = Status.YES
+            else:
+                left.is_high_dimensionality = Status.NO
+            if right[3] == True:
+                left.has_duplicates = Status.YES
+            else:
+                left.has_duplicates = Status.NO
             right = right[0]                                # Continue with the actual assignment as usual
         evaluation = self._evaluation.visit(right, self, dict())
         typ = StatisticalTypeLattice.from_lyra_type(left.typ)

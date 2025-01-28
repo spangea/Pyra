@@ -681,10 +681,29 @@ class PandasStatisticalTypeSemantics:
                     raise Exception("Unexpected argument type")
             fun_args[0] = os.path.join(dir, fun_args[0])
             concrete_df = pd.read_csv(fun_args[0], **fun_kwargs)
-            info = {}
+            shape = concrete_df.shape
+            # The concrete dataframe is high dimensional if the number of columns is similar to the number of rows
+            # e.g. they are not the dobule of each other
+            if shape[0] < 2 * shape[1]:
+                is_high_dim = True
+            else:
+                is_high_dim = False
+            has_duplicates = concrete_df.duplicated().any()
+            dtype_info = {}
             for col in concrete_df.columns:
-                info[col] = concrete_df[col].dtype
-            state.result = {(StatisticalTypeLattice.Status.DataFrame, frozenset(info.items()))}
+                dtype_info[col] = concrete_df[col].dtype
+            # For each Series check if it is increasing or decreasing
+            sorting_info = {}
+            for col in concrete_df.columns:
+                if concrete_df[col].is_monotonic_increasing and concrete_df[col].is_monotonic_decreasing:
+                    sorting_info[col] = "constant"
+                elif concrete_df[col].is_monotonic_increasing:
+                    sorting_info[col] = "increasing"
+                elif concrete_df[col].is_monotonic_decreasing:
+                    sorting_info[col] = "decreasing"
+                else:
+                    sorting_info[col] = "not_sorted"
+            state.result = {(StatisticalTypeLattice.Status.DataFrame, frozenset(dtype_info.items()), is_high_dim, has_duplicates, frozenset(sorting_info.items()))}
         except Exception as e:
             print("It was not possible to read the concrete DataFrame due to error: ", e)
             state.result = {StatisticalTypeLattice.Status.DataFrame}
