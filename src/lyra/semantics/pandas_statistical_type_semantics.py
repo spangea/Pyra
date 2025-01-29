@@ -2,9 +2,14 @@ import os
 import pandas as pd
 from pathlib import Path
 import lyra.config as config
+import warnings
+
+from lyra.core.statistical_warnings import (
+    InappropriateMissingValuesWarning
+)
 from lyra.core.expressions import (
     Subscription,
-    Input, VariableIdentifier,
+    Input, VariableIdentifier, Status
 )
 from lyra.core.statements import (
     Call,
@@ -760,6 +765,23 @@ class PandasStatisticalTypeSemantics:
     def fillna_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
+        caller = self.get_caller(stmt, state, interpreter)
+        if utilities.is_DataFrame(state, caller) and isinstance(caller, VariableIdentifier):
+            caller_to_print = caller if not isinstance(caller, StatisticalTypeLattice.Status) else stmt
+            if caller in state.variables:
+                caller = next((x for x in state.variables if x == caller))
+            if caller.is_small == Status.NO:
+                warnings.warn(
+                    f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} has many instances, therefore handling missing values with fillna might change the distribution.",
+                    category=InappropriateMissingValuesWarning,
+                    stacklevel=2,
+                )
+            else:
+                warnings.warn(
+                    f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} may have few instances, but handling missing values with fillna might change the distribution.",
+                    category=InappropriateMissingValuesWarning,
+                    stacklevel=2,
+                )
         if utilities.is_inplace(stmt.arguments):
             self.semantics_without_inplace(stmt, state, interpreter)
             state.result = {StatisticalTypeLattice.Status.NoneRet}

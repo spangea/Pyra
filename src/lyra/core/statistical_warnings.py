@@ -24,3 +24,5 @@ class SpecialAttributeAccessWarning(UserWarning):
 
 class CategoricalPlot(UserWarning):
     pass
+class InappropriateMissingValuesWarning(UserWarning):
+    pass
