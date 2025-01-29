@@ -688,6 +688,10 @@ class PandasStatisticalTypeSemantics:
                 is_high_dim = True
             else:
                 is_high_dim = False
+            if len(concrete_df) <= 100:
+                is_small = True
+            else:
+                is_small = False
             has_duplicates = concrete_df.duplicated().any()
             dtype_info = {}
             for col in concrete_df.columns:
@@ -703,7 +707,7 @@ class PandasStatisticalTypeSemantics:
                     sorting_info[col] = "decreasing"
                 else:
                     sorting_info[col] = "not_sorted"
-            state.result = {(StatisticalTypeLattice.Status.DataFrame, frozenset(dtype_info.items()), is_high_dim, has_duplicates, frozenset(sorting_info.items()))}
+            state.result = {(StatisticalTypeLattice.Status.DataFrame, frozenset(dtype_info.items()), is_high_dim, has_duplicates, is_small, frozenset(sorting_info.items()))}
         except Exception as e:
             print("It was not possible to read the concrete DataFrame due to error: ", e)
             state.result = {StatisticalTypeLattice.Status.DataFrame}

@@ -529,9 +529,9 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
     def _assign_variable(self, left: VariableIdentifier, right: Expression) -> 'StatisticalTypeState':
         if type(right) == tuple:    # Only used to gather concrete information about DataFrames when read_csv is called
             # It tuple has the following structure
-            # {(StatisticalTypeLattice.Status.DataFrame, frozenset(dtype_info.items()), is_high_dim, has_duplicates, frozenset(sorting_info.items()))}
-            assert len(right) == 5
-            self._add_series_with_dtypes(left, right[1], right[4])    # No return, just side effect
+            # {(StatisticalTypeLattice.Status.DataFrame, frozenset(dtype_info.items()), is_high_dim, has_duplicates, is_small, frozenset(sorting_info.items()))}
+            assert len(right) == 6
+            self._add_series_with_dtypes(left, right[1], right[5])    # No return, just side effect
             if right[2] == True:
                 left.is_high_dimensionality = Status.YES
             else:
@@ -540,6 +540,13 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
                 left.has_duplicates = Status.YES
             else:
                 left.has_duplicates = Status.NO
+            if right[4] == True:
+                left.is_small = Status.YES
+            else:
+                left.is_small = Status.NO
+            if left in self.variables:
+                self.variables.remove(left)
+            self.variables.add(left)
             right = right[0]                                # Continue with the actual assignment as usual
         evaluation = self._evaluation.visit(right, self, dict())
         typ = StatisticalTypeLattice.from_lyra_type(left.typ)

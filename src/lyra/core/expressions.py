@@ -715,6 +715,7 @@ class VariableIdentifier(Identifier):
         super().__init__(typ, name, special=False)
         self._is_high_dimensionality = Status.MAYBE
         self._has_duplicates = Status.MAYBE
+        self._is_small = Status.MAYBE
 
     @property
     def has_length(self):
@@ -769,6 +770,16 @@ class VariableIdentifier(Identifier):
         if not isinstance(value, Status):
             raise ValueError("Value must be an instance of Status Enum")
         self._has_duplicates = value
+
+    @property
+    def is_small(self):
+        return self._is_small
+
+    @is_small.setter
+    def is_small(self, value: Status):
+        if not isinstance(value, Status):
+            raise ValueError("Value must be an instance of Status Enum")
+        self._is_small = value
 
 class LengthIdentifier(Identifier):
     """Sequence or collection length representation."""
