@@ -491,6 +491,11 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
         arguments = StatisticalTypeState.Status()
         super().__init__(variables, lattices, arguments)
         InputMixin.__init__(self, precursory)
+        self._subscriptions = set()  # Initialize _subscriptions
+
+    @property
+    def subscriptions(self):
+        return self._subscriptions
 
     def _weak_update(self, variables: Set[VariableIdentifier], previous: 'StateWithSummarization'):
         for var in variables:
@@ -512,17 +517,23 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
             if str(dtype) in ['int64', 'float64']:
                 if col in df_info_sorting:
                     if df_info_sorting[col] == "constant":
-                        self._assign(Subscription(None, caller, Literal(StringLyraType(), col),Status.YES, Status.YES), StatisticalTypeLattice.Status.NumericSeries)
+                        sub = Subscription(None, caller, Literal(StringLyraType(), col),Status.YES, Status.YES)
+                        self._assign(sub, StatisticalTypeLattice.Status.NumericSeries)
                     elif df_info_sorting[col] == "increasing":
-                        self._assign(Subscription(None, caller, Literal(StringLyraType(), col),Status.YES, Status.NO), StatisticalTypeLattice.Status.NumericSeries)
+                        sub = Subscription(None, caller, Literal(StringLyraType(), col),Status.YES, Status.NO)
+                        self._assign(sub, StatisticalTypeLattice.Status.NumericSeries)
                     elif df_info_sorting[col] == "decreasing":
-                        self._assign(Subscription(None, caller, Literal(StringLyraType(), col), Status.NO, Status.YES), StatisticalTypeLattice.Status.NumericSeries)
+                        sub = Subscription(None, caller, Literal(StringLyraType(), col), Status.NO, Status.YES)
+                        self._assign(sub, StatisticalTypeLattice.Status.NumericSeries)
                     elif df_info_sorting[col] == "not_sorted":
-                        self._assign(Subscription(None, caller, Literal(StringLyraType(), col), Status.NO, Status.NO), StatisticalTypeLattice.Status.NumericSeries)
+                        sub = Subscription(None, caller, Literal(StringLyraType(), col), Status.NO, Status.NO)
+                        self._assign(sub, StatisticalTypeLattice.Status.NumericSeries)
                 else:
-                    self._assign(Subscription(None, caller, Literal(StringLyraType(), col)), StatisticalTypeLattice.Status.NumericSeries)
+                    sub = Subscription(None, caller, Literal(StringLyraType(), col))
+                    self._assign(sub, StatisticalTypeLattice.Status.NumericSeries)
             elif str(dtype) == 'object':
-                self._assign(Subscription(None, caller, Literal(StringLyraType(), col)), StatisticalTypeLattice.Status.CatSeries)
+                sub = Subscription(None, caller, Literal(StringLyraType(), col))
+                self._assign(sub, StatisticalTypeLattice.Status.CatSeries)
             else:
                 raise ValueError(f"Unexpected dtype: {dtype}")
 
@@ -588,6 +599,9 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
         if evaluation[right].element == StatisticalTypeLattice.Status.NoneRet:
             warnings.warn(f"Assignment to None type for variable {left.name} @ line {self.pp}", NoneRetAssignmentWarning,
                           stacklevel=2)
+        if left in self.subscriptions:
+            self.subscriptions.remove(left)
+        self.subscriptions.add(left)
         return self
 
     def _assign_attributeaccess(self, left: Subscription, right: Expression) -> 'StatisticalTypeState':
