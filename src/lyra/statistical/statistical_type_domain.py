@@ -31,7 +31,10 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
     from enum import IntEnum
 
     class Status(IntEnum):
-        Top = 35
+        Top = 36
+
+        # Transformations
+        PCA = 35
 
         # Tensor
         Tensor = 34

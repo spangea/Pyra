@@ -1,4 +1,4 @@
-from lyra.core.statements import Call
+from lyra.core.statements import Call, Keyword
 
 from lyra.engine.forward import ForwardInterpreter
 
@@ -8,6 +8,8 @@ from lyra.statistical.statistical_type_domain import (
 )
 import lyra.semantics.utilities as utilities
 
+from lyra.core.statistical_warnings import FixedNComponentsPCAWarning
+import warnings
 
 class SklearnTypeSemantics:
     def MaxAbsScaler_call_semantics(
@@ -95,4 +97,25 @@ class SklearnTypeSemantics:
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
         state.result = {StatisticalTypeLattice.Status.LabelBinarizer}
+        return state
+
+    def PCA_call_semantics(
+        self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        args = stmt.arguments
+        for a in args:
+            if isinstance(a, Keyword) and a.name == "n_components":
+                if type(a.value) in (int, float):   # Constant number
+                    warnings.warn(
+                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> n_components is {a.value}, this might be a wrong assumption. It may be better to run multiple experiments.",
+                        category=FixedNComponentsPCAWarning,
+                        stacklevel=2,
+                    )
+                elif interpreter.warning_level == "possible":
+                    warnings.warn(
+                        f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> n_components might be a wrong assumption. It may be better to run multiple experiments.",
+                        category=FixedNComponentsPCAWarning,
+                        stacklevel=2,
+                    )
+        state.result = {StatisticalTypeLattice.Status.PCA}
         return state

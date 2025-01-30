@@ -29,3 +29,6 @@ class InappropriateMissingValuesWarning(UserWarning):
 
 class HighDimensionalityWarning(UserWarning):
     pass
+
+class FixedNComponentsPCAWarning(UserWarning):
+    pass
