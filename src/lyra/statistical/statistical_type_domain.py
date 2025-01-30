@@ -22,7 +22,7 @@ from lyra.core.utils import copy_docstring
 
 from lyra.abstract_domains.basis import BasisWithSummarization
 
-from lyra.core.statistical_warnings import TypeChangedWarning, InconsistentTypeWarning, NoneRetAssignmentWarning
+from lyra.core.statistical_warnings import TypeChangedWarning, InconsistentTypeWarning, NoneRetAssignmentWarning, HighDimensionalityWarning
 
 # TODO: Check correctness and update documentation and operators
 
@@ -534,6 +534,9 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
             self._add_series_with_dtypes(left, right[1], right[5])    # No return, just side effect
             if right[2] == True:
                 left.is_high_dimensionality = Status.YES
+                warnings.warn(
+                    f"Warning: {left.name} is high dimensional. Feature selection/engineering or dimensionality reduction may be necessary.",
+                    category=HighDimensionalityWarning, stacklevel=2)
             else:
                 left.is_high_dimensionality = Status.NO
             if right[3] == True:

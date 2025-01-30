@@ -26,3 +26,6 @@ class CategoricalPlot(UserWarning):
     pass
 class InappropriateMissingValuesWarning(UserWarning):
     pass
+
+class HighDimensionalityWarning(UserWarning):
+    pass
