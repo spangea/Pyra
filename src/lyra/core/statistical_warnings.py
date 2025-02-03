@@ -32,3 +32,6 @@ class HighDimensionalityWarning(UserWarning):
 
 class FixedNComponentsPCAWarning(UserWarning):
     pass
+
+class ReproducibilityWarning(UserWarning):
+    pass

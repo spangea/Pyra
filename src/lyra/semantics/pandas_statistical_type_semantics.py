@@ -5,7 +5,8 @@ import lyra.config as config
 import warnings
 
 from lyra.core.statistical_warnings import (
-    InappropriateMissingValuesWarning
+    InappropriateMissingValuesWarning,
+    ReproducibilityWarning
 )
 from lyra.core.expressions import (
     Subscription,
@@ -228,6 +229,18 @@ class PandasStatisticalTypeSemantics:
     def sample_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
+        is_reproducible = False
+        for arg in stmt.arguments:
+            if isinstance(arg, Keyword) and arg.name == "random_state":
+                is_reproducible = True
+                break
+        if not is_reproducible:
+            warnings.warn(
+                f"Warning [definirte]: in {stmt} @ line {stmt.pp.line} the random state is not set, the experiment might not be reproducible.",
+                category=ReproducibilityWarning,
+                stacklevel=2,
+            )
+
         return self.return_same_type_as_caller(stmt, state, interpreter)
 
     def where_call_semantics(
