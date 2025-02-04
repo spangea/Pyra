@@ -494,7 +494,7 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
         arguments = StatisticalTypeState.Status()
         super().__init__(variables, lattices, arguments)
         InputMixin.__init__(self, precursory)
-        self._subscriptions = set()  # Initialize _subscriptions
+        self._subscriptions = dict() # Initialize _subscriptions as a dictionary
 
     @property
     def subscriptions(self):
@@ -541,30 +541,12 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
                 raise ValueError(f"Unexpected dtype: {dtype}")
 
     def _assign_variable(self, left: VariableIdentifier, right: Expression) -> 'StatisticalTypeState':
+        right_copy_ = None
         if type(right) == tuple:    # Only used to gather concrete information about DataFrames when read_csv is called
-            # It tuple has the following structure
-            # {(StatisticalTypeLattice.Status.DataFrame, frozenset(dtype_info.items()), is_high_dim, has_duplicates, is_small, frozenset(sorting_info.items()))}
             assert len(right) == 6
-            self._add_series_with_dtypes(left, right[1], right[5])    # No return, just side effect
-            if right[2] == True:
-                left.is_high_dimensionality = Status.YES
-                warnings.warn(
-                    f"Warning: {left.name} is high dimensional. Feature selection/engineering or dimensionality reduction may be necessary.",
-                    category=HighDimensionalityWarning, stacklevel=2)
-            else:
-                left.is_high_dimensionality = Status.NO
-            if right[3] == True:
-                left.has_duplicates = Status.YES
-            else:
-                left.has_duplicates = Status.NO
-            if right[4] == True:
-                left.is_small = Status.YES
-            else:
-                left.is_small = Status.NO
-            if left in self.variables:
-                self.variables.remove(left)
-            self.variables.add(left)
-            right = right[0]                                # Continue with the actual assignment as usual
+            right_copy_ = deepcopy(right)    # This is necessary because we need left information before adding the Series
+            right = right[0]
+        # Continue with the actual assignment as usual
         evaluation = self._evaluation.visit(right, self, dict())
         typ = StatisticalTypeLattice.from_lyra_type(left.typ)
         # Deep copy are needed because meet has side effects
@@ -593,6 +575,27 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
             else:
                 self.keys[left.keys] = deepcopy(evaluation[right]).meet(deepcopy(typ))
                 self.values[left.values] = deepcopy(evaluation[right]).meet(deepcopy(typ))
+        if right_copy_:
+            right = right_copy_
+            # It tuple has the following structure
+            # {(StatisticalTypeLattice.Status.DataFrame, frozenset(dtype_info.items()), is_high_dim, has_duplicates, is_small, frozenset(sorting_info.items()))}
+            self._add_series_with_dtypes(left, right[1], right[5])  # No return, just side effect
+            if right[2] == True:
+                left.is_high_dimensionality = Status.YES
+                warnings.warn(
+                    f"Warning: {left.name} is high dimensional. Feature selection/engineering or dimensionality reduction may be necessary.",
+                    category=HighDimensionalityWarning, stacklevel=2)
+            else:
+                left.is_high_dimensionality = Status.NO
+            if right[3] == True:
+                left.has_duplicates = Status.YES
+            else:
+                left.has_duplicates = Status.NO
+            if right[4] == True:
+                left.is_small = Status.YES
+            else:
+                left.is_small = Status.NO
+            self.variables.add(left)
         return self
 
     def _assign_subscription(self, left: Subscription, right: Expression) -> 'StatisticalTypeState':
@@ -602,9 +605,11 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
         if evaluation[right].element == StatisticalTypeLattice.Status.NoneRet:
             warnings.warn(f"Assignment to None type for variable {left.name} @ line {self.pp}", NoneRetAssignmentWarning,
                           stacklevel=2)
-        if left in self.subscriptions:
-            self.subscriptions.remove(left)
-        self.subscriptions.add(left)
+        target = left.target
+        if target in self.variables and target in self.store and self.store[target].element == StatisticalTypeLattice.Status.DataFrame:
+            if target not in self._subscriptions:
+                self._subscriptions[target] = set()
+            self._subscriptions[target].add(left)
         return self
 
     def _assign_attributeaccess(self, left: Subscription, right: Expression) -> 'StatisticalTypeState':
@@ -614,8 +619,10 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
             and left.attr.name == "columns" and evaluation[right]._less_equal(StatisticalTypeLattice(StatisticalTypeLattice.Status.List)):
             for c in right.items:
                 # Create subscription for each column and save them as Series in the abstract state
-                if Subscription(TopLyraType, left.target, c) not in self.store:
-                    self.store[Subscription(TopLyraType, left.target, c)] = StatisticalTypeLattice(StatisticalTypeLattice.Status.Series)
+                sub = Subscription(TopLyraType, left.target, c)
+                if sub not in self.store:
+                    self.store[sub] = StatisticalTypeLattice(StatisticalTypeLattice.Status.Series)
+                    self.subscriptions[left.target].add(sub)
         else:
             self.store[left] = evaluation[right].meet(typ)
         if evaluation[right].element == StatisticalTypeLattice.Status.NoneRet:
@@ -730,6 +737,8 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
                 if variable.is_dictionary:
                     del self.keys[variable.keys]
                     del self.values[variable.values]
+            if variable in self.subscriptions:
+                del self.subscriptions[variable]
             return self
         except:
             print("Could not remove variable", variable)
