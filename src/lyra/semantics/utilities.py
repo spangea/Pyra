@@ -31,6 +31,17 @@ from lyra.statistical.statistical_type_domain import (
 )
 import typing
 
+def is_PCA(state, caller):
+    if isinstance(caller, VariableAccess):
+        caller = caller.variable
+    if isinstance(caller, VariableIdentifier):
+        if caller in state.store and not state.store[caller].is_top():
+            if state.get_type(caller) == StatisticalTypeLattice.Status.PCA:
+                return True
+    elif isinstance(caller, StatisticalTypeLattice.Status) and \
+        caller == StatisticalTypeLattice.Status.PCA:
+        return True
+    return False
 
 def is_DataFrame(state, caller):
     if isinstance(caller, VariableAccess):
