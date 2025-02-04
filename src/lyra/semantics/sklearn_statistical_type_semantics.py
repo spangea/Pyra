@@ -8,7 +8,15 @@ from lyra.statistical.statistical_type_domain import (
 )
 import lyra.semantics.utilities as utilities
 
-from lyra.core.statistical_warnings import FixedNComponentsPCAWarning
+from lyra.core.expressions import (
+    VariableIdentifier
+)
+
+from lyra.core.statements import (
+    VariableAccess
+)
+
+from lyra.core.statistical_warnings import FixedNComponentsPCAWarning, PCAOnCategoricalWarning
 import warnings
 
 class SklearnTypeSemantics:
@@ -33,7 +41,34 @@ class SklearnTypeSemantics:
     def fit_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
+        caller = self.get_caller(stmt, state, interpreter)
+        if utilities.is_PCA(state, caller):
+            self.issue_pca_warnings(stmt, state, interpreter)
         return self.return_same_type_as_caller(stmt, state, interpreter)
+
+    def issue_pca_warnings(self, stmt, state, interpreter):
+        warning_raised = False
+        caller = self.get_caller(stmt, state, interpreter)
+        if utilities.is_PCA(state, caller) and state.get_type(caller) == StatisticalTypeLattice.Status.PCA:
+            arg = stmt.arguments[1]
+            if utilities.is_DataFrame(state, arg) and isinstance(arg, VariableAccess) and arg.variable in state.variables:
+                for e in state.variables:
+                    if e == arg.variable and e in state.subscriptions:
+                        for sub in state.subscriptions[e]:
+                            if sub in state.store and state.get_type(sub) == StatisticalTypeLattice.Status.CatSeries:
+                                warnings.warn(
+                                    f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> PCA is applied to Dataframe containing a categorical Series, it is better to use MixedPCA.",
+                                    category=PCAOnCategoricalWarning,
+                                    stacklevel=2,
+                                )
+                                warning_raised = True
+                                break
+                if not warning_raised and interpreter.warning_level == "possible":
+                    warnings.warn(
+                        f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> PCA might be applied to Dataframe containing a categorical Series, it is better to use MixedPCA.",
+                        category=PCAOnCategoricalWarning,
+                        stacklevel=2,
+                    )
 
     def transform_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
@@ -49,6 +84,8 @@ class SklearnTypeSemantics:
                 state.result = {StatisticalTypeLattice.Status.StdSeries}
         elif utilities.is_Encoder(state, caller):  # FIXME: to_array might me needed
             state.result = {StatisticalTypeLattice.Status.CatSeries}
+        elif utilities.is_PCA(state, caller):
+            self.issue_pca_warnings(stmt, state, interpreter)
         return state
 
     def fit_transform_call_semantics(
@@ -65,6 +102,8 @@ class SklearnTypeSemantics:
                 state.result = {StatisticalTypeLattice.Status.StdSeries}
         elif utilities.is_Encoder(state, caller):  # FIXME: to_array might me needed
             state.result = {StatisticalTypeLattice.Status.CatSeries}
+        elif utilities.is_PCA(state, caller):
+            self.issue_pca_warnings(stmt, state, interpreter)
         return state
 
     def inverse_transform_call_semantics(

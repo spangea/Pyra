@@ -35,3 +35,6 @@ class FixedNComponentsPCAWarning(UserWarning):
 
 class ReproducibilityWarning(UserWarning):
     pass
+
+class PCAOnCategoricalWarning(UserWarning):
+    pass
