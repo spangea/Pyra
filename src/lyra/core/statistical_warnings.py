@@ -38,3 +38,6 @@ class ReproducibilityWarning(UserWarning):
 
 class PCAOnCategoricalWarning(UserWarning):
     pass
+
+class PCAVisualizationWarning(UserWarning):
+    pass

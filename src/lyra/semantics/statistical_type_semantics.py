@@ -36,7 +36,8 @@ from lyra.core.statistical_warnings import (
     GmeanWarning,
     CategoricalConversionMean,
     ScaledMeanWarning,
-    CategoricalPlotWarning
+    CategoricalPlotWarning,
+    PCAVisualizationWarning
 )
 
 from lyra.semantics.forward import DefaultForwardSemantics
@@ -504,6 +505,13 @@ class StatisticalTypeSemantics(
                         stacklevel=2,
                     )
             elif utilities.is_DataFrame(state, arg):
+                if isinstance(arg, VariableAccess):
+                    arg = arg.variable
+                if state.get_type(arg) == StatisticalTypeLattice.Status.DataFrameFromPCA:
+                    warnings.warn(
+                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a DataFrame resulted from PCA, t-SNE or UMAP might be a better choice for visualization.",
+                        stacklevel=2,
+                    )
                 if arg in state.subscriptions:
                     for sub in state.subscriptions[arg]:
                         if utilities.is_CatSeries(state, sub):
