@@ -503,6 +503,21 @@ class StatisticalTypeSemantics(
                         category=CategoricalPlot,
                         stacklevel=2,
                     )
+            elif utilities.is_DataFrame(state, arg):
+                if arg in state.subscriptions:
+                    for sub in state.subscriptions[arg]:
+                        if utilities.is_CatSeries(state, sub):
+                            warnings.warn(
+                                f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {sub} is a categorical Series, a bar plot should be used.",
+                                category=CategoricalPlot,
+                                stacklevel=2,
+                            )
+                        elif utilities.is_StringSeries(state, sub):
+                            warnings.warn(
+                                f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {sub} is a string Series, a bar plot should be used.",
+                                category=CategoricalPlot,
+                                stacklevel=2,
+                            )
         state.result = {StatisticalTypeLattice.Status.Plot}
         return state
 
