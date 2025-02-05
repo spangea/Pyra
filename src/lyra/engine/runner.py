@@ -17,14 +17,16 @@ from queue import Queue
 from typing import Dict, List, Set
 
 from lyra.core.cfg import Loop, ControlFlowGraph, Conditional, Edge, Node
-from lyra.core.expressions import VariableIdentifier, LengthIdentifier
+from lyra.core.expressions import VariableIdentifier, LengthIdentifier, Status
 from lyra.core.statements import Assignment, VariableAccess, Call, TupleDisplayAccess
 from lyra.core.types import SequenceLyraType, ContainerLyraType
 from lyra.engine.result import AnalysisResult
 from lyra.frontend.cfg_generator import ast_to_cfgs
 from lyra.frontend.cfg_generator import ast_to_fargs
 from lyra.visualization.graph_renderer import AnalysisResultRenderer
-
+from lyra.statistical.statistical_type_domain import StatisticalTypeState
+from lyra.core.statistical_warnings import DuplicatesNotDroppedWarning
+import warnings
 
 class Runner:
     """Analysis runner."""
@@ -100,6 +102,15 @@ class Runner:
     def run(self, fname: str = '') -> AnalysisResult:
         start = time.time()
         result = self.interpreter().analyze(self.cfgs[fname], self.state())
+        if isinstance(self.state(), StatisticalTypeState):
+            last_node_results = list(result.get_node_result(self.cfgs[fname].out_node).values())[0]
+            assert len(last_node_results) == 1
+            last_node_results_state = last_node_results[0]
+            for v in last_node_results_state.variables:
+                if v.has_duplicates == Status.YES:
+                    warnings.warn(
+                    f"Warning: At the and of the program {v} still has duplicates that were not dropped, using drop_duplicates() might be necessary.",
+                    category=DuplicatesNotDroppedWarning, stacklevel=2)
         end = time.time()
         print('Time: {}s'.format(end - start))
         self.render(result)

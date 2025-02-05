@@ -19,6 +19,7 @@ from lyra.core.statements import (
     LiteralEvaluation,
     ListDisplayAccess,
     TupleDisplayAccess,
+    VariableAccess
 )
 from lyra.core.types import (
     TopLyraType,
@@ -190,6 +191,24 @@ class PandasStatisticalTypeSemantics:
     def drop_duplicates_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
+        subset = None
+        for arg in stmt.arguments:
+            if isinstance(arg, Keyword) and arg.name == "subset":
+                subset = arg.value
+                break
+        if subset is None:      # Drop duplicates on all columns
+            caller = self.get_caller(stmt, state, interpreter)
+            if utilities.is_DataFrame(state, caller):
+                if isinstance(caller, VariableAccess):
+                    caller = caller.variable
+                if caller in state.variables:
+                    for e in state.variables:
+                        if e == caller and e.has_duplicates == Status.YES:
+                            tmp = e
+                            state.variables.remove(e)
+                            tmp.has_duplicates = Status.NO
+                            state.variables.add(tmp)
+                            break
         if utilities.is_inplace(stmt.arguments):
             self.semantics_without_inplace(stmt, state, interpreter)
             state.result = {StatisticalTypeLattice.Status.NoneRet}  # inplace calls return None type

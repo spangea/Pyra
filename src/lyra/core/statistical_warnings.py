@@ -41,3 +41,6 @@ class PCAOnCategoricalWarning(UserWarning):
 
 class PCAVisualizationWarning(UserWarning):
     pass
+
+class DuplicatesNotDroppedWarning(UserWarning):
+    pass
