@@ -595,6 +595,8 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
                 left.is_small = Status.YES
             else:
                 left.is_small = Status.NO
+            if left in self.variables:
+                self.variables.remove(left)
             self.variables.add(left)
         return self
 
@@ -622,6 +624,8 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
                 sub = Subscription(TopLyraType, left.target, c)
                 if sub not in self.store:
                     self.store[sub] = StatisticalTypeLattice(StatisticalTypeLattice.Status.Series)
+                    if left.target not in self._subscriptions:
+                        self._subscriptions[left.target] = set()
                     self.subscriptions[left.target].add(sub)
         else:
             self.store[left] = evaluation[right].meet(typ)
