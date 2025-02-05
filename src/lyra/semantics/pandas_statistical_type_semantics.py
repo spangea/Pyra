@@ -259,7 +259,15 @@ class PandasStatisticalTypeSemantics:
                 category=ReproducibilityWarning,
                 stacklevel=2,
             )
-
+        caller = self.get_caller(stmt, state, interpreter)
+        if utilities.is_DataFrame(state, caller) and isinstance(caller, VariableAccess) and caller.variable in state.variables:
+            for e in state.variables:
+                if e == caller.variable:
+                    tmp = e
+                    state.variables.remove(e)
+                    tmp.is_shuffled = Status.YES
+                    state.variables.add(tmp)
+                    break
         return self.return_same_type_as_caller(stmt, state, interpreter)
 
     def where_call_semantics(

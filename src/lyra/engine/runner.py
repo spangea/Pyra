@@ -24,8 +24,8 @@ from lyra.engine.result import AnalysisResult
 from lyra.frontend.cfg_generator import ast_to_cfgs
 from lyra.frontend.cfg_generator import ast_to_fargs
 from lyra.visualization.graph_renderer import AnalysisResultRenderer
-from lyra.statistical.statistical_type_domain import StatisticalTypeState
-from lyra.core.statistical_warnings import DuplicatesNotDroppedWarning
+from lyra.statistical.statistical_type_domain import StatisticalTypeState, StatisticalTypeLattice
+from lyra.core.statistical_warnings import DuplicatesNotDroppedWarning, NotShuffledWarning
 import warnings
 
 class Runner:
@@ -109,8 +109,13 @@ class Runner:
             for v in last_node_results_state.variables:
                 if v.has_duplicates == Status.YES:
                     warnings.warn(
-                    f"Warning: At the and of the program {v} still has duplicates that were not dropped, using drop_duplicates() might be necessary.",
+                    f"Warning [possibile]: At the and of the program {v} might still have duplicates that were not dropped, using drop_duplicates() might be necessary.",
                     category=DuplicatesNotDroppedWarning, stacklevel=2)
+                if v in last_node_results_state.store and StatisticalTypeLattice._is_dataframe_type(last_node_results_state.store[v].element):
+                    if v.is_shuffled != Status.YES:
+                        warnings.warn(
+                        f"Warning [possible]: At the and of the program {v} might be not shuffled, using shuffle() might be necessary to guarantee randomness.",
+                        category=NotShuffledWarning, stacklevel=2)
         end = time.time()
         print('Time: {}s'.format(end - start))
         self.render(result)

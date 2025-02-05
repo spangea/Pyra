@@ -44,3 +44,6 @@ class PCAVisualizationWarning(UserWarning):
 
 class DuplicatesNotDroppedWarning(UserWarning):
     pass
+
+class NotShuffledWarning(UserWarning):
+    pass
