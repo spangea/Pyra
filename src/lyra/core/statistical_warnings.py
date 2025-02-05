@@ -16,13 +16,13 @@ class NoneRetAssignmentWarning(UserWarning):
 class CategoricalConversionMean(UserWarning):
     pass
 
-class ScaledMean(UserWarning):
+class ScaledMeanWarning(UserWarning):
     pass
 
 class SpecialAttributeAccessWarning(UserWarning):
     pass
 
-class CategoricalPlot(UserWarning):
+class CategoricalPlotWarning(UserWarning):
     pass
 class InappropriateMissingValuesWarning(UserWarning):
     pass

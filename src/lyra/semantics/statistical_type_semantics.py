@@ -35,8 +35,8 @@ import pandas as pd
 from lyra.core.statistical_warnings import (
     GmeanWarning,
     CategoricalConversionMean,
-    ScaledMean,
-    CategoricalPlot
+    ScaledMeanWarning,
+    CategoricalPlotWarning
 )
 
 from lyra.semantics.forward import DefaultForwardSemantics
@@ -288,7 +288,7 @@ class StatisticalTypeSemantics(
             elif utilities.is_ScaledSeries(state, caller):
                 warnings.warn(
                     f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} is a ScaledSeries [StdSeries or NormSeries], mean my be not meaningful.",
-                    category=ScaledMean,
+                    category=ScaledMeanWarning,
                     stacklevel=2,
                 )
             else:
@@ -305,7 +305,7 @@ class StatisticalTypeSemantics(
                     )
                     warnings.warn(
                         f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> if in {caller_to_print} there is a ScaledSeries [StdSeries or NormSeries], mean my be not meaningful.",
-                        category=ScaledMean,
+                        category=ScaledMeanWarning,
                         stacklevel=2,
                     )
             state.result = {StatisticalTypeLattice.Status.Numeric}
@@ -469,38 +469,38 @@ class StatisticalTypeSemantics(
                 if interpreter.warning_level == "possible":
                     warnings.warn(
                         f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} could contain nominal-scale data, a bar plot should be used.",
-                        category=CategoricalPlot,
+                        category=CategoricalPlotWarning,
                         stacklevel=2,
                     )
             if utilities.is_StringArray(state, arg):
                 warnings.warn(
                     f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a string array, a bar plot should be used.",
-                    category=CategoricalPlot,
+                    category=CategoricalPlotWarning,
                     stacklevel=2,
                 )
             elif utilities.is_StringList(state, arg):
                 warnings.warn(
                     f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a string list, a bar plot should be used.",
-                    category=CategoricalPlot,
+                    category=CategoricalPlotWarning,
                     stacklevel=2,
                 )
             elif utilities.is_CatSeries(state, arg):
                 warnings.warn(
                     f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a categorical Series, a bar plot should be used.",
-                    category=CategoricalPlot,
+                    category=CategoricalPlotWarning,
                     stacklevel=2,
                 )
             elif utilities.is_StringSeries(state, arg):
                 warnings.warn(
                     f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a string Series, a bar plot should be used.",
-                    category=CategoricalPlot,
+                    category=CategoricalPlotWarning,
                     stacklevel=2,
                 )
             elif utilities.is_Array(state, arg) or utilities.is_Series(state, arg) or utilities.is_Top(state, arg):
                 if interpreter.warning_level == "possible":
                     warnings.warn(
                         f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} could contain nominal-scale data, a bar plot should be used.",
-                        category=CategoricalPlot,
+                        category=CategoricalPlotWarning,
                         stacklevel=2,
                     )
             elif utilities.is_DataFrame(state, arg):
@@ -509,13 +509,13 @@ class StatisticalTypeSemantics(
                         if utilities.is_CatSeries(state, sub):
                             warnings.warn(
                                 f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {sub} is a categorical Series, a bar plot should be used.",
-                                category=CategoricalPlot,
+                                category=CategoricalPlotWarning,
                                 stacklevel=2,
                             )
                         elif utilities.is_StringSeries(state, sub):
                             warnings.warn(
                                 f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {sub} is a string Series, a bar plot should be used.",
-                                category=CategoricalPlot,
+                                category=CategoricalPlotWarning,
                                 stacklevel=2,
                             )
         state.result = {StatisticalTypeLattice.Status.Plot}
