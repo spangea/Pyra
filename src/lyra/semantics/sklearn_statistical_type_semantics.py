@@ -86,6 +86,7 @@ class SklearnTypeSemantics:
             state.result = {StatisticalTypeLattice.Status.CatSeries}
         elif utilities.is_PCA(state, caller):
             self.issue_pca_warnings(stmt, state, interpreter)
+            state.result = {StatisticalTypeLattice.Status.DataFrameFromPCA}
         return state
 
     def fit_transform_call_semantics(
@@ -104,6 +105,7 @@ class SklearnTypeSemantics:
             state.result = {StatisticalTypeLattice.Status.CatSeries}
         elif utilities.is_PCA(state, caller):
             self.issue_pca_warnings(stmt, state, interpreter)
+            state.result = {StatisticalTypeLattice.Status.DataFrameFromPCA}
         return state
 
     def inverse_transform_call_semantics(

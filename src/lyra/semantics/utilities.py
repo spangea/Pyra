@@ -48,7 +48,7 @@ def is_DataFrame(state, caller):
         caller = caller.variable
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
-            if state.get_type(caller) == StatisticalTypeLattice.Status.DataFrame:
+            if state.store[caller]._less_equal(StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame)):
                 return True
         else:
             if isinstance(caller.typ, DataFrameLyraType):
@@ -58,8 +58,7 @@ def is_DataFrame(state, caller):
             isinstance(caller.target.typ, DataFrameLyraType)
             or (
                 caller.target in state.store
-                and state.get_type(caller.target)
-                == StatisticalTypeLattice.Status.DataFrame
+                and state.get_type(caller.target)._less_equal(StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame))
             )
         ):
             return True
