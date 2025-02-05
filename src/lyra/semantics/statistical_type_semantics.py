@@ -460,6 +460,11 @@ class StatisticalTypeSemantics(
         state.result = {StatisticalTypeLattice.Status.Numeric}
         return state
 
+    def scatter_call_semantics(
+        self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        return self.plot_call_semantics(stmt, state, interpreter)
+
     def plot_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
