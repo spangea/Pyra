@@ -114,7 +114,7 @@ class Runner:
                 if v in last_node_results_state.store and StatisticalTypeLattice._is_dataframe_type(last_node_results_state.store[v].element):
                     if v.is_shuffled != Status.YES:
                         warnings.warn(
-                        f"Warning [possible]: At the and of the program {v} might be not shuffled, using shuffle() might be necessary to guarantee randomness.",
+                        f"Warning [possible]: At the and of the program {v} might be not shuffled, using sample() might be necessary to guarantee randomness.",
                         category=NotShuffledWarning, stacklevel=2)
         end = time.time()
         print('Time: {}s'.format(end - start))

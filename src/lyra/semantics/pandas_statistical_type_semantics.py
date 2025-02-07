@@ -255,19 +255,22 @@ class PandasStatisticalTypeSemantics:
                 break
         if not is_reproducible:
             warnings.warn(
-                f"Warning [definirte]: in {stmt} @ line {stmt.pp.line} the random state is not set, the experiment might not be reproducible.",
+                f"Warning [definite]: in {stmt} @ line {stmt.pp.line} the random state is not set, the experiment might not be reproducible.",
                 category=ReproducibilityWarning,
                 stacklevel=2,
             )
         caller = self.get_caller(stmt, state, interpreter)
-        if utilities.is_DataFrame(state, caller) and isinstance(caller, VariableAccess) and caller.variable in state.variables:
-            for e in state.variables:
-                if e == caller.variable:
-                    tmp = e
-                    state.variables.remove(e)
-                    tmp.is_shuffled = Status.YES
-                    state.variables.add(tmp)
-                    break
+        if utilities.is_DataFrame(state, caller):
+            if isinstance(caller, VariableAccess):
+                caller = caller.variable
+            if caller in state.variables:
+                for e in state.variables:
+                    if e == caller:
+                        tmp = e
+                        state.variables.remove(e)
+                        tmp.is_shuffled = Status.YES
+                        state.variables.add(tmp)
+                        break
         return self.return_same_type_as_caller(stmt, state, interpreter)
 
     def where_call_semantics(
