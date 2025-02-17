@@ -726,5 +726,5 @@ class SelfUtilitiesSemantics:
             elif is_Encoder(state, caller):
                 state.result = state.get_type(caller)
             else:
-                raise Exception("Unexpected type of caller")
+                return self.relaxed_open_call_policy(stmt, state, interpreter)
         return state

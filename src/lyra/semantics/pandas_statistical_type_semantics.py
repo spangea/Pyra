@@ -352,7 +352,7 @@ class PandasStatisticalTypeSemantics:
         if utilities.is_Series(state, caller) or utilities.is_DataFrame(state, caller):
             return self.return_same_type_as_caller(stmt, state, interpreter)
         else:
-            raise Exception("Unexpected type of caller")
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def add_suffix_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
@@ -361,7 +361,7 @@ class PandasStatisticalTypeSemantics:
         if utilities.is_Series(state, caller) or utilities.is_DataFrame(state, caller):
             return self.return_same_type_as_caller(stmt, state, interpreter)
         else:
-            raise Exception("Unexpected type of caller")
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def corr_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
@@ -373,7 +373,7 @@ class PandasStatisticalTypeSemantics:
             state.result = {StatisticalTypeLattice.Status.Numeric}
             return state
         else:
-            raise Exception("Unexpected type of caller")
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def get_dummies_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
@@ -392,7 +392,7 @@ class PandasStatisticalTypeSemantics:
             state.result = {StatisticalTypeLattice.Status.DataFrame}
             return state
         else:
-            raise Exception("Unexpected type of caller")
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def bfill_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
@@ -425,7 +425,7 @@ class PandasStatisticalTypeSemantics:
             state.result = {StatisticalTypeLattice.Status.Numeric}
             return state
         else:
-            raise Exception("Unexpected type of caller")
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def droplevel_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
@@ -434,7 +434,7 @@ class PandasStatisticalTypeSemantics:
         if utilities.is_Series(state, caller) or utilities.is_DataFrame(state, caller):
             return self.return_same_type_as_caller(stmt, state, interpreter)
         else:
-            raise Exception("Unexpected type of caller")
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def dropna_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
@@ -454,7 +454,7 @@ class PandasStatisticalTypeSemantics:
             state.result = {StatisticalTypeLattice.Status.BoolSeries}
             return state
         else:
-            raise Exception("Unexpected type of caller")
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def ffill_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
@@ -472,7 +472,7 @@ class PandasStatisticalTypeSemantics:
         if utilities.is_Series(state, caller) or utilities.is_DataFrame(state, caller):
             return self.return_same_type_as_caller(stmt, state, interpreter)
         else:
-            raise Exception("Unexpected type of caller")
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def last_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
@@ -482,7 +482,7 @@ class PandasStatisticalTypeSemantics:
         if utilities.is_Series(state, caller) or utilities.is_DataFrame(state, caller):
             return self.return_same_type_as_caller(stmt, state, interpreter)
         else:
-            raise Exception("Unexpected type of caller")
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def first_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
@@ -492,7 +492,7 @@ class PandasStatisticalTypeSemantics:
         if utilities.is_Series(state, caller) or utilities.is_DataFrame(state, caller):
             return self.return_same_type_as_caller(stmt, state, interpreter)
         else:
-            raise Exception("Unexpected type of caller")
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def kurtosis_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
@@ -520,7 +520,7 @@ class PandasStatisticalTypeSemantics:
         if utilities.is_DataFrame(state, caller):
             return self.return_same_type_as_caller(stmt, state, interpreter)
         else:
-            raise Exception("Unexpected type of caller")
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def nunique_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
@@ -530,7 +530,7 @@ class PandasStatisticalTypeSemantics:
             state.result = {StatisticalTypeLattice.Status.Numeric}
             return state
         else:
-            raise Exception("Unexpected type of caller")
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def pivot_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
@@ -539,7 +539,7 @@ class PandasStatisticalTypeSemantics:
         if utilities.is_DataFrame(state, caller):
             return self.return_same_type_as_caller(stmt, state, interpreter)
         else:
-            raise Exception("Unexpected type of caller")
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def pow_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
@@ -553,7 +553,7 @@ class PandasStatisticalTypeSemantics:
         ):
             return self.return_same_type_as_caller(stmt, state, interpreter)
         else:
-            raise Exception("Unexpected type of caller")
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def prod_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
@@ -566,7 +566,7 @@ class PandasStatisticalTypeSemantics:
             state.result = {StatisticalTypeLattice.Status.Series}
             return state
         else:
-            raise Exception("Unexpected type of caller")
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def radd_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
@@ -575,7 +575,7 @@ class PandasStatisticalTypeSemantics:
         if utilities.is_Series(state, caller) or utilities.is_DataFrame(state, caller):
             return self.return_same_type_as_caller(stmt, state, interpreter)
         else:
-            raise Exception("Unexpected type of caller")
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def rdiv_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
@@ -584,7 +584,7 @@ class PandasStatisticalTypeSemantics:
         if utilities.is_Series(state, caller) or utilities.is_DataFrame(state, caller):
             return self.return_same_type_as_caller(stmt, state, interpreter)
         else:
-            raise Exception("Unexpected type of caller")
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def rsub_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
@@ -593,7 +593,7 @@ class PandasStatisticalTypeSemantics:
         if utilities.is_Series(state, caller) or utilities.is_DataFrame(state, caller):
             return self.return_same_type_as_caller(stmt, state, interpreter)
         else:
-            raise Exception("Unexpected type of caller")
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def rmul_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
@@ -602,7 +602,7 @@ class PandasStatisticalTypeSemantics:
         if utilities.is_Series(state, caller) or utilities.is_DataFrame(state, caller):
             return self.return_same_type_as_caller(stmt, state, interpreter)
         else:
-            raise Exception("Unexpected type of caller")
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def rename_axis_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
@@ -620,7 +620,7 @@ class PandasStatisticalTypeSemantics:
         if utilities.is_Series(state, caller) or utilities.is_DataFrame(state, caller):
             return self.return_same_type_as_caller(stmt, state, interpreter)
         else:
-            raise Exception("Unexpected type of caller")
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def rfloordiv_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
@@ -629,7 +629,7 @@ class PandasStatisticalTypeSemantics:
         if utilities.is_Series(state, caller) or utilities.is_DataFrame(state, caller):
             return self.return_same_type_as_caller(stmt, state, interpreter)
         else:
-            raise Exception("Unexpected type of caller")
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def rtruediv_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
@@ -638,7 +638,7 @@ class PandasStatisticalTypeSemantics:
         if utilities.is_Series(state, caller) or utilities.is_DataFrame(state, caller):
             return self.return_same_type_as_caller(stmt, state, interpreter)
         else:
-            raise Exception("Unexpected type of caller")
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def set_index_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
@@ -705,7 +705,7 @@ class PandasStatisticalTypeSemantics:
                     state.result = {StatisticalTypeLattice.Status.Scalar}
             return state
         else:
-            raise Exception("Unexpected type of call")
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def iloc_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
