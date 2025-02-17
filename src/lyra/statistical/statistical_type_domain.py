@@ -654,7 +654,7 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
     def _assign_slicing(self, left: Slicing, right: Expression) -> 'StatisticalTypeState':
         pass
 
-    def _assign_tuple(self, left: TupleDisplay, right: Expression) -> '':
+    def _assign_tuple(self, left: TupleDisplay, right: Expression) -> 'StatisticalTypeState':
         if hasattr(right, "items") and len(left.items) == len(right.items):
             for l, r in zip(left.items, right.items):
                 self._assign(l,r)
