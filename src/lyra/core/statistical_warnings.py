@@ -16,13 +16,37 @@ class NoneRetAssignmentWarning(UserWarning):
 class CategoricalConversionMean(UserWarning):
     pass
 
-class ScaledMean(UserWarning):
+class ScaledMeanWarning(UserWarning):
     pass
 
 class SpecialAttributeAccessWarning(UserWarning):
     pass
 
-class CategoricalPlot(UserWarning):
+class CategoricalPlotWarning(UserWarning):
+    pass
+
+class InappropriateMissingValuesWarning(UserWarning):
+    pass
+
+class HighDimensionalityWarning(UserWarning):
+    pass
+
+class FixedNComponentsPCAWarning(UserWarning):
+    pass
+
+class ReproducibilityWarning(UserWarning):
+    pass
+
+class PCAOnCategoricalWarning(UserWarning):
+    pass
+
+class PCAVisualizationWarning(UserWarning):
+    pass
+
+class DuplicatesNotDroppedWarning(UserWarning):
+    pass
+
+class NotShuffledWarning(UserWarning):
     pass
 
 class DataLeakage(UserWarning):

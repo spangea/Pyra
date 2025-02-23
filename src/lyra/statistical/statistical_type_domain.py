@@ -14,7 +14,7 @@ from lyra.core.expressions import VariableIdentifier, Expression, ExpressionVisi
     Input, ListDisplay, Range, AttributeReference, Subscription, Slicing, \
     UnaryArithmeticOperation, BinaryArithmeticOperation, LengthIdentifier, TupleDisplay, \
     SetDisplay, DictDisplay, BinarySequenceOperation, BinaryComparisonOperation, Keys, Values, \
-    KeysIdentifier, ValuesIdentifier, CastOperation
+    KeysIdentifier, ValuesIdentifier, CastOperation, Status
 from lyra.core.types import LyraType, BooleanLyraType, IntegerLyraType, FloatLyraType, \
     StringLyraType, ListLyraType, SequenceLyraType, SetLyraType, TupleLyraType, DictLyraType, \
     ContainerLyraType, DataFrameLyraType, SeriesLyraType, NoneLyraType, TopLyraType
@@ -22,7 +22,7 @@ from lyra.core.utils import copy_docstring
 
 from lyra.abstract_domains.basis import BasisWithSummarization
 
-from lyra.core.statistical_warnings import TypeChangedWarning, InconsistentTypeWarning, NoneRetAssignmentWarning
+from lyra.core.statistical_warnings import TypeChangedWarning, InconsistentTypeWarning, NoneRetAssignmentWarning, HighDimensionalityWarning
 
 # TODO: Check correctness and update documentation and operators
 
@@ -31,65 +31,69 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
     from enum import IntEnum
 
     class Status(IntEnum):
-        Top = 52
+        Top = 54
+
+        # Transformations
+        PCA = 53
 
         # Tensor
-        Tensor = 51
+        Tensor = 52
 
         # Split Data
-        SplittedTestData = 50
-        SplittedTrainData = 49
+        SplittedTestData = 51
+        SplittedTrainData = 50
 
         # None
-        NoneRet = 48
+        NoneRet = 49
 
         # Plot
-        Plot = 47
+        Plot = 48
 
         # Feature Selection
-        FeatureSelector = 46
-        FeatureSelected = 45
+        FeatureSelector = 47
+        FeatureSelected = 46
 
         # Encoders
-        KBinsDiscretizer = 44
-        MultiLabelBinarizer = 43
-        TargetEncoder = 42
-        Binarizer = 41
-        LabelBinarizer = 40
-        OrdinalEncoder = 39
-        OneHotEncoder = 38
-        LabelEncoder = 37
+        KBinsDiscretizer = 45
+        MultiLabelBinarizer = 44
+        TargetEncoder = 43
+        Binarizer = 42
+        LabelBinarizer = 41
+        OrdinalEncoder = 40
+        OneHotEncoder = 39
+        LabelEncoder = 38
 
         # Scalers
-        FunctionTransformer = 36
-        KernelCenterer = 35
-        Normalizer = 34
-        PolynomialFeatures = 33
-        PowerTransformer = 32
-        QuantileTransformer = 31
-        RobustScaler = 30
-        SplineTransformer = 29
-        MaxAbsScaler = 28
-        MinMaxScaler = 27
-        StandardScaler = 26
-        Scaled = 25
+        FunctionTransformer = 37
+        KernelCenterer = 36
+        Normalizer = 35
+        PolynomialFeatures = 34
+        PowerTransformer = 33
+        QuantileTransformer = 32
+        RobustScaler = 31
+        SplineTransformer = 30
+        MaxAbsScaler = 29
+        MinMaxScaler = 28
+        StandardScaler = 27
+        Scaled = 26
 
         # Scalar
-        Scalar = 24
+        Scalar = 25
 
         # Series types
-        Series = 23
-        NumericSeries = 22
-        RatioSeries = 21
-        ExpSeries = 20
-        NormSeries = 19
-        StdSeries = 18
-        CatSeries = 17
-        StringSeries = 16
-        BoolSeries = 15
+        Series = 24
+        NumericSeries = 23
+        RatioSeries = 22
+        ExpSeries = 21
+        NormSeries = 20
+        StdSeries = 19
+        CatSeries = 18
+        StringSeries = 17
+        BoolSeries = 16
 
         # DataFrame
-        DataFrame = 14
+        DataFrame = 15
+        DataFrameFromPCA = 14
 
         # Array types
         Array = 13
@@ -237,6 +241,8 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.RatioSeries)
         elif json == 'DataFrame':
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame)
+        elif json == 'DataFrameFromPCA':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrameFromPCA)
         elif json == 'Series':
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.Series)
         elif json == 'StringSeries':
@@ -350,6 +356,8 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
             return True
         elif self.element in self._scalar_types() and other.element == StatisticalTypeLattice.Status.Scalar:
             return True
+        elif self.element == StatisticalTypeLattice.Status.DataFrameFromPCA and other.element == StatisticalTypeLattice.Status.DataFrame:
+            return True
         elif (self.element in {StatisticalTypeLattice.Status.NumericSeries, StatisticalTypeLattice.Status.StringSeries,
                                StatisticalTypeLattice.Status.BoolSeries}
               and other.element == StatisticalTypeLattice.Status.Series):
@@ -359,6 +367,12 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
     @classmethod
     def get_all_types(cls):
         return {cls(t) for t in StatisticalTypeLattice.Status}
+
+    @classmethod
+    def _dataframes_types(cls):
+        s = (StatisticalTypeLattice.Status.DataFrame,
+             StatisticalTypeLattice.Status.DataFrameFromPCA)
+        return s
 
     @classmethod
     def _list_types(cls):
@@ -420,6 +434,10 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
         )
 
     @classmethod
+    def _is_dataframe_type(cls, status):
+        return status in cls._dataframes_types()
+
+    @classmethod
     def _atom_types(cls):
         s = (StatisticalTypeLattice.Status.NoneRet,
              StatisticalTypeLattice.Status.Plot,
@@ -443,7 +461,6 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
              StatisticalTypeLattice.Status.RobustScaler,
              StatisticalTypeLattice.Status.SplineTransformer,
              StatisticalTypeLattice.Status.Scaled,
-             StatisticalTypeLattice.Status.DataFrame,
              StatisticalTypeLattice.Status.Tuple,
              StatisticalTypeLattice.Status.Set,
              StatisticalTypeLattice.Status.Dict,
@@ -486,7 +503,9 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
         # Scalar values
         elif self.element in self._scalar_types() and other.element in self._scalar_types():
             return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Scalar))
-
+        # DataFrame
+        elif self.element in self._dataframes_types() and other.element in self._dataframes_types():
+            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame))
         # Computes the join between types of different series groups
         elif self._is_series_type(self.element) and self._is_series_type(other.element):
             return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Series))
@@ -514,7 +533,7 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
 def resolve(typ: LyraType) -> StatisticalTypeLattice.Status:
     _typ = typ
     # FIXME: this part is useless for our domain
-    """ 
+    """
     while isinstance(_typ, (ListLyraType, TupleLyraType, SetLyraType, DictLyraType)):
         if isinstance(_typ, (ListLyraType, SetLyraType)):
             _typ = _typ.typ
@@ -563,6 +582,11 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
         arguments = StatisticalTypeState.Status()
         super().__init__(variables, lattices, arguments)
         InputMixin.__init__(self, precursory)
+        self._subscriptions = dict() # Initialize _subscriptions as a dictionary
+
+    @property
+    def subscriptions(self):
+        return self._subscriptions
 
     def _weak_update(self, variables: Set[VariableIdentifier], previous: 'StateWithSummarization'):
         for var in variables:
@@ -577,7 +601,40 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
     def replace(self, variable: VariableIdentifier, expression: Expression) -> 'StatisticalTypeState':
         pass
 
+    def _add_series_with_dtypes(self, caller, df_info_dtypes, df_info_sorting):
+        df_info_dtypes = dict(df_info_dtypes)
+        df_info_sorting = dict(df_info_sorting)
+        for col, dtype in df_info_dtypes.items():
+            if str(dtype) in ['int64', 'float64']:
+                if col in df_info_sorting:
+                    if df_info_sorting[col] == "constant":
+                        sub = Subscription(None, caller, Literal(StringLyraType(), col),Status.YES, Status.YES)
+                        self._assign(sub, StatisticalTypeLattice.Status.NumericSeries)
+                    elif df_info_sorting[col] == "increasing":
+                        sub = Subscription(None, caller, Literal(StringLyraType(), col),Status.YES, Status.NO)
+                        self._assign(sub, StatisticalTypeLattice.Status.NumericSeries)
+                    elif df_info_sorting[col] == "decreasing":
+                        sub = Subscription(None, caller, Literal(StringLyraType(), col), Status.NO, Status.YES)
+                        self._assign(sub, StatisticalTypeLattice.Status.NumericSeries)
+                    elif df_info_sorting[col] == "not_sorted":
+                        sub = Subscription(None, caller, Literal(StringLyraType(), col), Status.NO, Status.NO)
+                        self._assign(sub, StatisticalTypeLattice.Status.NumericSeries)
+                else:
+                    sub = Subscription(None, caller, Literal(StringLyraType(), col))
+                    self._assign(sub, StatisticalTypeLattice.Status.NumericSeries)
+            elif str(dtype) == 'object':
+                sub = Subscription(None, caller, Literal(StringLyraType(), col))
+                self._assign(sub, StatisticalTypeLattice.Status.CatSeries)
+            else:
+                raise ValueError(f"Unexpected dtype: {dtype}")
+
     def _assign_variable(self, left: VariableIdentifier, right: Expression) -> 'StatisticalTypeState':
+        right_copy_ = None
+        if type(right) == tuple:    # Only used to gather concrete information about DataFrames when read_csv is called
+            assert len(right) == 6
+            right_copy_ = deepcopy(right)    # This is necessary because we need left information before adding the Series
+            right = right[0]
+        # Continue with the actual assignment as usual
         evaluation = self._evaluation.visit(right, self, dict())
         typ = StatisticalTypeLattice.from_lyra_type(left.typ)
         # Deep copy are needed because meet has side effects
@@ -606,6 +663,29 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
             else:
                 self.keys[left.keys] = deepcopy(evaluation[right]).meet(deepcopy(typ))
                 self.values[left.values] = deepcopy(evaluation[right]).meet(deepcopy(typ))
+        if right_copy_:
+            right = right_copy_
+            # It tuple has the following structure
+            # {(StatisticalTypeLattice.Status.DataFrame, frozenset(dtype_info.items()), is_high_dim, has_duplicates, is_small, frozenset(sorting_info.items()))}
+            self._add_series_with_dtypes(left, right[1], right[5])  # No return, just side effect
+            if right[2] == True:
+                left.is_high_dimensionality = Status.YES
+                warnings.warn(
+                    f"Warning: {left.name} is high dimensional. Feature selection/engineering or dimensionality reduction may be necessary.",
+                    category=HighDimensionalityWarning, stacklevel=2)
+            else:
+                left.is_high_dimensionality = Status.NO
+            if right[3] == True:
+                left.has_duplicates = Status.YES
+            else:
+                left.has_duplicates = Status.NO
+            if right[4] == True:
+                left.is_small = Status.YES
+            else:
+                left.is_small = Status.NO
+            if left in self.variables:
+                self.variables.remove(left)
+            self.variables.add(left)
         return self
 
     def _assign_subscription(self, left: Subscription, right: Expression) -> 'StatisticalTypeState':
@@ -615,6 +695,11 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
         if evaluation[right].element == StatisticalTypeLattice.Status.NoneRet:
             warnings.warn(f"Assignment to None type for variable {left.name} @ line {self.pp}", NoneRetAssignmentWarning,
                           stacklevel=2)
+        target = left.target
+        if target in self.variables and target in self.store and self.store[target].element == StatisticalTypeLattice.Status.DataFrame:
+            if target not in self._subscriptions:
+                self._subscriptions[target] = set()
+            self._subscriptions[target].add(left)
         return self
 
     def _assign_attributeaccess(self, left: Subscription, right: Expression) -> 'StatisticalTypeState':
@@ -624,8 +709,12 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
             and left.attr.name == "columns" and evaluation[right]._less_equal(StatisticalTypeLattice(StatisticalTypeLattice.Status.List)):
             for c in right.items:
                 # Create subscription for each column and save them as Series in the abstract state
-                if Subscription(TopLyraType, left.target, c) not in self.store:
-                    self.store[Subscription(TopLyraType, left.target, c)] = StatisticalTypeLattice(StatisticalTypeLattice.Status.Series)
+                sub = Subscription(TopLyraType, left.target, c)
+                if sub not in self.store:
+                    self.store[sub] = StatisticalTypeLattice(StatisticalTypeLattice.Status.Series)
+                    if left.target not in self._subscriptions:
+                        self._subscriptions[left.target] = set()
+                    self.subscriptions[left.target].add(sub)
         else:
             self.store[left] = evaluation[right].meet(typ)
         if evaluation[right].element == StatisticalTypeLattice.Status.NoneRet:
@@ -637,7 +726,7 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
     def _assign_slicing(self, left: Slicing, right: Expression) -> 'StatisticalTypeState':
         pass
 
-    def _assign_tuple(self, left: TupleDisplay, right: Expression) -> '':
+    def _assign_tuple(self, left: TupleDisplay, right: Expression) -> 'StatisticalTypeState':
         if hasattr(right, "items") and len(left.items) == len(right.items):
             for l, r in zip(left.items, right.items):
                 self._assign(l,r)
@@ -740,6 +829,8 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
                 if variable.is_dictionary:
                     del self.keys[variable.keys]
                     del self.values[variable.values]
+            if variable in self.subscriptions:
+                del self.subscriptions[variable]
             return self
         except:
             print("Could not remove variable", variable)
@@ -765,7 +856,7 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
             return evaluation
 
         """
-        Using BasisWithSummarization.ExpressionEvaluation 
+        Using BasisWithSummarization.ExpressionEvaluation
         per non essere forzato ad implementare i metodi che seguono
         (altrimenti estendere ExpressionVisitor)
 

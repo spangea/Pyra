@@ -8,7 +8,7 @@ Lyra's internal representation of Python expressions.
 """
 
 from abc import ABCMeta, abstractmethod
-from enum import IntEnum
+from enum import IntEnum, Enum
 from typing import Set, List
 
 from apronpy.coeff import PyMPQScalarCoeff, PyMPQIntervalCoeff
@@ -23,6 +23,10 @@ from lyra.core.types import LyraType, StringLyraType, IntegerLyraType, BooleanLy
     DictLyraType, SetLyraType, ListLyraType, TupleLyraType, SequenceLyraType, ContainerLyraType
 from lyra.core.utils import copy_docstring
 
+class Status(Enum):
+    YES = "YES"
+    MAYBE = "MAYBE"
+    NO = "NO"
 
 class Expression(metaclass=ABCMeta):
     """Expression representation.
@@ -709,6 +713,10 @@ class VariableIdentifier(Identifier):
         :param name: name of the identifier
         """
         super().__init__(typ, name, special=False)
+        self._is_high_dimensionality = Status.MAYBE
+        self._has_duplicates = Status.MAYBE
+        self._is_small = Status.MAYBE
+        self._is_shuffled = Status.MAYBE
 
     @property
     def has_length(self):
@@ -744,6 +752,45 @@ class VariableIdentifier(Identifier):
             return ValuesIdentifier(self)
         return None
 
+    @property
+    def is_high_dimensionality(self):
+        return self._is_high_dimensionality
+
+    @is_high_dimensionality.setter
+    def is_high_dimensionality(self, value: Status):
+        if not isinstance(value, Status):
+            raise ValueError("Value must be an instance of Status Enum")
+        self._is_high_dimensionality = value
+
+    @property
+    def has_duplicates(self):
+        return self._has_duplicates
+
+    @has_duplicates.setter
+    def has_duplicates(self, value: Status):
+        if not isinstance(value, Status):
+            raise ValueError("Value must be an instance of Status Enum")
+        self._has_duplicates = value
+
+    @property
+    def is_small(self):
+        return self._is_small
+
+    @is_small.setter
+    def is_small(self, value: Status):
+        if not isinstance(value, Status):
+            raise ValueError("Value must be an instance of Status Enum")
+        self._is_small = value
+
+    @property
+    def is_shuffled(self):
+        return self._is_shuffled
+
+    @is_shuffled.setter
+    def is_shuffled(self, value: Status):
+        if not isinstance(value, Status):
+            raise ValueError("Value must be an instance of Status Enum")
+        self._is_shuffled = value
 
 class LengthIdentifier(Identifier):
     """Sequence or collection length representation."""
@@ -989,7 +1036,7 @@ class Subscription(Expression):
     https://docs.python.org/3.4/reference/expressions.html#subscriptions
     """
 
-    def __init__(self, typ: LyraType, target: Expression, key: Expression):
+    def __init__(self, typ: LyraType, target: Expression, key: Expression, is_increasing: Status = Status.MAYBE, is_decreasing: Status = Status.MAYBE):
         """Subscription construction.
 
         :param typ: type of the subscription
@@ -999,6 +1046,8 @@ class Subscription(Expression):
         super().__init__(typ)
         self._target = target
         self._key = key
+        self._is_increasing = is_increasing
+        self._is_decreasing = is_decreasing
 
     @property
     def target(self):
@@ -1007,6 +1056,26 @@ class Subscription(Expression):
     @property
     def key(self):
         return self._key
+
+    @property
+    def is_increasing(self):
+        return self._is_increasing
+
+    @is_increasing.setter
+    def is_increasing(self, value: Status):
+        if not isinstance(value, Status):
+            raise ValueError("Value must be an instance of Status Enum")
+        self._is_increasing = value
+
+    @property
+    def is_decreasing(self):
+        return self._is_decreasing
+
+    @is_decreasing.setter
+    def is_decreasing(self, value: Status):
+        if not isinstance(value, Status):
+            raise ValueError("Value must be an instance of Status Enum")
+        self._is_decreasing = value
 
     def __eq__(self, other: 'Subscription'):
         typ = self.typ == other.typ
