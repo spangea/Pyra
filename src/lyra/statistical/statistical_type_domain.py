@@ -31,30 +31,51 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
     from enum import IntEnum
 
     class Status(IntEnum):
-        Top = 37
+        Top = 54
 
         # Transformations
-        PCA = 36
+        PCA = 53
 
         # Tensor
-        Tensor = 35
+        Tensor = 52
+
+        # Split Data
+        SplittedTestData = 51
+        SplittedTrainData = 50
 
         # None
-        NoneRet = 34
+        NoneRet = 49
 
         # Plot
-        Plot = 33
+        Plot = 48
+
+        # Feature Selection
+        FeatureSelector = 47
+        FeatureSelected = 46
 
         # Encoders
-        LabelBinarizer = 32
-        OrdinalEncoder = 31
-        OneHotEncoder = 30
-        LabelEncoder = 29
+        KBinsDiscretizer = 45
+        MultiLabelBinarizer = 44
+        TargetEncoder = 43
+        Binarizer = 42
+        LabelBinarizer = 41
+        OrdinalEncoder = 40
+        OneHotEncoder = 39
+        LabelEncoder = 38
 
         # Scalers
-        MaxAbsScaler = 28
-        MinMaxScaler = 27
-        StandardScaler = 26
+        FunctionTransformer = 37
+        KernelCenterer = 36
+        Normalizer = 35
+        PolynomialFeatures = 34
+        PowerTransformer = 33
+        QuantileTransformer = 32
+        RobustScaler = 31
+        SplineTransformer = 30
+        MaxAbsScaler = 29
+        MinMaxScaler = 28
+        StandardScaler = 27
+        Scaled = 26
 
         # Scalar
         Scalar = 25
@@ -264,14 +285,48 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.MinMaxScaler)
         elif json == 'StandardScaler':
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.StandardScaler)
+        elif json == 'KBinsDiscretizer':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.KBinsDiscretizer)
+        elif json == 'MultiLabelBinarizer':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.MultiLabelBinarizer)
+        elif json == 'TargetEncoder':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.TargetEncoder)
         elif json == 'OrdinalEncoder':
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.OrdinalEncoder)
+        elif json == 'Binarizer':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.Binarizer)
         elif json == 'OneHotEncoder':
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.OneHotEncoder)
         elif json == 'LabelEncoder':
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.LabelEncoder)
+        elif json == 'FunctionTransformer':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.FunctionTransformer)
+        elif json == 'KernelCenterer':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.KernelCenterer)
+        elif json == 'Normalizer':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.Normalizer)
+        elif json == 'PolynomialFeatures':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.PolynomialFeatures)
+        elif json == 'PowerTransformer':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.PowerTransformer)
+        elif json == 'QuantileTransformer':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.QuantileTransformer)
+        elif json == 'RobustScaler':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.RobustScaler)
+        elif json == 'SplineTransformer':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.SplineTransformer)
+        elif json == 'Scaled':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.Scaled)
         elif json == 'Tensor':
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.Tensor)
+        elif json == 'SplittedTestData':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.SplittedTestData)
+        elif json == 'SplittedTrainData':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.SplittedTrainData)
+        elif json == ('FeatureSelector'):
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.FeatureSelector)
+        elif json == 'FeatureSelected':
+            return StatisticalTypeLattice(StatisticalTypeLattice.Status.FeatureSelected)
         elif json == 'Top':
             return StatisticalTypeLattice(StatisticalTypeLattice.Status.Top)
         return StatisticalTypeLattice()
@@ -312,7 +367,7 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
     @classmethod
     def get_all_types(cls):
         return {cls(t) for t in StatisticalTypeLattice.Status}
-    
+
     @classmethod
     def _dataframes_types(cls):
         s = (StatisticalTypeLattice.Status.DataFrame,
@@ -377,7 +432,7 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
                 status in cls._numeric_series_types() or
                 status == StatisticalTypeLattice.Status.BoolSeries
         )
-    
+
     @classmethod
     def _is_dataframe_type(cls, status):
         return status in cls._dataframes_types()
@@ -386,17 +441,34 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
     def _atom_types(cls):
         s = (StatisticalTypeLattice.Status.NoneRet,
              StatisticalTypeLattice.Status.Plot,
+             StatisticalTypeLattice.Status.Binarizer,
              StatisticalTypeLattice.Status.LabelBinarizer,
              StatisticalTypeLattice.Status.OrdinalEncoder,
              StatisticalTypeLattice.Status.OneHotEncoder,
              StatisticalTypeLattice.Status.LabelEncoder,
+             StatisticalTypeLattice.Status.KBinsDiscretizer,
+             StatisticalTypeLattice.Status.MultiLabelBinarizer,
+             StatisticalTypeLattice.Status.TargetEncoder,
              StatisticalTypeLattice.Status.MaxAbsScaler,
              StatisticalTypeLattice.Status.MinMaxScaler,
              StatisticalTypeLattice.Status.StandardScaler,
+             StatisticalTypeLattice.Status.FunctionTransformer,
+             StatisticalTypeLattice.Status.KernelCenterer,
+             StatisticalTypeLattice.Status.Normalizer,
+             StatisticalTypeLattice.Status.PolynomialFeatures,
+             StatisticalTypeLattice.Status.PowerTransformer,
+             StatisticalTypeLattice.Status.QuantileTransformer,
+             StatisticalTypeLattice.Status.RobustScaler,
+             StatisticalTypeLattice.Status.SplineTransformer,
+             StatisticalTypeLattice.Status.Scaled,
              StatisticalTypeLattice.Status.Tuple,
              StatisticalTypeLattice.Status.Set,
              StatisticalTypeLattice.Status.Dict,
-             StatisticalTypeLattice.Status.Tensor
+             StatisticalTypeLattice.Status.Tensor,
+             StatisticalTypeLattice.Status.SplittedTrainData,
+             StatisticalTypeLattice.Status.SplittedTestData,
+             StatisticalTypeLattice.Status.FeatureSelector,
+             StatisticalTypeLattice.Status.FeatureSelected
              )
         return s
 
@@ -819,22 +891,28 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
                 return evaluation  # nothing to be done
             evaluated = evaluation
             value: StatisticalTypeLattice = StatisticalTypeLattice().bottom()
-            for item in expr.items:
-                evaluated = self.visit(item, state, evaluated)
-                value = value.join(evaluated[item])
-            if value.element == StatisticalTypeLattice.Status.String:
-                evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.StringList)
-            elif value.element == StatisticalTypeLattice.Status.Numeric:
-                evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.NumericList)
-            elif value.element == StatisticalTypeLattice.Status.Boolean:
-                evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.BoolList)
-            else:
+            if isinstance(expr, tuple):
                 evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.List)
+            else:
+                for item in expr.items:
+                    evaluated = self.visit(item, state, evaluated)
+                    value = value.join(evaluated[item])
+                if value.element == StatisticalTypeLattice.Status.String:
+                    evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.StringList)
+                elif value.element == StatisticalTypeLattice.Status.Numeric:
+                    evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.NumericList)
+                elif value.element == StatisticalTypeLattice.Status.Boolean:
+                    evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.BoolList)
+                else:
+                    evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.List)
             return evaluation
 
         @copy_docstring(ExpressionVisitor.visit_TupleDisplay)
         def visit_TupleDisplay(self, expr: TupleDisplay, state=None, evaluation=None):
-            evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.Tuple)
+            if len(state.variables) == 1:
+                evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.List)
+            else:
+                evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.Tuple)
             return evaluation
 
         @copy_docstring(ExpressionVisitor.visit_DictDisplay)

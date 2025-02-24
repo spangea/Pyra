@@ -24,6 +24,7 @@ class SpecialAttributeAccessWarning(UserWarning):
 
 class CategoricalPlotWarning(UserWarning):
     pass
+
 class InappropriateMissingValuesWarning(UserWarning):
     pass
 
@@ -46,4 +47,7 @@ class DuplicatesNotDroppedWarning(UserWarning):
     pass
 
 class NotShuffledWarning(UserWarning):
+    pass
+
+class DataLeakage(UserWarning):
     pass

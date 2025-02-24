@@ -37,7 +37,8 @@ from lyra.core.statistical_warnings import (
     CategoricalConversionMean,
     ScaledMeanWarning,
     CategoricalPlotWarning,
-    PCAVisualizationWarning
+    PCAVisualizationWarning,
+    DataLeakage
 )
 
 from lyra.semantics.forward import DefaultForwardSemantics
@@ -1046,4 +1047,43 @@ class StatisticalTypeSemantics(
             state.result = {StatisticalTypeLattice.Status.Top}
         return state
 
-
+    def train_test_split_call_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        types: tuple = ()
+        for arg in stmt.arguments:
+            if not isinstance(arg, Keyword):
+                if utilities.is_NormSeries(state, arg):
+                    warnings.warn(
+                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} @ column {stmt.pp.column} -> Data should be normalized after the split method",
+                        category=DataLeakage,
+                        stacklevel=2,
+                    )
+                elif utilities.is_StdSeries(state, arg):
+                    warnings.warn(
+                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} @ column {stmt.pp.column} -> Data should be standardized after the split method",
+                        category=DataLeakage,
+                        stacklevel=2,
+                    )
+                elif utilities.is_CatSeries(state, arg):
+                    warnings.warn(
+                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} @ column {stmt.pp.column} -> Data should be encoded after the split method",
+                        category=DataLeakage,
+                        stacklevel=2,
+                    )
+                elif utilities.is_FeatureSelected(state, arg):
+                    warnings.warn(
+                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} @ column {stmt.pp.column} -> Data should be Feature Selected after the split method",
+                        category=DataLeakage,
+                        stacklevel=2,
+                    )
+                elif utilities.is_Scaled(state, arg):
+                    warnings.warn(
+                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} @ column {stmt.pp.column} -> Data should be scaled after the split method",
+                        category=DataLeakage,
+                        stacklevel=2,
+                    )
+                types += tuple({StatisticalTypeLattice.Status.SplittedTrainData})
+                types += tuple({StatisticalTypeLattice.Status.SplittedTestData})
+        state.result = {types}
+        return state
