@@ -86,9 +86,15 @@ def is_Series(state, caller):
         elif not isinstance(caller.key, ListDisplay) and (
             isinstance(caller.target.typ, DataFrameLyraType)
             or (
-                caller.target in state.store
-                and state.get_type(caller.target)
-                == StatisticalTypeLattice.Status.DataFrame
+            caller.target in state.store
+            and state.get_type(caller.target)
+            == StatisticalTypeLattice.Status.DataFrame
+            )
+            or (
+            hasattr(caller.target, 'variable')
+            and caller.target.variable in state.store
+            and state.get_type(caller.target.variable)
+            == StatisticalTypeLattice.Status.DataFrame
             )
         ):
             return True
@@ -806,7 +812,7 @@ class SelfUtilitiesSemantics:
     def get_caller(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ):
-        dfs = self.semantics(stmt.arguments[0], state, interpreter).result
+        dfs = self.semantics(stmt.arguments[0], state, interpreter, is_lhs=True).result
         assert len(dfs) == 1, (
             f"Function {stmt.name} is supposed to be called "
             "either on a single DataFrame or Series element"
