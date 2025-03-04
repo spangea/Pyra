@@ -1040,6 +1040,26 @@ class BuiltInCallSemantics(CallSemantics):
         operator = BinaryBooleanOperation.Operator.And
         return self._binary_operation(stmt, operator, state, interpreter)
 
+    def bitand_call_semantics(self, stmt: Call, state: State, interpreter: Interpreter) -> State:
+        """Semantics of a call to 'and'.
+
+        :param stmt: call to 'add' to be executed
+        :param state: state before executing the call statement
+        :return: state modified by the call statement
+        """
+        operator = BinaryBooleanOperation.Operator.And
+        return self._binary_operation(stmt, operator, state, interpreter)
+
+    def bitor_call_semantics(self, stmt: Call, state: State, interpreter: Interpreter) -> State:
+        """Semantics of a call to 'and'.
+
+        :param stmt: call to 'add' to be executed
+        :param state: state before executing the call statement
+        :return: state modified by the call statement
+        """
+        operator = BinaryBooleanOperation.Operator.Or
+        return self._binary_operation(stmt, operator, state, interpreter)
+
     def or_call_semantics(self, stmt: Call, state: State, interpreter: Interpreter) -> State:
         """Semantics of a call to 'or'.
 
