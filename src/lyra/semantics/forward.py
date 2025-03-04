@@ -146,6 +146,8 @@ class AssignmentSemantics(ForwardSemantics):
                 hasattr(self, '{}_semantics'.format(stmt.left.target.attr))):
             lhs = {Subscription(typing.Any, stmt.left.target.target, stmt.left.key)}
             warnings.warn(f"Special subscription in lhs @ line {stmt.pp.line}", SpecialSubscriptionAssignmentWarning)
+        elif isinstance(stmt.left, SubscriptionAccess):
+            lhs = getattr(self, "subscription_access_semantics")(stmt.left, state, interpreter, is_lhs=True).result
         else:
             lhs = self.semantics(stmt.left, state, interpreter).result      # lhs evaluation
 

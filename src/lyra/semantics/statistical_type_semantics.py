@@ -9,6 +9,7 @@ from lyra.core.expressions import (
     Subscription,
     Literal,
     BinaryComparisonOperation,
+    BinaryBooleanOperation,
     UnaryOperation, BinaryArithmeticOperation
 )
 
@@ -19,7 +20,8 @@ from lyra.core.statements import (
     AttributeAccess,
     LibraryAccess,
     ListDisplayAccess,
-    Keyword
+    Keyword,
+    LiteralEvaluation
 )
 
 from lyra.engine.forward import ForwardInterpreter
@@ -47,9 +49,9 @@ from lyra.semantics.pandas_statistical_type_semantics import PandasStatisticalTy
 from lyra.semantics.torch_statistical_type_semantics import TorchStatisticalTypeSemantics
 from lyra.semantics.seaborn_statistical_type_semantics import SeabornStatisticalTypeSemantics
 import lyra.semantics.utilities as utilities
-from lyra.semantics.numpy_statistical_type_semantics import NumPyStatisticalTypeSemantics
 from lyra.semantics.utilities import SelfUtilitiesSemantics
-
+from lyra.semantics.semantics import camel_to_snake
+from lyra.semantics.numpy_statistical_type_semantics import NumPyStatisticalTypeSemantics
 
 
 class StatisticalTypeSemantics(
@@ -62,6 +64,19 @@ class StatisticalTypeSemantics(
     SeabornStatisticalTypeSemantics
 ):
     """Forward semantics of statements with support for Pandas library calls for dataframe column usage analysis."""
+
+    def semantics(self, stmt, state, interpreter, is_lhs=False):
+        """Override the semantics method to add the is_lhs parameter"""
+        name = '{}_semantics'.format(camel_to_snake(stmt.__class__.__name__))
+        if hasattr(self, name):
+            method = getattr(self, name)
+            if 'is_lhs' in method.__code__.co_varnames:
+                return method(stmt, state, interpreter, is_lhs)
+            else:
+                return method(stmt, state, interpreter)
+        error = f"Semantics for statement {stmt} of type {type(stmt)} not yet implemented! "
+        raise NotImplementedError(error + f"You must provide method {name}(...)")
+
     def relaxed_open_call_policy(
             self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
@@ -137,40 +152,145 @@ class StatisticalTypeSemantics(
         stmt: SubscriptionAccess,
         state: StatisticalTypeState,
         interpreter: ForwardInterpreter,
+        is_lhs=False,
     ) -> StatisticalTypeState:
-        # Check and resolution for AttributeAccess in scenarios like df.loc[0]
+        if is_lhs: # Left-hand side subscription
+            # Example: df['column'] = some_value
+            if isinstance(stmt, SubscriptionAccess):
+                target = stmt.target.variable if isinstance(stmt.target, VariableAccess) else stmt.target
+                key = stmt.key.literal if isinstance(stmt.key, LiteralEvaluation) else stmt.key
+            else:  # Handle other subscription access types
+                # Example: df.loc['index'] = some_value
+                target = stmt.left.target.variable if isinstance(stmt.left.target, VariableAccess) else stmt.left.target
+                key = stmt.left.key.literal if isinstance(stmt.left.key, LiteralEvaluation) else stmt.left.key
+
+            state.result = {Subscription(stmt.typ if isinstance(stmt, SubscriptionAccess) else stmt.left.typ, target, key)}
+            return state
+
+        # Check for AttributeAccess in scenarios like df.loc[0]
+        # Example: df.loc[0] or df.iloc[0:5]
         if isinstance(stmt.target, AttributeAccess) and hasattr(
             self, "{}_semantics".format(stmt.target.attr)
         ):
             return getattr(self, "{}_semantics".format(stmt.target.attr))(
                 stmt, state, interpreter
             )
+
+        # First, evaluate target and key in the state
         target = self.semantics(stmt.target, state, interpreter).result
         key = self.semantics(stmt.key, state, interpreter).result
         result = set()
+
+        # Sound analysis: if any key is Top, the result should be Top
+        # Example: df[some_unknown_variable] where some_unknown_variable is Top
+        if any(state.get_type(k) == StatisticalTypeLattice.Status.Top for k in key
+            if hasattr(k, 'variable') or isinstance(k, VariableIdentifier)):
+            state.result = {StatisticalTypeLattice.Status.Top}
+            return state
+
         for primary, index in itertools.product(target, key):
+            # Create a temporary Subscription object for consistent handling
+            temp_subscription = Subscription(
+                stmt.typ if hasattr(stmt, 'typ') else None,
+                primary if not isinstance(primary, StatisticalTypeLattice.Status) else stmt.target,
+                index if not isinstance(index, StatisticalTypeLattice.Status) else stmt.key
+            )
+
+            # Handle ListDisplay keys - selecting multiple columns
+            # Example: df[['col1', 'col2']] - returns a DataFrame with selected columns
             if isinstance(index, ListDisplay):
-                if utilities.is_DataFrame(state, primary):  # Example: df[["a", "b"]]
-                    subscription = Subscription(primary.typ, primary, index)
-                    result.add(subscription)
+                if utilities.is_DataFrame(state, primary):
+                    result.add(StatisticalTypeLattice.Status.DataFrame)
                 else:
-                    for idx in index.items:
-                        subscription = Subscription(primary.typ, primary, idx)
-                        result.add(subscription)
+                    result.add(temp_subscription)
+
+            # Handle literal or variable keys
+            # Examples: df['column'], df[0], array[i] where i is a variable
             elif isinstance(index, (Literal, VariableIdentifier)):
-                subscription = Subscription(primary.typ, primary, index)
-                result.add(subscription)
-            elif isinstance(index, BinaryComparisonOperation):
-                # FIXME
-                # Now Top is returned but the semantics for stmts like
-                # df = df[df["Score"] != 3]
-                # should be implemented
-                result.add(StatisticalTypeLattice.Status.Top)
-            elif isinstance(index, StatisticalTypeLattice.Status) and index==StatisticalTypeLattice.Status.BoolSeries:
-                result.add(StatisticalTypeLattice.Status.DataFrame)
+                primary_type = state.get_type(primary)
+
+                if primary_type == StatisticalTypeLattice.Status.DataFrame:
+                    # Handle DataFrame access
+                    # Example: df[mask] where mask is a boolean array/Series
+                    if (isinstance(index, VariableIdentifier) and utilities.is_BoolArray(state, index)):
+                        result.add(StatisticalTypeLattice.Status.DataFrame)
+                    else:
+                        # Example: df['column'] - returns a Series
+                        result.add(StatisticalTypeLattice.Status.Series)
+
+                elif utilities.is_Series(state, primary):
+                    # Handle Series access
+                    # Example: series[0] or series[i] where i is numeric - returns a scalar
+                    if (isinstance(index, Literal) and isinstance(index.val, (int, float)) or
+                        (isinstance(index.val, str) and index.val.isdigit())) or \
+                        (isinstance(index, VariableIdentifier) and utilities.is_Numeric(state, index)):
+
+                        # Determine specific scalar type
+                        if utilities.is_NumericSeries(state, primary):
+                            # Example: numeric_series[0] - returns a numeric value
+                            result.add(StatisticalTypeLattice.Status.Numeric)
+                        elif utilities.is_StringSeries(state, primary):
+                            # Example: string_series[0] - returns a string
+                            result.add(StatisticalTypeLattice.Status.String)
+                        elif utilities.is_BoolSeries(state, primary):
+                            # Example: bool_series[0] - returns a boolean
+                            result.add(StatisticalTypeLattice.Status.Boolean)
+                        else:
+                            # Example: unknown_type_series[0] - returns a generic scalar
+                            result.add(StatisticalTypeLattice.Status.Scalar)
+                    else:
+                        # Example: series[1:5] - returns a Series
+                        result.add(StatisticalTypeLattice.Status.Series)
+
+                # Handle dictionary access
+                # Example: my_dict['key']
+                elif isinstance(primary, VariableIdentifier) and primary.is_dictionary:
+                    result.add(state.values[primary.values].element)
+                else:
+                    if hasattr(primary, 'variable') or isinstance(primary, VariableIdentifier):
+                        # Example: custom_container[key]
+                        eval = StatisticalTypeState._evaluation.visit_Subscription(
+                            temp_subscription,
+                            state,
+                            evaluation={}
+                        )
+                        result.add(eval[temp_subscription].element)
+                    else:
+                        result.add(primary)
+
+            # Handle boolean expressions for filtering
+            # Example: df[df['age'] > 30] or array[x < 5]
+            elif isinstance(index, (BinaryComparisonOperation, UnaryOperation, BinaryBooleanOperation)):
+                primary_type = state.get_type(primary)
+                if primary_type == StatisticalTypeLattice.Status.DataFrame:
+                    # Example: df[df['age'] > 30] - returns a filtered DataFrame
+                    result.add(StatisticalTypeLattice.Status.DataFrame)
+                elif utilities.is_Series(state, primary):
+                    # Example: series[series > 0] - returns a filtered Series
+                    result.add(StatisticalTypeLattice.Status.Series)
+                else:
+                    result.add(StatisticalTypeLattice.Status.Top)
+
+            # Handle boolean Series/Array masks
+            # Example: df[mask] where mask is a boolean Series/Array
             else:
-                error = f"Semantics for subscription of {primary} and {index} is not yet implemented!"
-                raise NotImplementedError(error)
+                index_type = state.get_type(index) if hasattr(index, 'variable') or isinstance(index, VariableIdentifier) else index
+                if index_type in (StatisticalTypeLattice.Status.BoolSeries, StatisticalTypeLattice.Status.BoolArray):
+                    primary_type = state.get_type(primary)
+                    if primary_type == StatisticalTypeLattice.Status.DataFrame:
+                        # Example: df[bool_mask] - returns a filtered DataFrame
+                        result.add(StatisticalTypeLattice.Status.DataFrame)
+                    elif utilities.is_Series(state, primary):
+                        # Example: series[bool_mask] - returns a filtered Series
+                        result.add(StatisticalTypeLattice.Status.Series)
+                    else:
+                        result.add(StatisticalTypeLattice.Status.Top)
+                elif hasattr(index_type, 'variable') or isinstance(index_type, VariableIdentifier) or isinstance(index_type, StatisticalTypeLattice.Status):
+                    # Example: container[unknown_index] where unknown_index could be anything
+                    result.add(StatisticalTypeLattice.Status.Top)
+                else:
+                    error = f"Semantics for subscription of {primary} and {index} (type: {type(index).__name__}) is not yet implemented!"
+                    raise NotImplementedError(error)
 
         state.result = result
         return state
@@ -541,6 +661,10 @@ class StatisticalTypeSemantics(
         caller = self.get_caller(stmt, state, interpreter)
         if utilities.is_Series(state, caller) or utilities.is_DataFrame(state, caller) or utilities.is_Numeric(state, caller):
             return self.return_same_type_as_caller(stmt, state, interpreter)
+        # If caller is a statement return the semantics
+        elif isinstance(caller, BinaryComparisonOperation):
+            state.result = {caller}
+            return state
         else:
             return self.relaxed_open_call_policy(stmt, state, interpreter)
 
@@ -555,6 +679,8 @@ class StatisticalTypeSemantics(
                 state.result = {StatisticalTypeLattice.Status.NumericArray}
             elif utilities.is_StringList(state,eval):
                 state.result = {StatisticalTypeLattice.Status.StringArray}
+            elif utilities.is_BoolList(state,eval):
+                state.result = {StatisticalTypeLattice.Status.BoolArray}
             else:
                 state.result = {StatisticalTypeLattice.Status.Array}
         else:
@@ -562,6 +688,8 @@ class StatisticalTypeSemantics(
                 state.result = {StatisticalTypeLattice.Status.NumericArray}
             elif utilities.is_String(state, eval):
                 state.result = {StatisticalTypeLattice.Status.StringArray}
+            elif utilities.is_Bool(state, eval):
+                state.result = {StatisticalTypeLattice.Status.BoolArray}
             else:
                 state.result = {StatisticalTypeLattice.Status.Array}
         return state
