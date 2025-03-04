@@ -19,6 +19,7 @@ from lyra.core.types import LyraType, BooleanLyraType, IntegerLyraType, FloatLyr
     StringLyraType, ListLyraType, SequenceLyraType, SetLyraType, TupleLyraType, DictLyraType, \
     ContainerLyraType, DataFrameLyraType, SeriesLyraType, NoneLyraType, TopLyraType
 from lyra.core.utils import copy_docstring
+from lyra.core.statements import VariableAccess
 
 from lyra.abstract_domains.basis import BasisWithSummarization
 
@@ -696,6 +697,8 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
             warnings.warn(f"Assignment to None type for variable {left.name} @ line {self.pp}", NoneRetAssignmentWarning,
                           stacklevel=2)
         target = left.target
+        if isinstance(target, VariableAccess):
+            target = target.variable
         if target in self.variables and target in self.store and self.store[target].element == StatisticalTypeLattice.Status.DataFrame:
             if target not in self._subscriptions:
                 self._subscriptions[target] = set()
