@@ -844,7 +844,9 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
             return self.store[id].element
         if isinstance(id, StatisticalTypeLattice.Status):
             return id
-        raise KeyError(f"{id} not tracked by abstract state")
+        #raise KeyError(f"{id} not tracked by abstract state")
+        # If not tracked, return Top
+        return StatisticalTypeLattice.Status.Top
 
     # expression evaluation
 
