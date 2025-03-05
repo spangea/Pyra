@@ -65,13 +65,13 @@ class StatisticalTypeSemantics(
 ):
     """Forward semantics of statements with support for Pandas library calls for dataframe column usage analysis."""
 
-    def semantics(self, stmt, state, interpreter, is_lhs=False):
-        """Override the semantics method to add the is_lhs parameter"""
+    def semantics(self, stmt, state, interpreter, get_caller=False):
+        """Override the semantics method to add the get_caller parameter"""
         name = '{}_semantics'.format(camel_to_snake(stmt.__class__.__name__))
         if hasattr(self, name):
             method = getattr(self, name)
-            if 'is_lhs' in method.__code__.co_varnames:
-                return method(stmt, state, interpreter, is_lhs)
+            if 'get_caller' in method.__code__.co_varnames:
+                return method(stmt, state, interpreter, get_caller=get_caller)
             else:
                 return method(stmt, state, interpreter)
         error = f"Semantics for statement {stmt} of type {type(stmt)} not yet implemented! "
@@ -96,7 +96,7 @@ class StatisticalTypeSemantics(
             return StatisticalTypeLattice.Status.Top
 
     def attribute_access_semantics(
-        self, access: AttributeAccess, state: StatisticalTypeState, interpreter: ForwardInterpreter, is_lhs = False
+        self, access: AttributeAccess, state: StatisticalTypeState, interpreter: ForwardInterpreter, is_lhs = False, get_caller = False
     ) -> StatisticalTypeState:
         if is_lhs:
             return {access.left}
@@ -124,10 +124,10 @@ class StatisticalTypeSemantics(
                 if v == access.target.arguments[0].variable and isinstance(
                     v, VariableIdentifier
                 ):
-                    access_field = AttributeAccess(
-                        state.pp, access.target.arguments[0], access.attr
+                    attribute_access = AttributeAccess(
+                        state.pp, access.typ, access.target.arguments[0], access.attr
                     )
-                    return self.access_field_semantics(access_field, state, interpreter)
+                    return self.attribute_access_semantics(attribute_access, state, interpreter)
         elif isinstance(access.target, AttributeAccess):
             if access.target.attr.name == "cat":  # Nothing to be done
                 if access.attr.name == "codes":
@@ -153,8 +153,9 @@ class StatisticalTypeSemantics(
         state: StatisticalTypeState,
         interpreter: ForwardInterpreter,
         is_lhs=False,
+        get_caller=False,
     ) -> StatisticalTypeState:
-        if is_lhs: # Left-hand side subscription
+        if is_lhs or get_caller: # Left-hand side or get_caller subscription
             # Example: df['column'] = some_value
             if isinstance(stmt, SubscriptionAccess):
                 target = stmt.target.variable if isinstance(stmt.target, VariableAccess) else stmt.target

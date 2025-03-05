@@ -812,7 +812,7 @@ class SelfUtilitiesSemantics:
     def get_caller(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ):
-        dfs = self.semantics(stmt.arguments[0], state, interpreter, is_lhs=True).result
+        dfs = self.semantics(stmt.arguments[0], state, interpreter, get_caller=True).result
         assert len(dfs) == 1, (
             f"Function {stmt.name} is supposed to be called "
             "either on a single DataFrame or Series element"
