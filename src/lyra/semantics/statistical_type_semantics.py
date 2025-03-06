@@ -84,6 +84,16 @@ class StatisticalTypeSemantics(
         state.result = {StatisticalTypeLattice.Status.Top}
         return state
 
+    def library_access_semantics(
+            self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        if stmt.library == "numpy" and stmt.name == "nan":
+            state.result = {StatisticalTypeLattice.Status.Scalar}
+            return state
+        else:
+            state.result = {StatisticalTypeLattice.Status.Top}
+            return state
+
     def dict_call_semantics(self, stmt: Call, state: State, interpreter: ForwardInterpreter) -> State:
         state.result = {StatisticalTypeLattice.Status.Dict}
         return state
