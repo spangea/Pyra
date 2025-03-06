@@ -1112,8 +1112,9 @@ class CFGVisitor(ast.NodeVisitor):
         elif isinstance(iterated, SlicingAccess):
             target_typ = TopLyraType
         else:
-            error = "The iteration attribute {} is not yet translatable to CFG!".format(iterated)
-            raise NotImplementedError(error)
+            target_typ = TopLyraType
+            # error = "The iteration attribute {} is not yet translatable to CFG!".format(iterated)
+            # raise NotImplementedError(error)
         target = self.visit(node.target, types=types, libraries=libraries, typ=target_typ, fname=fname)
 
         body = self._visit_body(node.body, types, libraries, fname=fname)
