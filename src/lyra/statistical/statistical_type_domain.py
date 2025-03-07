@@ -597,6 +597,9 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
                 if var.is_dictionary:
                     self.keys[var.keys].join(previous.keys[var.keys])
                     self.values[var.values].join(previous.values[var.values])
+        for var, subs in self.subscriptions.items():
+            if var in previous.subscriptions:
+                self.subscriptions[var].update(previous.subscriptions[var])
         return self
 
     def replace(self, variable: VariableIdentifier, expression: Expression) -> 'StatisticalTypeState':
@@ -996,7 +999,7 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
             while isinstance(target, (Subscription, Slicing)):
                 target = target.target
             evaluated = self.visit(target, state, evaluation)
-            if isinstance(target.typ, DataFrameLyraType) or state.get_type(
+            if state.get_type(
                     target) == StatisticalTypeLattice.Status.DataFrame:
                     evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame)
             elif state.get_type(target) in StatisticalTypeLattice._series_types():
