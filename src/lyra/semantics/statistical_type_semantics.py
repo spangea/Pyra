@@ -56,8 +56,8 @@ from lyra.semantics.numpy_statistical_type_semantics import NumPyStatisticalType
 
 from lyra.core.types import TopLyraType
 
-from src.lyra.core.expressions import CastOperation, SetDisplay
-from src.lyra.core.types import DictLyraType, ListLyraType, SetLyraType, StringLyraType, TupleLyraType
+from lyra.core.expressions import CastOperation, SetDisplay
+from lyra.core.types import DictLyraType, ListLyraType, SetLyraType, StringLyraType, TupleLyraType
 class StatisticalTypeSemantics(
     DefaultForwardSemantics,
     PandasStatisticalTypeSemantics,
