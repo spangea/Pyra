@@ -10,7 +10,8 @@ from lyra.core.expressions import (
     Literal,
     BinaryComparisonOperation,
     BinaryBooleanOperation,
-    UnaryOperation, BinaryArithmeticOperation
+    UnaryOperation, BinaryArithmeticOperation,
+    Slicing, LibraryAccessExpression
 )
 
 from lyra.core.statements import (
@@ -21,7 +22,8 @@ from lyra.core.statements import (
     LibraryAccess,
     ListDisplayAccess,
     Keyword,
-    LiteralEvaluation
+    LiteralEvaluation,
+    SlicingAccess
 )
 
 from lyra.engine.forward import ForwardInterpreter
@@ -53,7 +55,7 @@ from lyra.semantics.utilities import SelfUtilitiesSemantics
 from lyra.semantics.semantics import camel_to_snake
 from lyra.semantics.numpy_statistical_type_semantics import NumPyStatisticalTypeSemantics
 
-
+from lyra.core.types import TopLyraType
 class StatisticalTypeSemantics(
     DefaultForwardSemantics,
     PandasStatisticalTypeSemantics,
@@ -131,13 +133,20 @@ class StatisticalTypeSemantics(
             # CHECK
             eval = self.semantics(access.target, state, interpreter)
             for v in eval.variables:
-                if v == access.target.arguments[0].variable and isinstance(
-                    v, VariableIdentifier
-                ):
-                    attribute_access = AttributeAccess(
-                        state.pp, access.typ, access.target.arguments[0], access.attr
-                    )
-                    return self.attribute_access_semantics(attribute_access, state, interpreter)
+                if hasattr(v, "variable") and v.variable == access.target:
+                    if v == access.target.arguments[0].variable and isinstance(
+                        v, VariableIdentifier
+                    ):
+                        attribute_access = AttributeAccess(
+                            state.pp, access.typ, access.target.arguments[0], access.attr
+                        )
+                        return self.attribute_access_semantics(attribute_access, state, interpreter)
+                else:  # subscriptionaccess
+                    if isinstance(v, SubscriptionAccess) and v == access.target.arguments[0]:
+                        subscription_access = SubscriptionAccess(
+                            state.pp, access.typ, v, access.attr
+                        )
+                        return self.subscription_access_semantics(subscription_access, state, interpreter)
         elif isinstance(access.target, AttributeAccess):
             if access.target.attr.name == "cat":  # Nothing to be done
                 if access.attr.name == "codes":
