@@ -858,6 +858,7 @@ class CFGVisitor(ast.NodeVisitor):
                                    ast.JoinedStr)  # Needed if sub to a formatted str like df[f'{feature}_zero']
         is_compare = isinstance(node.slice, ast.Compare)
         is_unop = isinstance(node.slice, ast.UnaryOp)
+        is_call = isinstance(node.slice, ast.Call)
         if hasattr(target, 'typ'):
             is_loc = isinstance(target.typ, AttributeAccessLyraType) and isinstance(target.typ.target_typ, DataFrameLyraType)
         else:
@@ -907,6 +908,10 @@ class CFGVisitor(ast.NodeVisitor):
             return SubscriptionAccess(pp, target.typ, target, key)
         elif is_compare and is_loc:
             key = self.visit(node.slice, types, libraries, BooleanLyraType(), fname=fname)
+            target = self.visit(node.value, types, libraries, None, fname=fname)
+            return SubscriptionAccess(pp, target.typ, target, key)
+        elif is_call:
+            key = self.visit(node.slice, types, libraries, None, fname=fname)
             target = self.visit(node.value, types, libraries, None, fname=fname)
             return SubscriptionAccess(pp, target.typ, target, key)
         raise NotImplementedError(f"Subscription {node.slice.__class__.__name__} is unsupported!")
