@@ -792,7 +792,18 @@ class CFGVisitor(ast.NodeVisitor):
                     args_list.append(a)
             return Keyword(pp, node.arg, args_list)
         elif isinstance(node.value, ast.Attribute):
-            return Keyword(pp, node.arg, node.value.value.id + '.' + node.value.attr)
+            attrs = [node.value.attr]
+            temp_node = node.value.value
+            while isinstance(temp_node, ast.Attribute):
+                attrs.append(temp_node.attr)
+                temp_node = temp_node.value
+            if isinstance(temp_node, ast.Name):
+                attrs.append(temp_node.id)
+                attrs.reverse()
+            else:
+                # Handle other cases if needed, e.g., ast.Call
+                attrs.append(ast.unparse(temp_node))  # Fallback to source code representation
+            return Keyword(pp, node.arg, '.'.join(attrs))
         elif isinstance(node.value, ast.Name):
             return Keyword(pp, node.arg, node.value.id)
 
