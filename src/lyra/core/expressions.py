@@ -1093,6 +1093,9 @@ class Subscription(Expression):
 
     def __str__(self):
         return "{0.target}[{0.key}]".format(self)
+    
+    def __repr__(self):
+        return self.__str__()
 
     @property
     def name(self):
@@ -1707,3 +1710,33 @@ class LambdaExpression(Expression):
     def __str__(self):
         return "LYRA: LAMBDA EXPRESSION NOT REPRESENTED"
 
+class LibraryAccessExpression(Expression):
+    def __init__(self, library: str, name: str):
+        """Library access expression representation.
+
+        :param library: the library being accessed
+        :param name: the function being accessed
+        """
+        super().__init__(typ=TopLyraType)
+        self._library = library
+        self._name = name
+
+    @property
+    def library(self):
+        return self._library
+
+    @property
+    def name(self):
+        return self._name
+
+    def __eq__(self, other: 'LibraryAccess'):
+        return (self.library, self.name) == (other.library, other.name)
+
+    def __hash__(self):
+        return hash((self.library, self.name))
+
+    def __str__(self):
+        return f"{self.library}.{self.name}"
+
+    def __repr__(self):
+        return f"{self.library}.{self.name}"

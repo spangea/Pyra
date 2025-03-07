@@ -178,6 +178,8 @@ class StatisticalTypeSemantics(
             # Example: df['column'] = some_value
             if isinstance(stmt, SubscriptionAccess):
                 target = stmt.target.variable if isinstance(stmt.target, VariableAccess) else stmt.target
+                if isinstance(target, LibraryAccess):
+                    target = LibraryAccessExpression(target.library, target.name)
                 key = stmt.key.literal if isinstance(stmt.key, LiteralEvaluation) else stmt.key
             else:  # Handle other subscription access types
                 # Example: df.loc['index'] = some_value
@@ -1234,4 +1236,31 @@ class StatisticalTypeSemantics(
                 types += tuple({StatisticalTypeLattice.Status.SplittedTrainData})
                 types += tuple({StatisticalTypeLattice.Status.SplittedTestData})
         state.result = {types}
+        return state
+
+    def strip_call_semantics(self, stmt: Call, state: State, interpreter: ForwardInterpreter) -> State:
+        state.result = {StatisticalTypeLattice.Status.String}
+        return state
+    
+    def slicing_access_semantics(self, stmt: Slicing, state, interpreter) -> State:
+        """Semantics of a slicing access.
+
+        :param stmt: slicing access statement to be executed
+        :param state: state before executing the slicing access
+        :return: state modified by the slicing access
+        """
+        target = self.semantics(stmt.target, state, interpreter).result
+        lower = self.semantics(stmt.lower, state, interpreter).result if stmt.lower else {None}
+        upper = self.semantics(stmt.upper, state, interpreter).result if stmt.upper else {None}
+        stride = self.semantics(stmt.stride, state, interpreter).result if stmt.stride else {None}
+        result = set()
+        for primary, start, stop, step in itertools.product(target, lower, upper, stride):
+            if hasattr(primary, "typ"):
+                slicing = Slicing(primary.typ, primary, start, stop, step)
+                result.add(slicing)
+            else:
+                top_type = TopLyraType
+                slicing = Slicing(top_type, primary, start, stop, step)
+                result.add(slicing)
+        state.result = result
         return state
