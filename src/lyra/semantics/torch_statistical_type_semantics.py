@@ -1,6 +1,5 @@
 from lyra.core.expressions import (
     Subscription,
-    Input,
 )
 from lyra.core.statements import (
     Call,

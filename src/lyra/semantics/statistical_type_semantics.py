@@ -3,7 +3,6 @@ import typing
 
 from lyra.abstract_domains.state import State
 from lyra.core.expressions import (
-    Input,
     VariableIdentifier,
     ListDisplay,
     Subscription,
@@ -123,13 +122,13 @@ class StatisticalTypeSemantics(
                     elif access.attr.name == "values":
                         state.result = {self.values_semantics(access, state)}
                     else:
-                        state.result = {Input(typ=typing.Any)}
+                        state.result = {StatisticalTypeLattice.Status.Top}
                 else:
                     state.result = {StatisticalTypeLattice.Status.Series}
             elif StatisticalTypeLattice(state.get_type(id))._less_equal(
                 StatisticalTypeLattice(StatisticalTypeLattice.Status.Series)
             ):
-                state.result = {Input(typ=typing.Any)}
+                state.result = {StatisticalTypeLattice.Status.Top}
         elif isinstance(access.target, Call):
             # CHECK
             eval = self.semantics(access.target, state, interpreter)
@@ -1242,7 +1241,7 @@ class StatisticalTypeSemantics(
     def strip_call_semantics(self, stmt: Call, state: State, interpreter: ForwardInterpreter) -> State:
         state.result = {StatisticalTypeLattice.Status.String}
         return state
-    
+
     def slicing_access_semantics(self, stmt: Slicing, state, interpreter) -> State:
         """Semantics of a slicing access.
 

@@ -10,7 +10,7 @@ from lyra.core.statistical_warnings import (
 )
 from lyra.core.expressions import (
     Subscription,
-    Input, VariableIdentifier, Status
+    VariableIdentifier, Status
 )
 from lyra.core.statements import (
     Call,
