@@ -30,6 +30,7 @@ from lyra.statistical.statistical_type_domain import (
     StatisticalTypeLattice,
 )
 import typing
+from lyra.core.types import TopLyraType
 
 def is_PCA(state, caller):
     if isinstance(caller, VariableAccess):
@@ -831,6 +832,9 @@ class SelfUtilitiesSemantics:
     def forget_arg(self, caller, arg, state: StatisticalTypeState):
         if isinstance(arg, LiteralEvaluation):
             s = Subscription(typing.Any, caller, arg.literal)
+            if s in state.store:
+                state.forget_variable(s)
+            s = Subscription(TopLyraType, caller, arg.literal)
             if s in state.store:
                 state.forget_variable(s)
         elif isinstance(arg, ListDisplayAccess):
