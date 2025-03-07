@@ -868,16 +868,16 @@ class SelfUtilitiesSemantics:
             state.result = {statistical_type}
         else:
             if is_DataFrame(state, caller):
-                state.result = {StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame)}
+                state.result = {StatisticalTypeLattice.Status.DataFrame}
             elif is_Series(state, caller):
                 # TODO: here we can be more precise if we return a statistical type element (not a Input/LyraType)
-                state.result = {StatisticalTypeLattice(StatisticalTypeLattice.Status.Series)}
+                state.result = {StatisticalTypeLattice.Status.Series}
             elif is_String(state, caller):
-                state.result = {StatisticalTypeLattice(StatisticalTypeLattice.Status.String)}
+                state.result = {StatisticalTypeLattice.Status.String}
             elif is_Numeric(state, caller):
-                state.result = {StatisticalTypeLattice(StatisticalTypeLattice.Status.Numeric)}
+                state.result = {StatisticalTypeLattice.Status.Numeric}
             elif is_Set(state, caller):
-                state.result = {StatisticalTypeLattice(StatisticalTypeLattice.Status.Set)}
+                state.result = {StatisticalTypeLattice.Status.Set}
             elif is_Scaler(state, caller):
                 state.result = state.get_type(caller)
             elif is_Encoder(state, caller):

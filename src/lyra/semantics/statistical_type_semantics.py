@@ -55,6 +55,9 @@ from lyra.semantics.semantics import camel_to_snake
 from lyra.semantics.numpy_statistical_type_semantics import NumPyStatisticalTypeSemantics
 
 from lyra.core.types import TopLyraType
+
+from src.lyra.core.expressions import CastOperation, SetDisplay
+from src.lyra.core.types import DictLyraType, ListLyraType, SetLyraType, StringLyraType, TupleLyraType
 class StatisticalTypeSemantics(
     DefaultForwardSemantics,
     PandasStatisticalTypeSemantics,
@@ -1266,5 +1269,38 @@ class StatisticalTypeSemantics(
         return state
 
     def set_call_semantics(self, stmt: Call, state: State, interpreter: ForwardInterpreter) -> State:
-        state.result = {StatisticalTypeLattice.Status.Set}
+        """Semantics of a call to 'set'.
+
+        :param stmt: call to 'set' to be executed
+        :param state: state before executing the call statement
+        :return: state modified by the call statement
+        """
+        if not stmt.arguments:
+            state.result = {SetDisplay(stmt.typ, list())}
+            return state
+        assert len(stmt.arguments) == 1  # exactly one argument is expected
+        argument = self.semantics(stmt.arguments[0], state, interpreter).result
+        result = set()
+        for expression in argument:
+            if isinstance(expression.typ, StringLyraType):
+                typ = SetLyraType(expression.typ)
+                result.add(CastOperation(typ, expression))
+            elif isinstance(expression.typ, ListLyraType):
+                typ = SetLyraType(expression.typ.typ)
+                result.add(CastOperation(typ, expression))
+            elif isinstance(expression.typ, TupleLyraType):
+                if all(typ == expression.typ.typs[0] for typ in expression.typ.typs):
+                    typ = SetLyraType(expression.typ.typs[0])
+                    result.add(CastOperation(typ, expression))
+                else:
+                    error = f"Cast to list of {expression} is not yet implemented!"
+                    raise NotImplementedError(error)
+            elif isinstance(expression.typ, SetLyraType):
+                result.add(expression)
+            elif isinstance(expression.typ, DictLyraType):
+                typ = SetLyraType(expression.typ.key_typ)
+                result.add(CastOperation(typ, expression))
+            else:
+                result.add(StatisticalTypeLattice.Status.Set)
+        state.result = result
         return state
