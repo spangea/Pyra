@@ -20,7 +20,7 @@ from apronpy.texpr1 import PyTexpr1
 from apronpy.var import PyVar
 
 from lyra.core.types import LyraType, StringLyraType, IntegerLyraType, BooleanLyraType, \
-    DictLyraType, SetLyraType, ListLyraType, TupleLyraType, SequenceLyraType, ContainerLyraType
+    DictLyraType, SetLyraType, ListLyraType, TupleLyraType, SequenceLyraType, ContainerLyraType, TopLyraType
 from lyra.core.utils import copy_docstring
 
 class Status(Enum):
@@ -1084,6 +1084,11 @@ class Subscription(Expression):
         return typ and target and key
 
     def __hash__(self):
+        top_type = None
+        if isinstance(self.typ, list):
+            top_type = TopLyraType
+        if top_type:
+            return hash((top_type, self.target, self.key))
         return hash((self.typ, self.target, self.key))
 
     def __str__(self):
