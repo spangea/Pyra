@@ -111,6 +111,7 @@ class StatisticalTypeSemantics(
         self, access: AttributeAccess, state: StatisticalTypeState, interpreter: ForwardInterpreter, is_lhs = False, get_caller = False
     ) -> StatisticalTypeState:
         if is_lhs:
+            state.result = {access.left} # Necessary to handle get_caller
             return {access.left}
         if isinstance(access.target, VariableAccess):
             id = access.target.variable
