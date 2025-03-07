@@ -846,7 +846,6 @@ class CFGVisitor(ast.NodeVisitor):
         The attribute ctx is Load, Store, or Del."""
 
         target = self.visit(node.value, types, libraries, None, fname=fname)
-        is_loc = isinstance(target.typ, AttributeAccessLyraType) and isinstance(target.typ.target_typ, DataFrameLyraType)
 
         pp = ProgramPoint(node.lineno, node.col_offset)
         constant = isinstance(node.slice, ast.Constant)
@@ -859,8 +858,10 @@ class CFGVisitor(ast.NodeVisitor):
                                    ast.JoinedStr)  # Needed if sub to a formatted str like df[f'{feature}_zero']
         is_compare = isinstance(node.slice, ast.Compare)
         is_unop = isinstance(node.slice, ast.UnaryOp)
-        is_loc = isinstance(target.typ, AttributeAccessLyraType) and isinstance(target.typ.target_typ,
-                                                                                DataFrameLyraType)
+        if hasattr(target, 'typ'):
+            is_loc = isinstance(target.typ, AttributeAccessLyraType) and isinstance(target.typ.target_typ, DataFrameLyraType)
+        else:
+            is_loc = False
         if constant or name or binop or subscript or list or is_tuple or is_joined_str or is_compare or is_unop:
             key = self.visit(node.slice, types, libraries, None, fname=fname)
             if key is not None:
@@ -873,18 +874,21 @@ class CFGVisitor(ast.NodeVisitor):
             target = self.visit(node.value, types, libraries, [_typ, typ], fname=fname)
             if isinstance(target, AttributeAccess):
                 return SubscriptionAccess(pp, None, target, key)
-            if isinstance(target.typ, DictLyraType):
-                return SubscriptionAccess(pp, target.typ.val_typ, target, key)
-            elif isinstance(target.typ, ListLyraType):
-                return SubscriptionAccess(pp, target.typ.typ, target, key)
-            elif isinstance(node.slice, ast.Compare):
-                self.visit_Compare(node, types, libraries)
+            if hasattr(target, 'typ') and isinstance(target.typ, ListLyraType):
+                if isinstance(target.typ, DictLyraType):
+                    return SubscriptionAccess(pp, target.typ.val_typ, target, key)
+                elif isinstance(target.typ, ListLyraType):
+                    return SubscriptionAccess(pp, target.typ.typ, target, key)
+                elif isinstance(node.slice, ast.Compare):
+                    self.visit_Compare(node, types, libraries)
+                    return SubscriptionAccess(pp, TopLyraType, target, key)
+                # elif isinstance(node.slice, ast.UnaryOp):
+                #     self.visit_UnaryOp(node.slice, types)
+                #     return SubscriptionAccess(pp, TopLyraType, target, key)
+                else:  # String
+                        return SubscriptionAccess(pp, target.typ, target, key)
+            else:
                 return SubscriptionAccess(pp, TopLyraType, target, key)
-            # elif isinstance(node.slice, ast.UnaryOp):
-            #     self.visit_UnaryOp(node.slice, types)
-            #     return SubscriptionAccess(pp, TopLyraType, target, key)
-            else:  # String
-                    return SubscriptionAccess(pp, target.typ, target, key)
         elif isinstance(node.slice, ast.Slice):
             value = self.visit(node.value, types, libraries, None, fname=fname)
             lower = None
