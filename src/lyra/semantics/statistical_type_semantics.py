@@ -1265,3 +1265,7 @@ class StatisticalTypeSemantics(
                 result.add(slicing)
         state.result = result
         return state
+
+    def set_call_semantics(self, stmt: Call, state: State, interpreter: ForwardInterpreter) -> State:
+        state.result = {StatisticalTypeLattice.Status.Set}
+        return state
