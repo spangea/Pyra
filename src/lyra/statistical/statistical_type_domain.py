@@ -810,8 +810,9 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
         return self
 
     def delete_var(self, variable: VariableIdentifier) -> 'StatisticalTypeState':
-        # Deletes the variable from the store
-        del self.store[variable]
+        # Deletes the variable from the store if they are present
+        if variable in self.store:
+            del self.store[variable]
         return self
 
     def _output(self, output: Expression) -> 'StatisticalTypeState':
