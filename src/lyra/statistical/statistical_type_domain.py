@@ -1010,8 +1010,7 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
                 typ = state.get_type(target)
                 evaluation[expr] = StatisticalTypeLattice(typ)
             else:
-                # FIXME: Probably should return Top
-                evaluation[expr] = evaluated[target].meet(StatisticalTypeLattice.from_lyra_type(target.typ.typ))
+                evaluation[expr] = StatisticalTypeLattice()
             return evaluation
 
         @copy_docstring(ExpressionVisitor.visit_Input)
