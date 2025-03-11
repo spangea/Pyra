@@ -19,7 +19,7 @@ from lyra.core.types import LyraType, BooleanLyraType, IntegerLyraType, FloatLyr
     StringLyraType, ListLyraType, SequenceLyraType, SetLyraType, TupleLyraType, DictLyraType, \
     ContainerLyraType, DataFrameLyraType, SeriesLyraType, NoneLyraType, TopLyraType
 from lyra.core.utils import copy_docstring
-from lyra.core.statements import VariableAccess
+from lyra.core.statements import VariableAccess, AttributeAccess
 
 from lyra.abstract_domains.basis import BasisWithSummarization
 
@@ -991,6 +991,10 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
                     print(e)
                     evaluation[expr] = StatisticalTypeLattice()
             return evaluation
+        
+        def visit_AttributeAccess(self, expr: AttributeAccess, state=None, evaluation=None):
+            if expr in evaluation:
+                return evaluation
 
         @copy_docstring(ExpressionVisitor.visit_Slicing)
         def visit_Slicing(self, expr: Slicing, state=None, evaluation=None):
