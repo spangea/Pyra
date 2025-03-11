@@ -130,7 +130,7 @@ class NumPyStatisticalTypeSemantics:
             else:
                 state.result = {StatisticalTypeLattice.Status.Array}
         else:
-            state.result = {StatisticalTypeLattice.Status.Top}
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
         return state
 
     def log_call_semantics(
@@ -141,6 +141,6 @@ class NumPyStatisticalTypeSemantics:
         elif utilities.is_Numeric(state, stmt.arguments[0]):
             state.result = {StatisticalTypeLattice.Status.Numeric}
         else:
-            state.result = {StatisticalTypeLattice.Status.Top}
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
         return state

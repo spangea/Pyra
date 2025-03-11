@@ -62,9 +62,7 @@ class PandasStatisticalTypeSemantics:
         elif utilities.is_Numeric(state, caller) or utilities.is_String(state, caller):
             state.result = {StatisticalTypeLattice.Status.Boolean}
         else:
-            state.result = {
-                StatisticalTypeLattice.Status.Top
-            }
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
         return state
 
     def isna_call_semantics(
@@ -108,9 +106,7 @@ class PandasStatisticalTypeSemantics:
         elif utilities.is_Numeric(state, caller) or utilities.is_String(state, caller):
             state.result = {StatisticalTypeLattice.Status.Boolean}
         else:
-            state.result = {
-                StatisticalTypeLattice.Status.Top
-            }
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
         return state
 
     def notnull_call_semantics(
@@ -170,6 +166,8 @@ class PandasStatisticalTypeSemantics:
             state.result = {StatisticalTypeLattice.Status.NumericArray}
         elif utilities.is_Series(state, caller):
             state.result = {StatisticalTypeLattice.Status.Array}
+        else:
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
         return state
 
     def from_dict_call_semantics(
@@ -186,6 +184,8 @@ class PandasStatisticalTypeSemantics:
             state.result = {StatisticalTypeLattice.Status.Numeric}
         elif utilities.is_DataFrame(state, caller):
             state.result = {StatisticalTypeLattice.Status.Series}
+        else:
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
         return state
 
     def drop_duplicates_call_semantics(
@@ -658,6 +658,8 @@ class PandasStatisticalTypeSemantics:
             state.result = {StatisticalTypeLattice.Status.Series}
         elif utilities.is_Series(state, caller):
             state.result = {StatisticalTypeLattice.Status.Numeric}
+        else:
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
         return state
 
     def sort_index_call_semantics(
@@ -677,6 +679,8 @@ class PandasStatisticalTypeSemantics:
             state.result = {StatisticalTypeLattice.Status.Series}
         elif utilities.is_Series(state, caller):
             state.result = {StatisticalTypeLattice.Status.Numeric}
+        else:
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
         return state
 
     def loc_semantics(

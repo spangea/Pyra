@@ -95,19 +95,18 @@ class StatisticalTypeSemantics(
             state.result = {StatisticalTypeLattice.Status.Scalar}
             return state
         else:
-            state.result = {StatisticalTypeLattice.Status.Top}
-            return state
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
 
     def dict_call_semantics(self, stmt: Call, state: State, interpreter: ForwardInterpreter) -> State:
         state.result = {StatisticalTypeLattice.Status.Dict}
         return state
 
-    def values_semantics(self, access: AttributeAccess, state: State) -> StatisticalTypeState:
+    def values_semantics(self, access: AttributeAccess, state: State,) -> StatisticalTypeState:
         caller = access.left.variable
         if utilities.is_DataFrame(state, caller) or utilities.is_Series(state, caller):
             return StatisticalTypeLattice.Status.Array
         else:
-            return StatisticalTypeLattice.Status.Top
+            return self.relaxed_open_call_policy(None, state, None)
 
     def attribute_access_semantics(
         self, access: AttributeAccess, state: StatisticalTypeState, interpreter: ForwardInterpreter, is_lhs = False, get_caller = False
@@ -160,6 +159,8 @@ class StatisticalTypeSemantics(
         elif isinstance(access.target, LibraryAccess):
             # This should not happen
             raise Exception("Access field is actually a LibraryAccess")
+        else:
+            return self.relaxed_open_call_policy(None, state, interpreter)
         return state
 
     def _summarized_view(
@@ -337,6 +338,8 @@ class StatisticalTypeSemantics(
             state.result = {StatisticalTypeLattice.Status.Series}
         elif utilities.is_Series(state, caller):
             state.result = {StatisticalTypeLattice.Status.Numeric}
+        else:
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
         return state
 
     def max_call_semantics(
@@ -353,6 +356,8 @@ class StatisticalTypeSemantics(
             state.result = {StatisticalTypeLattice.Status.Series}
         elif utilities.is_Series(state, caller):
             state.result = {StatisticalTypeLattice.Status.Numeric}
+        else:
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
         return state
 
     def median_call_semantics(
@@ -383,6 +388,8 @@ class StatisticalTypeSemantics(
                         stacklevel=2,
                     )
             state.result = {StatisticalTypeLattice.Status.Numeric}
+        else:
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
         return state
 
     def replace_call_semantics(
@@ -461,6 +468,8 @@ class StatisticalTypeSemantics(
             state.result = {StatisticalTypeLattice.Status.Numeric}
         elif utilities.is_DataFrame(state, caller):
             state.result = {StatisticalTypeLattice.Status.Series}
+        else:
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
         return state
 
     def gmean_call_semantics(
@@ -474,6 +483,8 @@ class StatisticalTypeSemantics(
         caller = list(dfs)[0]
         if utilities.is_Series(state, caller):
             state.result = {StatisticalTypeLattice.Status.Numeric}
+        else:
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
         return state
 
     def print_call_semantics(
@@ -503,6 +514,8 @@ class StatisticalTypeSemantics(
             state.result = {StatisticalTypeLattice.Status.Series}
         elif utilities.is_List(state, caller):
             state.result = {StatisticalTypeLattice.Status.Numeric}
+        else:
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
         return state
 
     def join_call_semantics(
@@ -524,8 +537,7 @@ class StatisticalTypeSemantics(
         elif utilities.is_Array(state, caller):
             state.result = {StatisticalTypeLattice.Status.List}
         else:
-            state.result = {StatisticalTypeLattice.Status.Top}
-
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
         return state
 
     def abs_call_semantics(
@@ -564,7 +576,7 @@ class StatisticalTypeSemantics(
         if utilities.is_Series(state, caller) or utilities.is_DataFrame(state, caller):
             state.result = {StatisticalTypeLattice.Status.Array}
         else:
-            state.result = {None}
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
         return state
 
     def sum_call_semantics(
@@ -890,7 +902,7 @@ class StatisticalTypeSemantics(
             else:
                 state.result = {StatisticalTypeLattice.Status.Top}
         else:
-            state.result = {StatisticalTypeLattice.Status.Top}
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
         return state
 
     def interp_call_semantics(
@@ -904,7 +916,7 @@ class StatisticalTypeSemantics(
              utilities.is_NumericList(state, x)):
             state.result = {StatisticalTypeLattice.Status.NumericArray}
         else:
-            state.result = {StatisticalTypeLattice.Status.Top}
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
         return state
 
     def seed_call_semantics(
@@ -938,7 +950,7 @@ class StatisticalTypeSemantics(
                 else:
                     state.result = {StatisticalTypeLattice.Status.DataFrame}
         else:
-            state.result = {StatisticalTypeLattice.Status.Top}
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
         return state
 
     def precision_recall_curve_call_semantics(
@@ -1200,7 +1212,7 @@ class StatisticalTypeSemantics(
         elif utilities.is_BoolList(state, caller):
             state.result = {StatisticalTypeLattice.Status.Boolean}
         else:
-            state.result = {StatisticalTypeLattice.Status.Top}
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
         return state
 
     def train_test_split_call_semantics(
