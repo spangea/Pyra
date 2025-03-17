@@ -41,7 +41,8 @@ from lyra.core.statistical_warnings import (
     ScaledMeanWarning,
     CategoricalPlotWarning,
     PCAVisualizationWarning,
-    DataLeakage
+    DataLeakage,
+    ReproducibilityWarning
 )
 
 from lyra.semantics.forward import DefaultForwardSemantics
@@ -1218,6 +1219,17 @@ class StatisticalTypeSemantics(
     def train_test_split_call_semantics(
             self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
+        is_reproducible = False
+        for arg in stmt.arguments:
+            if isinstance(arg, Keyword) and arg.name == "random_state":
+                is_reproducible = True
+                break
+        if not is_reproducible:
+            warnings.warn(
+                f"Warning [definite]: in {stmt} @ line {stmt.pp.line} the random state is not set, the experiment might not be reproducible.",
+                category=ReproducibilityWarning,
+                stacklevel=2,
+            )
         types: tuple = ()
         for arg in stmt.arguments:
             if not isinstance(arg, Keyword):
