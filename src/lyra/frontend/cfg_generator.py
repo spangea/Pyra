@@ -1152,7 +1152,7 @@ class CFGVisitor(ast.NodeVisitor):
             body.add_edge(Unconditional(body_out_node, header, Edge.Kind.LOOP_OUT))
 
         if node.orelse:  # there is an else branch
-            orelse = self._visit_body(node.orelse, types=types, libraries=libraries, fname=fname)
+            orelse = self._visit_body(node.orelse, types, libraries=libraries, fname=fname)
             if orelse.out_node:  # control flow can exit the else
                 # add an unconditional DEFAULT edge
                 orelse.add_edge(Unconditional(orelse.out_node, None, Edge.Kind.DEFAULT))
@@ -1321,6 +1321,14 @@ class CFGVisitor(ast.NodeVisitor):
             elif isinstance(child, ast.With):
                 factory.complete_basic_block()
                 factory.append_cfg(self.visit(child, types, libraries))
+            elif isinstance(child, ast.Try):
+                factory.complete_basic_block()
+                try_cfg = self.visit(child, types, libraries, fname=fname)
+                factory.append_cfg(try_cfg)
+            elif isinstance(child, ast.ExceptHandler):
+                factory.complete_basic_block()
+                except_cfg = self.visit(child, types, libraries, fname=fname)
+                factory.append_cfg(except_cfg)
             else:
                 error = "The statement {} is not yet translatable to CFG!".format(child)
                 raise NotImplementedError(error)
@@ -1361,6 +1369,23 @@ class CFGVisitor(ast.NodeVisitor):
         pp = ProgramPoint(node.lineno, node.col_offset)
         expr = Literal(StringLyraType(), "LYRA: FORMATTED STRING NOT REPRESENTED")
         return LiteralEvaluation(pp, expr)
+
+    def visit_Try(self, node, types=None, libraries=None, typ=None, fname=''):
+        pp = ProgramPoint(node.lineno, node.col_offset)
+        body = self._visit_body(node.body, types, libraries, fname=fname)
+        body.add_edge(Unconditional(body.out_node, None, Edge.Kind.DEFAULT))
+        if node.finalbody:
+            finalbody = self._visit_body(node.finalbody, types, libraries, fname=fname)
+            body.append(finalbody)
+        if node.orelse:
+            orelse = self._visit_body(node.orelse, types, libraries, fname=fname)
+            body.append(orelse)
+        return body
+
+    def visit_ExceptHandler(self, node, types=None, libraries=None, typ=None, fname=''):
+        # Return dummy node for except block
+        pp = ProgramPoint(node.lineno, node.col_offset)
+        return _dummy_cfg(self._id_gen)
 
     # def _restructure_return_and_raise_edges(self, cfg):
     #     nodes_to_be_removed = []

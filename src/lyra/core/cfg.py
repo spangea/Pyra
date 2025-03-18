@@ -92,11 +92,13 @@ class Loop(Node):
 class Edge(metaclass=ABCMeta):
     class Kind(Enum):
         """Kind of an edge of a control flow graph."""
+        TRY_OUT = -3  # try exit edge
         IF_OUT = -2  # if exit edge
         LOOP_OUT = -1  # loop exit edge
         DEFAULT = 0
         LOOP_IN = 1  # loop entry edge
         IF_IN = 2  # if entry edge
+        TRY_IN = 3  # try entry edge
 
     def __init__(self, source: Node, target: Node, kind: Kind = Kind.DEFAULT):
         """Edge of a control flow graph.
