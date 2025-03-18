@@ -1,4 +1,6 @@
 import os
+import shutil
+import zipfile
 import pandas as pd
 from pathlib import Path
 import lyra.config as config
@@ -719,6 +721,7 @@ class PandasStatisticalTypeSemantics:
     def read_csv_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
+        last_folder_in_name = None
         try:
             dir = Path(config.args.python_file).parent
             fun_args = []
@@ -732,7 +735,19 @@ class PandasStatisticalTypeSemantics:
                 else:
                     raise Exception("Unexpected argument type")
             fun_args[0] = os.path.join(dir, fun_args[0])
-            concrete_df = pd.read_csv(fun_args[0], **fun_kwargs)
+            benchmark_dir = "/Users/greta/PhD/kaggle/input" # TODO: Do not use hardcoded paths
+            last_folder_in_name = fun_args[0].split("/")[-2] + ".zip"
+            # Check if there is a zip file in the benchmark directory with the same name as the directory from which the file is read
+            if last_folder_in_name in os.listdir(benchmark_dir):
+                # Unzip the file in a temporary directory
+                with zipfile.ZipFile(os.path.join(benchmark_dir, last_folder_in_name), 'r') as zip_ref:
+                    last_folder_in_name = last_folder_in_name.replace(".zip", "")
+                    zip_ref.extractall(os.path.join("/tmp", last_folder_in_name))
+                    tmp_name = os.path.join("/tmp", last_folder_in_name, fun_args[0].split("/")[-1])
+                    concrete_df = pd.read_csv(tmp_name, **fun_kwargs)
+                    shutil.rmtree(os.path.join("/tmp", last_folder_in_name))
+            else:
+                concrete_df = pd.read_csv(fun_args[0], **fun_kwargs)
             shape = concrete_df.shape
             # The concrete dataframe is high dimensional if the number of columns is similar to the number of rows
             # e.g. they are not the dobule of each other
@@ -763,6 +778,8 @@ class PandasStatisticalTypeSemantics:
         except Exception as e:
             print("It was not possible to read the concrete DataFrame due to error: ", e)
             state.result = {StatisticalTypeLattice.Status.DataFrame}
+            if last_folder_in_name is not None and last_folder_in_name in os.listdir("/tmp"):
+                shutil.rmtree(os.path.join("/tmp", last_folder_in_name))
         return state
 
     def DataFrame_call_semantics(
