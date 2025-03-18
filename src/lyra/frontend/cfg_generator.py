@@ -1374,12 +1374,12 @@ class CFGVisitor(ast.NodeVisitor):
         pp = ProgramPoint(node.lineno, node.col_offset)
         body = self._visit_body(node.body, types, libraries, fname=fname)
         body.add_edge(Unconditional(body.out_node, None, Edge.Kind.DEFAULT))
-        if node.finalbody:
-            finalbody = self._visit_body(node.finalbody, types, libraries, fname=fname)
-            body.append(finalbody)
         if node.orelse:
             orelse = self._visit_body(node.orelse, types, libraries, fname=fname)
             body.append(orelse)
+        if node.finalbody:
+            finalbody = self._visit_body(node.finalbody, types, libraries, fname=fname)
+            body.append(finalbody)
         return body
 
     def visit_ExceptHandler(self, node, types=None, libraries=None, typ=None, fname=''):
