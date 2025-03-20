@@ -23,7 +23,7 @@ from lyra.core.statements import VariableAccess, AttributeAccess
 
 from lyra.abstract_domains.basis import BasisWithSummarization
 
-from lyra.core.statistical_warnings import TypeChangedWarning, InconsistentTypeWarning, NoneRetAssignmentWarning, HighDimensionalityWarning
+from lyra.core.statistical_warnings import InconsistentTypeWarning, NoneRetAssignmentWarning, HighDimensionalityWarning
 
 # TODO: Check correctness and update documentation and operators
 
@@ -645,9 +645,6 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
         if left in self.store:
             left_copy = copy.deepcopy(self.store[left])
             right_copy = copy.deepcopy(evaluation[right])
-            if right_copy.meet(left_copy).is_bottom():
-                warnings.warn(f"Warning: inferred type has changed for variable {left.name}. {self.store[left]} -> {evaluation[right]} @ line {self.pp}",
-                              category=TypeChangedWarning, stacklevel=2)
             if right_copy.meet(typ).is_bottom() and not typ.is_top():
                 warnings.warn(f"Warning: inferred type is different wrt annotated type for variable {left.name}. {typ} -> {evaluation[right]} @ line {self.pp}",
                               category=InconsistentTypeWarning, stacklevel=2)

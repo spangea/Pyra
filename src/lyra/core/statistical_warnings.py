@@ -1,5 +1,3 @@
-class TypeChangedWarning(UserWarning):
-    pass
 
 class InconsistentTypeWarning(UserWarning):
     pass
@@ -7,8 +5,6 @@ class InconsistentTypeWarning(UserWarning):
 class GmeanWarning(UserWarning):
     pass
 
-class SpecialSubscriptionAssignmentWarning(UserWarning):
-    pass
 
 class NoneRetAssignmentWarning(UserWarning):
     pass
@@ -19,8 +15,6 @@ class CategoricalConversionMean(UserWarning):
 class ScaledMeanWarning(UserWarning):
     pass
 
-class SpecialAttributeAccessWarning(UserWarning):
-    pass
 
 class CategoricalPlotWarning(UserWarning):
     pass

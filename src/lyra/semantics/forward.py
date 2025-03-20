@@ -24,7 +24,6 @@ from lyra.abstract_domains.state import State
 from lyra.core.statements import Assignment, Call, Return, SubscriptionAccess, AttributeAccess
 
 from copy import deepcopy
-from lyra.core.statistical_warnings import SpecialSubscriptionAssignmentWarning, SpecialAttributeAccessWarning
 
 class ForwardSemantics(Semantics):
     """Forward semantics of statements."""
@@ -139,13 +138,11 @@ class AssignmentSemantics(ForwardSemantics):
         """
         if isinstance(stmt.left, AttributeAccess):
             lhs = getattr(self, "attribute_access_semantics")(stmt, state, interpreter, is_lhs=True)
-            warnings.warn(f"Special attribute access in lhs @ line {stmt.pp.line}", SpecialAttributeAccessWarning)
 
         elif (isinstance(stmt.left, SubscriptionAccess) \
                 and hasattr(stmt.left.target, "attr") and \
                 hasattr(self, '{}_semantics'.format(stmt.left.target.attr))):
             lhs = {Subscription(typing.Any, stmt.left.target.target, stmt.left.key)}
-            warnings.warn(f"Special subscription in lhs @ line {stmt.pp.line}", SpecialSubscriptionAssignmentWarning)
         elif isinstance(stmt.left, SubscriptionAccess):
             lhs = getattr(self, "subscription_access_semantics")(stmt.left, state, interpreter, is_lhs=True).result
         else:
