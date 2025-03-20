@@ -669,6 +669,9 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
             # It tuple has the following structure
             # {(StatisticalTypeLattice.Status.DataFrame, frozenset(dtype_info.items()), is_high_dim, has_duplicates, is_small, frozenset(sorting_info.items()))}
             self._add_series_with_dtypes(left, right[1], right[5])  # No return, just side effect
+            # If there is at least one ordered Series, the DataFrame is not shuffled
+            if any([v == "increasing" or v == "decreasing" for v in dict(right[5]).values()]):
+                left.is_shuffled = Status.NO
             if right[2] == True:
                 left.is_high_dimensionality = Status.YES
                 warnings.warn(
