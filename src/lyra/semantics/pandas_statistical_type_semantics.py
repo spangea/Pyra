@@ -251,10 +251,18 @@ class PandasStatisticalTypeSemantics:
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
         is_reproducible = False
+        # Keyword case for random_state
         for arg in stmt.arguments:
             if isinstance(arg, Keyword) and arg.name == "random_state":
                 is_reproducible = True
                 break
+        # Positional case for random_state - More than 5 arguments and the first five are positional
+        if not is_reproducible and len(stmt.arguments) > 5:
+            is_reproducible = True
+            for arg in stmt.arguments[1:6]:
+                if isinstance(arg, Keyword):
+                    is_reproducible = False
+                    break   # After the first keyword argument, all the following must be keyword arguments
         if not is_reproducible:
             warnings.warn(
                 f"Warning [definite]: in {stmt} @ line {stmt.pp.line} the random state is not set, the experiment might not be reproducible.",
