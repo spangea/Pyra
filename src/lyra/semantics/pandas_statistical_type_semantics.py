@@ -205,7 +205,7 @@ class PandasStatisticalTypeSemantics:
                     caller = caller.variable
                 if caller in state.variables:
                     for e in state.variables:
-                        if e == caller and e.has_duplicates == Status.YES:
+                        if e == caller:
                             tmp = e
                             state.variables.remove(e)
                             tmp.has_duplicates = Status.NO
