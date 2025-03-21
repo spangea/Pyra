@@ -449,7 +449,24 @@ class PandasStatisticalTypeSemantics:
     def dropna_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
-        caller = self.get_caller(stmt, state, interpreter)
+        subset = None
+        for arg in stmt.arguments:
+            if isinstance(arg, Keyword) and (arg.name == "subset" or arg.name == "thresh"):
+                subset = arg.value
+                break
+        if subset is None:
+            caller = self.get_caller(stmt, state, interpreter)
+            if utilities.is_DataFrame(state, caller):
+                if isinstance(caller, VariableAccess):
+                    caller = caller.variable
+                if caller in state.variables:
+                    for e in state.variables:
+                        if e == caller:
+                            tmp = e
+                            state.variables.remove(e)
+                            tmp.has_na_values = Status.NO
+                            state.variables.add(tmp)
+                            break
         if utilities.is_inplace(stmt.arguments):
             self.semantics_without_inplace(stmt, state, interpreter)
             state.result = {StatisticalTypeLattice.Status.NoneRet}
@@ -768,6 +785,7 @@ class PandasStatisticalTypeSemantics:
             else:
                 is_small = False
             has_duplicates = concrete_df.duplicated().any()
+            has_na_values = concrete_df.isna().values.any()
             dtype_info = {}
             for col in concrete_df.columns:
                 dtype_info[col] = concrete_df[col].dtype
@@ -782,7 +800,7 @@ class PandasStatisticalTypeSemantics:
                     sorting_info[col] = "decreasing"
                 else:
                     sorting_info[col] = "not_sorted"
-            state.result = {(StatisticalTypeLattice.Status.DataFrame, frozenset(dtype_info.items()), is_high_dim, has_duplicates, is_small, frozenset(sorting_info.items()))}
+            state.result = {(StatisticalTypeLattice.Status.DataFrame, frozenset(dtype_info.items()), is_high_dim, has_duplicates, has_na_values, is_small, frozenset(sorting_info.items()))}
         except Exception as e:
             print("It was not possible to read the concrete DataFrame due to error: ", e)
             state.result = {StatisticalTypeLattice.Status.DataFrame}

@@ -45,3 +45,6 @@ class NotShuffledWarning(UserWarning):
 
 class DataLeakage(UserWarning):
     pass
+
+class MissingDataWarning(UserWarning):
+    pass

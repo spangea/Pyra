@@ -717,6 +717,7 @@ class VariableIdentifier(Identifier):
         self._has_duplicates = Status.MAYBE
         self._is_small = Status.MAYBE
         self._is_shuffled = Status.MAYBE
+        self._has_na_values = Status.MAYBE
 
     @property
     def has_length(self):
@@ -791,6 +792,16 @@ class VariableIdentifier(Identifier):
         if not isinstance(value, Status):
             raise ValueError("Value must be an instance of Status Enum")
         self._is_shuffled = value
+
+    @property
+    def has_na_values(self):
+        return self._has_na_values
+
+    @has_na_values.setter
+    def has_na_values(self, value: Status):
+        if not isinstance(value, Status):
+            raise ValueError("Value must be an instance of Status Enum")
+        self._has_na_values = value
 
 class LengthIdentifier(Identifier):
     """Sequence or collection length representation."""

@@ -25,7 +25,7 @@ from lyra.frontend.cfg_generator import ast_to_cfgs
 from lyra.frontend.cfg_generator import ast_to_fargs
 from lyra.visualization.graph_renderer import AnalysisResultRenderer
 from lyra.statistical.statistical_type_domain import StatisticalTypeState, StatisticalTypeLattice
-from lyra.core.statistical_warnings import DuplicatesNotDroppedWarning, NotShuffledWarning
+from lyra.core.statistical_warnings import DuplicatesNotDroppedWarning, NotShuffledWarning, MissingDataWarning
 import warnings
 
 class Runner:
@@ -120,6 +120,10 @@ class Runner:
                         warnings.warn(
                         f"Warning [possible]: At the and of the program {v} might be not shuffled and at the read_csv statement it contained a increasing/decreasing/constant Series, using sample() might be necessary to guarantee randomness.",
                         category=NotShuffledWarning, stacklevel=2)
+                if v.has_na_values == Status.YES:
+                    warnings.warn(
+                    f"Warning [possible]: At the and of the program {v} might still have NA values, using dropna() might be necessary.",
+                    category=MissingDataWarning, stacklevel=2)
         end = time.time()
         print('Time: {}s'.format(end - start))
         self.render(result)

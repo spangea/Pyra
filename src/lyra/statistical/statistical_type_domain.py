@@ -635,7 +635,7 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
     def _assign_variable(self, left: VariableIdentifier, right: Expression) -> 'StatisticalTypeState':
         right_copy_ = None
         if type(right) == tuple:    # Only used to gather concrete information about DataFrames when read_csv is called
-            assert len(right) == 6
+            assert len(right) == 7
             right_copy_ = deepcopy(right)    # This is necessary because we need left information before adding the Series
             right = right[0]
         # Continue with the actual assignment as usual
@@ -667,10 +667,10 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
         if right_copy_:
             right = right_copy_
             # It tuple has the following structure
-            # {(StatisticalTypeLattice.Status.DataFrame, frozenset(dtype_info.items()), is_high_dim, has_duplicates, is_small, frozenset(sorting_info.items()))}
-            self._add_series_with_dtypes(left, right[1], right[5])  # No return, just side effect
+            # {(StatisticalTypeLattice.Status.DataFrame, frozenset(dtype_info.items()), is_high_dim, has_duplicates, has_na_values, is_small, frozenset(sorting_info.items()))}
+            self._add_series_with_dtypes(left, right[1], right[6])  # No return, just side effect
             # If there is at least one ordered Series, the DataFrame is not shuffled
-            if any([v == "increasing" or v == "decreasing" for v in dict(right[5]).values()]):
+            if any([v == "increasing" or v == "decreasing" for v in dict(right[6]).values()]):
                 left.is_shuffled = Status.NO
             if right[2] == True:
                 left.is_high_dimensionality = Status.YES
@@ -687,6 +687,11 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
                 left.is_small = Status.YES
             else:
                 left.is_small = Status.NO
+            if right[5] == True:
+                left.has_na_values = Status.YES
+                print(f"Warning: {left.name} has missing values.")
+            else:
+                left.has_na_values = Status.NO
             if left in self.variables:
                 self.variables.remove(left)
             self.variables.add(left)
