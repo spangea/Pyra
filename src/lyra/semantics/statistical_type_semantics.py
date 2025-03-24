@@ -103,7 +103,7 @@ class StatisticalTypeSemantics(
         return state
 
     def values_semantics(self, access: AttributeAccess, state: State,) -> StatisticalTypeState:
-        caller = access.left.variable
+        caller = access.target.variable
         if utilities.is_DataFrame(state, caller) or utilities.is_Series(state, caller):
             return StatisticalTypeLattice.Status.Array
         else:
