@@ -859,16 +859,19 @@ class PandasStatisticalTypeSemantics:
         if utilities.is_DataFrame(state, caller) and isinstance(caller, VariableIdentifier):
             caller_to_print = caller if not isinstance(caller, StatisticalTypeLattice.Status) else stmt
             if caller in state.variables:
-                caller = next((x for x in state.variables if x == caller))
+                for item in state.variables:
+                    if item == caller:
+                        caller = item
+                        break
             if caller.is_small == Status.NO:
                 warnings.warn(
-                    f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} has many instances, therefore handling missing values with fillna might change the distribution.",
+                    f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} has many instances, but handling missing values with fillna might change the distribution.",
                     category=InappropriateMissingValuesWarning,
                     stacklevel=2,
                 )
             else:
                 warnings.warn(
-                    f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} may have few instances, but handling missing values with fillna might change the distribution.",
+                    f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} may have few instances, handling missing values with fillna might change the distribution.",
                     category=InappropriateMissingValuesWarning,
                     stacklevel=2,
                 )
