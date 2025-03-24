@@ -560,19 +560,23 @@ class CFGVisitor(ast.NodeVisitor):
                 if name.replace(str(fname) + "#", "") in libraries:
                     demangled_name = name.replace(str(fname) + "#", "")
                     return LibraryAccess(pp, libraries[demangled_name], demangled_name)
-            if name in types:
+            if types and name in types:
                 _name = name
             else:
                 _name = name.replace(fname + '#', '')
-            if name not in types:
+            if types and name not in types:
                 if typ:
                     types[name] = typ
                 else:
                     types[name] = Any
             # assert _name in types
             # assert types[name] == typ or typ is None
-            expr = VariableIdentifier(types[_name], _name)
-            return VariableAccess(pp, types[_name], expr)
+            if types is None:
+                expr = VariableIdentifier(Any, _name)
+                return VariableAccess(pp, Any, expr)
+            else:
+                expr = VariableIdentifier(types[_name], _name)
+                return VariableAccess(pp, types[_name], expr)
         if isinstance(node.ctx, ast.Del):
             if name not in types:
                 if typ:
