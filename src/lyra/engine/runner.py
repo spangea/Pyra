@@ -108,9 +108,14 @@ class Runner:
             last_node_results_state = last_node_results[0]
             for v in last_node_results_state.variables:
                 if v.has_duplicates == Status.YES:
-                    warnings.warn(
-                    f"Warning [possibile]: At the and of the program {v} might still have duplicates that were not dropped, using drop_duplicates() might be necessary.",
-                    category=DuplicatesNotDroppedWarning, stacklevel=2)
+                    if v.is_small == Status.YES:
+                        warnings.warn(
+                            f"Warning [possibile]: At the and of the program {v} might be small and still have duplicates that were not dropped, using drop_duplicates() might be necessary.",
+                            category=DuplicatesNotDroppedWarning, stacklevel=2)
+                    else:
+                        warnings.warn(
+                        f"Warning [possibile]: At the and of the program {v} might still have duplicates that were not dropped, using drop_duplicates() might be necessary.",
+                        category=DuplicatesNotDroppedWarning, stacklevel=2)
                 if v in last_node_results_state.store and StatisticalTypeLattice._is_dataframe_type(last_node_results_state.store[v].element):
                     if v.is_shuffled == Status.MAYBE:
                         warnings.warn(
