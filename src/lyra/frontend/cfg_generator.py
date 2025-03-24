@@ -598,7 +598,7 @@ class CFGVisitor(ast.NodeVisitor):
         if isinstance(target, LibraryAccess):
             return LibraryAccess(pp, target.library, node.attr)
         attr = AttributeIdentifier(StringLyraType(), node.attr)
-        access_typ = AttributeAccessLyraType(target.typ, None)
+        access_typ = AttributeAccessLyraType(target.typ if hasattr(target, "typ") else TopLyraType, None)
         return AttributeAccess(pp, access_typ, target, attr)
 
     # Expressions

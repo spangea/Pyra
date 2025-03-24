@@ -1305,29 +1305,31 @@ class StatisticalTypeSemantics(
         if not stmt.arguments:
             state.result = {SetDisplay(stmt.typ, list())}
             return state
-        assert len(stmt.arguments) == 1  # exactly one argument is expected
-        argument = self.semantics(stmt.arguments[0], state, interpreter).result
-        result = set()
-        for expression in argument:
-            if isinstance(expression.typ, StringLyraType):
-                typ = SetLyraType(expression.typ)
-                result.add(CastOperation(typ, expression))
-            elif isinstance(expression.typ, ListLyraType):
-                typ = SetLyraType(expression.typ.typ)
-                result.add(CastOperation(typ, expression))
-            elif isinstance(expression.typ, TupleLyraType):
-                if all(typ == expression.typ.typs[0] for typ in expression.typ.typs):
-                    typ = SetLyraType(expression.typ.typs[0])
+        if len(stmt.arguments) == 1:
+            argument = self.semantics(stmt.arguments[0], state, interpreter).result
+            result = set()
+            for expression in argument:
+                if isinstance(expression.typ, StringLyraType):
+                    typ = SetLyraType(expression.typ)
+                    result.add(CastOperation(typ, expression))
+                elif isinstance(expression.typ, ListLyraType):
+                    typ = SetLyraType(expression.typ.typ)
+                    result.add(CastOperation(typ, expression))
+                elif isinstance(expression.typ, TupleLyraType):
+                    if all(typ == expression.typ.typs[0] for typ in expression.typ.typs):
+                        typ = SetLyraType(expression.typ.typs[0])
+                        result.add(CastOperation(typ, expression))
+                    else:
+                        error = f"Cast to list of {expression} is not yet implemented!"
+                        raise NotImplementedError(error)
+                elif isinstance(expression.typ, SetLyraType):
+                    result.add(expression)
+                elif isinstance(expression.typ, DictLyraType):
+                    typ = SetLyraType(expression.typ.key_typ)
                     result.add(CastOperation(typ, expression))
                 else:
-                    error = f"Cast to list of {expression} is not yet implemented!"
-                    raise NotImplementedError(error)
-            elif isinstance(expression.typ, SetLyraType):
-                result.add(expression)
-            elif isinstance(expression.typ, DictLyraType):
-                typ = SetLyraType(expression.typ.key_typ)
-                result.add(CastOperation(typ, expression))
-            else:
-                result.add(StatisticalTypeLattice.Status.Set)
-        state.result = result
-        return state
+                    result.add(StatisticalTypeLattice.Status.Set)
+            state.result = result
+            return state
+        else:
+            return self.relaxed_open_call_policy(stmt, state, interpreter)
