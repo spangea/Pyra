@@ -729,7 +729,7 @@ class StatisticalTypeSemantics(
                 state.result = {StatisticalTypeLattice.Status.NumericArray}
             elif utilities.is_String(state, eval):
                 state.result = {StatisticalTypeLattice.Status.StringArray}
-            elif utilities.is_Bool(state, eval):
+            elif utilities.is_Boolean(state, eval):
                 state.result = {StatisticalTypeLattice.Status.BoolArray}
             else:
                 state.result = {StatisticalTypeLattice.Status.Array}
