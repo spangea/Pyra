@@ -651,7 +651,8 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
         # Assignment is destructive
         self.store[left] = evaluation[right]
         if evaluation[right].element == StatisticalTypeLattice.Status.NoneRet:
-            warnings.warn(f"Warning [definite]: Assignment to None type for variable {left.name} @ line {self.pp}", NoneRetAssignmentWarning,
+            warnings.warn(f"Warning [definite]: Assignment to None type for variable {left.name} @ line {self.pp}",
+                          NoneRetAssignmentWarning,
                           stacklevel=2)
         if left.is_dictionary:
             _typ = StatisticalTypeLattice.from_lyra_type(left.typ.key_typ)
@@ -702,8 +703,9 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
         typ = StatisticalTypeLattice.from_lyra_type(left.typ)
         self.store[left] = evaluation[right].meet(typ)
         if evaluation[right].element == StatisticalTypeLattice.Status.NoneRet:
-            warnings.warn(f"Assignment to None type for variable {left.name} @ line {self.pp}", NoneRetAssignmentWarning,
-                          stacklevel=2)
+                        warnings.warn(f"Warning [definite]: Assignment to None type for variable {left.name} @ line {self.pp}",
+                        NoneRetAssignmentWarning,
+                        stacklevel=2)
         target = left.target
         if isinstance(target, VariableAccess):
             target = target.variable
@@ -729,7 +731,7 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
         else:
             self.store[left] = evaluation[right].meet(typ)
         if evaluation[right].element == StatisticalTypeLattice.Status.NoneRet:
-            warnings.warn(f"Assignment to None type for variable {left.name} @ line {self.pp}",
+            warnings.warn(f"Warning [definite]: Assignment to None type for variable {left.name} @ line {self.pp}",
                           NoneRetAssignmentWarning,
                           stacklevel=2)
         return self
