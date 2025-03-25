@@ -9,7 +9,7 @@ class GmeanWarning(UserWarning):
 class NoneRetAssignmentWarning(UserWarning):
     pass
 
-class CategoricalConversionMean(UserWarning):
+class CategoricalConversionMeanWarning(UserWarning):
     pass
 
 class ScaledMeanWarning(UserWarning):
@@ -43,7 +43,7 @@ class DuplicatesNotDroppedWarning(UserWarning):
 class NotShuffledWarning(UserWarning):
     pass
 
-class DataLeakage(UserWarning):
+class DataLeakageWarning(UserWarning):
     pass
 
 class MissingDataWarning(UserWarning):

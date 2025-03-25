@@ -37,11 +37,11 @@ import pandas as pd
 
 from lyra.core.statistical_warnings import (
     GmeanWarning,
-    CategoricalConversionMean,
+    CategoricalConversionMeanWarning,
     ScaledMeanWarning,
     CategoricalPlotWarning,
     PCAVisualizationWarning,
-    DataLeakage,
+    DataLeakageWarning,
     ReproducibilityWarning
 )
 
@@ -378,14 +378,14 @@ class StatisticalTypeSemantics(
             if caller in state.store and state.get_type(caller) == StatisticalTypeLattice.Status.CatSeries:
                 warnings.warn(
                     f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} is a CatSeries, median my be not meaningful.",
-                    category=CategoricalConversionMean,
+                    category=CategoricalConversionMeanWarning,
                     stacklevel=2,
                 )
             else:
                 if interpreter.warning_level == "possible":
                     warnings.warn(
                         f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> if in {caller_to_print} there is a CatSeries, median my be not meaningful.",
-                        category=CategoricalConversionMean,
+                        category=CategoricalConversionMeanWarning,
                         stacklevel=2,
                     )
             state.result = {StatisticalTypeLattice.Status.Numeric}
@@ -440,7 +440,7 @@ class StatisticalTypeSemantics(
             elif utilities.is_CatSeries(state, caller):
                 warnings.warn(
                     f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} is a CatSeries, mean my be not meaningful.",
-                    category=CategoricalConversionMean,
+                    category=CategoricalConversionMeanWarning,
                     stacklevel=2,
                 )
             elif utilities.is_ScaledSeries(state, caller):
@@ -458,7 +458,7 @@ class StatisticalTypeSemantics(
                     )
                     warnings.warn(
                         f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> if in {caller_to_print} there is a CatSeries, mean my be not meaningful.",
-                        category=CategoricalConversionMean,
+                        category=CategoricalConversionMeanWarning,
                         stacklevel=2,
                     )
                     warnings.warn(
@@ -1236,31 +1236,31 @@ class StatisticalTypeSemantics(
                 if utilities.is_NormSeries(state, arg):
                     warnings.warn(
                         f"Warning [definite]: in {stmt} @ line {stmt.pp.line} @ column {stmt.pp.column} -> Data should be normalized after the split method",
-                        category=DataLeakage,
+                        category=DataLeakageWarning,
                         stacklevel=2,
                     )
                 elif utilities.is_StdSeries(state, arg):
                     warnings.warn(
                         f"Warning [definite]: in {stmt} @ line {stmt.pp.line} @ column {stmt.pp.column} -> Data should be standardized after the split method",
-                        category=DataLeakage,
+                        category=DataLeakageWarning,
                         stacklevel=2,
                     )
                 elif utilities.is_CatSeries(state, arg):
                     warnings.warn(
                         f"Warning [definite]: in {stmt} @ line {stmt.pp.line} @ column {stmt.pp.column} -> Data should be encoded after the split method",
-                        category=DataLeakage,
+                        category=DataLeakageWarning,
                         stacklevel=2,
                     )
                 elif utilities.is_FeatureSelected(state, arg):
                     warnings.warn(
                         f"Warning [definite]: in {stmt} @ line {stmt.pp.line} @ column {stmt.pp.column} -> Data should be Feature Selected after the split method",
-                        category=DataLeakage,
+                        category=DataLeakageWarning,
                         stacklevel=2,
                     )
                 elif utilities.is_Scaled(state, arg):
                     warnings.warn(
                         f"Warning [definite]: in {stmt} @ line {stmt.pp.line} @ column {stmt.pp.column} -> Data should be scaled after the split method",
-                        category=DataLeakage,
+                        category=DataLeakageWarning,
                         stacklevel=2,
                     )
                 types += tuple({StatisticalTypeLattice.Status.SplittedTrainData})

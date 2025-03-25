@@ -14,7 +14,7 @@ from lyra.core.statements import (
 from lyra.semantics.utilities import SelfUtilitiesSemantics
 
 from lyra.core.statistical_warnings import (
-    DataLeakage
+    DataLeakageWarning
 )
 
 import warnings
@@ -52,7 +52,7 @@ class SklearnTypeSemantics:
         if utilities.is_SplittedTestData(state, data):
             warnings.warn(
                 f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> The fit method should be used on train data only.",
-                category=DataLeakage,
+                category=DataLeakageWarning,
                 stacklevel=2,
             )
         elif utilities.is_PCA(state, caller):
@@ -72,7 +72,7 @@ class SklearnTypeSemantics:
                                 warnings.warn(
                                     f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> PCA is applied to Dataframe containing a categorical Series, it is better to use MixedPCA.",
                                     category=PCAOnCategoricalWarning,
-                                    stacklevel=2,
+                                    stacklevel=3,
                                 )
                                 warning_raised = True
                                 break
@@ -80,7 +80,7 @@ class SklearnTypeSemantics:
                     warnings.warn(
                         f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> PCA might be applied to Dataframe containing a categorical Series, it is better to use MixedPCA.",
                         category=PCAOnCategoricalWarning,
-                        stacklevel=2,
+                        stacklevel=3,
                     )
 
     def transform_call_semantics(
@@ -113,7 +113,7 @@ class SklearnTypeSemantics:
         if utilities.is_SplittedTestData(state, data):
             warnings.warn(
                 f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> The fit_transform method should be used on train data only.",
-                category=DataLeakage,
+                category=DataLeakageWarning,
                 stacklevel=2,
             )
         elif utilities.is_PCA(state, caller):
