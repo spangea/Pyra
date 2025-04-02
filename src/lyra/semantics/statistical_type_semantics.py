@@ -678,6 +678,7 @@ class StatisticalTypeSemantics(
                     warnings.warn(
                         f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a DataFrame resulted from PCA, t-SNE or UMAP might be a better choice for visualization.",
                         stacklevel=2,
+                        category=PCAVisualizationWarning
                     )
                 if arg in state.subscriptions:
                     for sub in state.subscriptions[arg]:
@@ -693,6 +694,18 @@ class StatisticalTypeSemantics(
                                 category=CategoricalPlotWarning,
                                 stacklevel=2,
                             )
+            # Also a subscription to a DataFrameFromPCA a PCAVisualizationWarning must be raised
+            elif isinstance(arg, SubscriptionAccess):
+                if isinstance(arg.target, VariableAccess):
+                    arg = arg.target.variable
+                else:
+                    arg = arg.target
+                if state.get_type(arg) == StatisticalTypeLattice.Status.DataFrameFromPCA:
+                    warnings.warn(
+                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a DataFrame resulted from PCA, t-SNE or UMAP might be a better choice for visualization.",
+                        stacklevel=2,
+                        category=PCAVisualizationWarning
+                    )
         state.result = {StatisticalTypeLattice.Status.Plot}
         return state
 
