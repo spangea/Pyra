@@ -652,7 +652,7 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
         self.store[left] = evaluation[right]
         if evaluation[right].element == StatisticalTypeLattice.Status.NoneRet:
             warnings.warn(f"Warning [definite]: Assignment to None type for variable {left.name} @ line {self.pp}",
-                          NoneRetAssignmentWarning,
+                          category=NoneRetAssignmentWarning,
                           stacklevel=2)
         if left.is_dictionary:
             _typ = StatisticalTypeLattice.from_lyra_type(left.typ.key_typ)
