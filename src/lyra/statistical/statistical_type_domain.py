@@ -665,6 +665,21 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
             else:
                 self.keys[left.keys] = deepcopy(evaluation[right]).meet(deepcopy(typ))
                 self.values[left.values] = deepcopy(evaluation[right]).meet(deepcopy(typ))
+        if isinstance(right, VariableIdentifier):
+            if right in self.variables and left in self.variables:
+                right_tmp = None
+                for v in self._variables:
+                    if v == right:
+                        right_tmp = v
+                if right_tmp:
+                    left.is_shuffled = right_tmp.is_shuffled
+                    left.is_high_dimensionality = right_tmp.is_high_dimensionality
+                    left.has_duplicates = right_tmp.has_duplicates
+                    left.is_small = right_tmp.is_small
+                    left.has_na_values = right_tmp.has_na_values
+                    if left in self.variables:
+                        self.variables.remove(left)
+                    self.variables.add(left)
         if right_copy_:
             right = right_copy_
             # It tuple has the following structure
