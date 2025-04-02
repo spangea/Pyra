@@ -193,12 +193,15 @@ class PandasStatisticalTypeSemantics:
     def drop_duplicates_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
-        subset = None
-        for arg in stmt.arguments:
-            if isinstance(arg, Keyword) and arg.name == "subset":
-                subset = arg.value
-                break
-        if subset is None:      # Drop duplicates on all columns
+        if utilities.is_inplace(stmt.arguments):
+            self.semantics_without_inplace(stmt, state, interpreter)
+            state.result = {StatisticalTypeLattice.Status.NoneRet}  # inplace calls return None type
+            # Directly change has_duplicates property of the caller to NO
+            subset = None
+            for arg in stmt.arguments:
+                if isinstance(arg, Keyword) and arg.name == "subset":
+                    subset = arg.value
+                    break
             caller = self.get_caller(stmt, state, interpreter)
             if utilities.is_DataFrame(state, caller):
                 if isinstance(caller, VariableAccess):
@@ -211,10 +214,30 @@ class PandasStatisticalTypeSemantics:
                             tmp.has_duplicates = Status.NO
                             state.variables.add(tmp)
                             break
-        if utilities.is_inplace(stmt.arguments):
-            self.semantics_without_inplace(stmt, state, interpreter)
-            state.result = {StatisticalTypeLattice.Status.NoneRet}  # inplace calls return None type
             return state
+        subset = None
+        for arg in stmt.arguments:
+                if isinstance(arg, Keyword) and arg.name == "subset":
+                    subset = arg.value
+                    break
+        if subset is None:  # Drop duplicates on all columns
+            caller = self.get_caller(stmt, state, interpreter)
+            if utilities.is_DataFrame(state, caller):
+                if isinstance(caller, VariableAccess):
+                    caller = caller.variable
+                if caller in state.variables:
+                    # Create a copy of the caller to represent the new DataFrame
+                    new_var = VariableIdentifier(caller.typ, f"{caller}_lyracopy")
+                    state.variables.add(new_var)
+                    for e in state.variables:
+                        if e == new_var:
+                            tmp = e
+                            tmp.has_duplicates = Status.NO
+                            break
+                    tmp_state = self.return_same_type_as_caller(stmt, state, interpreter)
+                    tmp_result = tmp_state.result.pop()
+                    state.result = {(tmp_result, new_var)}
+                    return state
         return self.return_same_type_as_caller(stmt, state, interpreter)
 
     def query_call_semantics(
@@ -449,6 +472,28 @@ class PandasStatisticalTypeSemantics:
     def dropna_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
+        if utilities.is_inplace(stmt.arguments):
+            self.semantics_without_inplace(stmt, state, interpreter)
+            state.result = {StatisticalTypeLattice.Status.NoneRet}
+            subset = None
+            for arg in stmt.arguments:
+                if isinstance(arg, Keyword) and (arg.name == "subset" or arg.name == "thresh"):
+                    subset = arg.value
+                    break
+            if subset is None:
+                caller = self.get_caller(stmt, state, interpreter)
+                if utilities.is_DataFrame(state, caller):
+                    if isinstance(caller, VariableAccess):
+                        caller = caller.variable
+                    if caller in state.variables:
+                        for e in state.variables:
+                            if e == caller:
+                                tmp = e
+                                state.variables.remove(e)
+                                tmp.has_na_values = Status.NO
+                                state.variables.add(tmp)
+                                break
+                return state
         subset = None
         for arg in stmt.arguments:
             if isinstance(arg, Keyword) and (arg.name == "subset" or arg.name == "thresh"):
@@ -460,17 +505,18 @@ class PandasStatisticalTypeSemantics:
                 if isinstance(caller, VariableAccess):
                     caller = caller.variable
                 if caller in state.variables:
+                    # Create a copy of the caller to represent the new DataFrame
+                    new_var = VariableIdentifier(caller.typ, f"{caller}_lyracopy")
+                    state.variables.add(new_var)
                     for e in state.variables:
-                        if e == caller:
+                        if e == new_var:
                             tmp = e
-                            state.variables.remove(e)
                             tmp.has_na_values = Status.NO
-                            state.variables.add(tmp)
                             break
-        if utilities.is_inplace(stmt.arguments):
-            self.semantics_without_inplace(stmt, state, interpreter)
-            state.result = {StatisticalTypeLattice.Status.NoneRet}
-            return state
+                    tmp_state = self.return_same_type_as_caller(stmt, state, interpreter)
+                    tmp_result = tmp_state.result.pop()
+                    state.result = {(tmp_result, new_var)}
+                    return state
         return self.return_same_type_as_caller(stmt, state, interpreter)
 
     def duplicated_call_semantics(
@@ -855,6 +901,28 @@ class PandasStatisticalTypeSemantics:
     def fillna_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
+        if utilities.is_inplace(stmt.arguments):
+            self.semantics_without_inplace(stmt, state, interpreter)
+            state.result = {StatisticalTypeLattice.Status.NoneRet}
+            subset = None
+            for arg in stmt.arguments:
+                if isinstance(arg, Keyword) and (arg.name == "limit" or arg.name == "axis"):
+                    subset = arg.value
+                    break
+            if subset is None:
+                caller = self.get_caller(stmt, state, interpreter)
+                if utilities.is_DataFrame(state, caller):
+                    if isinstance(caller, VariableAccess):
+                        caller = caller.variable
+                    if caller in state.variables:
+                        for e in state.variables:
+                            if e == caller:
+                                tmp = e
+                                state.variables.remove(e)
+                                tmp.has_na_values = Status.NO
+                                state.variables.add(tmp)
+                                break
+            return state
         caller = self.get_caller(stmt, state, interpreter)
         if utilities.is_DataFrame(state, caller) and isinstance(caller, VariableIdentifier):
             caller_to_print = caller if not isinstance(caller, StatisticalTypeLattice.Status) else stmt
@@ -875,8 +943,27 @@ class PandasStatisticalTypeSemantics:
                     category=InappropriateMissingValuesWarning,
                     stacklevel=2,
                 )
-        if utilities.is_inplace(stmt.arguments):
-            self.semantics_without_inplace(stmt, state, interpreter)
-            state.result = {StatisticalTypeLattice.Status.NoneRet}
-            return state
+        subset = None
+        for arg in stmt.arguments:
+            if isinstance(arg, Keyword) and (arg.name == "limit" or arg.name == "axis"):
+                subset = arg.value
+                break
+        if subset is None:
+            caller = self.get_caller(stmt, state, interpreter)
+            if utilities.is_DataFrame(state, caller):
+                if isinstance(caller, VariableAccess):
+                    caller = caller.variable
+                if caller in state.variables:
+                    # Create a copy of the caller to represent the new DataFrame
+                    new_var = VariableIdentifier(caller.typ, f"{caller}_lyracopy")
+                    state.variables.add(new_var)
+                    for e in state.variables:
+                        if e == new_var:
+                            tmp = e
+                            tmp.has_na_values = Status.NO
+                            break
+                    tmp_state = self.return_same_type_as_caller(stmt, state, interpreter)
+                    tmp_result = tmp_state.result.pop()
+                    state.result = {(tmp_result, new_var)}
+                    return state
         return self.return_same_type_as_caller(stmt, state, interpreter)

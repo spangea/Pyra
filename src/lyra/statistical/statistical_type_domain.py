@@ -635,7 +635,7 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
     def _assign_variable(self, left: VariableIdentifier, right: Expression) -> 'StatisticalTypeState':
         right_copy_ = None
         if type(right) == tuple:    # Only used to gather concrete information about DataFrames when read_csv is called
-            assert len(right) == 7
+            assert len(right) == 7 or len(right) == 2
             right_copy_ = deepcopy(right)    # This is necessary because we need left information before adding the Series
             right = right[0]
         # Continue with the actual assignment as usual
@@ -681,36 +681,48 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
                         self.variables.remove(left)
                     self.variables.add(left)
         if right_copy_:
-            right = right_copy_
-            # It tuple has the following structure
-            # {(StatisticalTypeLattice.Status.DataFrame, frozenset(dtype_info.items()), is_high_dim, has_duplicates, has_na_values, is_small, frozenset(sorting_info.items()))}
-            self._add_series_with_dtypes(left, right[1], right[6])  # No return, just side effect
-            # If there is at least one ordered Series, the DataFrame is not shuffled
-            if any([v == "increasing" or v == "decreasing" for v in dict(right[6]).values()]):
-                left.is_shuffled = Status.NO
-            if right[2] == True:
-                left.is_high_dimensionality = Status.YES
-                warnings.warn(
-                    f"Warning [definite]: {left.name} is high dimensional. Feature selection/engineering or dimensionality reduction may be necessary.",
-                    category=HighDimensionalityWarning, stacklevel=2)
-            else:
-                left.is_high_dimensionality = Status.NO
-            if right[3] == True:
-                left.has_duplicates = Status.YES
-            else:
-                left.has_duplicates = Status.NO
-            if right[4] == True:
-                left.is_small = Status.YES
-            else:
-                left.is_small = Status.NO
-            if right[5] == True:
-                left.has_na_values = Status.YES
-                print(f"Warning: {left.name} has missing values.")
-            else:
-                left.has_na_values = Status.NO
-            if left in self.variables:
-                self.variables.remove(left)
-            self.variables.add(left)
+            if len(right_copy_) == 7:
+                right = right_copy_
+                # It tuple has the following structure
+                # {(StatisticalTypeLattice.Status.DataFrame, frozenset(dtype_info.items()), is_high_dim, has_duplicates, has_na_values, is_small, frozenset(sorting_info.items()))}
+                self._add_series_with_dtypes(left, right[1], right[6])  # No return, just side effect
+                # If there is at least one ordered Series, the DataFrame is not shuffled
+                if any([v == "increasing" or v == "decreasing" for v in dict(right[6]).values()]):
+                    left.is_shuffled = Status.NO
+                if right[2] == True:
+                    left.is_high_dimensionality = Status.YES
+                    warnings.warn(
+                        f"Warning [definite]: {left.name} is high dimensional. Feature selection/engineering or dimensionality reduction may be necessary.",
+                        category=HighDimensionalityWarning, stacklevel=2)
+                else:
+                    left.is_high_dimensionality = Status.NO
+                if right[3] == True:
+                    left.has_duplicates = Status.YES
+                else:
+                    left.has_duplicates = Status.NO
+                if right[4] == True:
+                    left.is_small = Status.YES
+                else:
+                    left.is_small = Status.NO
+                if right[5] == True:
+                    left.has_na_values = Status.YES
+                else:
+                    left.has_na_values = Status.NO
+                if left in self.variables:
+                    self.variables.remove(left)
+                self.variables.add(left)
+            elif len(right_copy_) == 2:
+                right_tmp = right_copy_[1]
+                if right_tmp in self.variables:
+                    left.is_shuffled = right_tmp.is_shuffled
+                    left.is_high_dimensionality = right_tmp.is_high_dimensionality
+                    left.has_duplicates = right_tmp.has_duplicates
+                    left.is_small = right_tmp.is_small
+                    left.has_na_values = right_tmp.has_na_values
+                    if left in self.variables:
+                        self.variables.remove(left)
+                    self.variables.add(left)
+                self.variables.remove(right_tmp)
         return self
 
     def _assign_subscription(self, left: Subscription, right: Expression) -> 'StatisticalTypeState':
