@@ -106,29 +106,30 @@ class Runner:
             last_node_results = list(result.get_node_result(self.cfgs[fname].out_node).values())[0]
             assert len(last_node_results) == 1
             last_node_results_state = last_node_results[0]
-            for v in last_node_results_state.variables:
-                if v.has_duplicates == Status.YES:
-                    if v.is_small == Status.YES:
-                        warnings.warn(
-                            f"Warning [possible]: At the and of the program {v} might be small and still have duplicates that were not dropped, using drop_duplicates() might be necessary.",
+            if self.interpreter().warning_level == "possible":
+                for v in last_node_results_state.variables:
+                    if v.has_duplicates == Status.YES:
+                        if v.is_small == Status.YES:
+                            warnings.warn(
+                                f"Warning [possible]: At the and of the program {v} might be small and still have duplicates that were not dropped, using drop_duplicates() might be necessary.",
+                                category=DuplicatesNotDroppedWarning, stacklevel=2)
+                        else:
+                            warnings.warn(
+                            f"Warning [possible]: At the and of the program {v} might still have duplicates that were not dropped, using drop_duplicates() might be necessary.",
                             category=DuplicatesNotDroppedWarning, stacklevel=2)
-                    else:
+                    if v in last_node_results_state.store and StatisticalTypeLattice._is_dataframe_type(last_node_results_state.store[v].element):
+                        if v.is_shuffled == Status.MAYBE:
+                            warnings.warn(
+                            f"Warning [possible]: At the and of the program {v} might be not shuffled, using sample() might be necessary to guarantee randomness.",
+                            category=NotShuffledWarning, stacklevel=2)
+                        elif v.is_shuffled == Status.NO:
+                            warnings.warn(
+                            f"Warning [possible]: At the and of the program {v} might be not shuffled and at the read_csv statement it contained a increasing/decreasing/constant Series, using sample() might be necessary to guarantee randomness.",
+                            category=NotShuffledWarning, stacklevel=2)
+                    if v.has_na_values == Status.YES:
                         warnings.warn(
-                        f"Warning [possible]: At the and of the program {v} might still have duplicates that were not dropped, using drop_duplicates() might be necessary.",
-                        category=DuplicatesNotDroppedWarning, stacklevel=2)
-                if v in last_node_results_state.store and StatisticalTypeLattice._is_dataframe_type(last_node_results_state.store[v].element):
-                    if v.is_shuffled == Status.MAYBE:
-                        warnings.warn(
-                        f"Warning [possible]: At the and of the program {v} might be not shuffled, using sample() might be necessary to guarantee randomness.",
-                        category=NotShuffledWarning, stacklevel=2)
-                    elif v.is_shuffled == Status.NO:
-                        warnings.warn(
-                        f"Warning [possible]: At the and of the program {v} might be not shuffled and at the read_csv statement it contained a increasing/decreasing/constant Series, using sample() might be necessary to guarantee randomness.",
-                        category=NotShuffledWarning, stacklevel=2)
-                if v.has_na_values == Status.YES:
-                    warnings.warn(
-                    f"Warning [possible]: At the and of the program {v} might still have NA values, using dropna() might be necessary.",
-                    category=MissingDataWarning, stacklevel=2)
+                        f"Warning [possible]: At the and of the program {v} might still have NA values, using dropna() might be necessary.",
+                        category=MissingDataWarning, stacklevel=2)
         end = time.time()
         print('Time: {}s'.format(end - start))
         self.render(result)

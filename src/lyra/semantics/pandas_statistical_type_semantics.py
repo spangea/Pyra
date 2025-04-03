@@ -931,18 +931,19 @@ class PandasStatisticalTypeSemantics:
                     if item == caller:
                         caller = item
                         break
-            if caller.is_small == Status.NO:
-                warnings.warn(
-                    f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} has many instances, but handling missing values with fillna might change the distribution.",
-                    category=InappropriateMissingValuesWarning,
-                    stacklevel=2,
-                )
-            else:
-                warnings.warn(
-                    f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} may have few instances, handling missing values with fillna might change the distribution.",
-                    category=InappropriateMissingValuesWarning,
-                    stacklevel=2,
-                )
+            if interpreter.warning_level == "possible":
+                if caller.is_small == Status.NO:
+                    warnings.warn(
+                        f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} has many instances, but handling missing values with fillna might change the distribution.",
+                        category=InappropriateMissingValuesWarning,
+                        stacklevel=2,
+                    )
+                else:
+                    warnings.warn(
+                        f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} may have few instances, handling missing values with fillna might change the distribution.",
+                        category=InappropriateMissingValuesWarning,
+                        stacklevel=2,
+                    )
         subset = None
         for arg in stmt.arguments:
             if isinstance(arg, Keyword) and (arg.name == "limit" or arg.name == "axis"):

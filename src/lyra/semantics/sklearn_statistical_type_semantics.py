@@ -50,11 +50,12 @@ class SklearnTypeSemantics:
         data = list(self.semantics(stmt.arguments[1], state, interpreter).result)[0]
         caller = self.get_caller(stmt, state, interpreter)
         if utilities.is_SplittedTestData(state, data):
-            warnings.warn(
-                f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> The fit method should be used on train data only.",
-                category=DataLeakageWarning,
-                stacklevel=2,
-            )
+            if interpreter.warning_level == "possible":
+                warnings.warn(
+                    f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> The fit method should be used on train data only.",
+                    category=DataLeakageWarning,
+                    stacklevel=2,
+                )
         elif utilities.is_PCA(state, caller):
             self.issue_pca_warnings(stmt, state, interpreter)
         return self.return_same_type_as_caller(stmt, state, interpreter)
@@ -111,11 +112,12 @@ class SklearnTypeSemantics:
         data = list(self.semantics(stmt.arguments[1], state, interpreter).result)[0]
         caller = self.get_caller(stmt, state, interpreter)
         if utilities.is_SplittedTestData(state, data):
-            warnings.warn(
-                f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> The fit_transform method should be used on train data only.",
-                category=DataLeakageWarning,
-                stacklevel=2,
-            )
+            if interpreter.warning_level == "possible":
+                warnings.warn(
+                    f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> The fit_transform method should be used on train data only.",
+                    category=DataLeakageWarning,
+                    stacklevel=2,
+                )
         elif utilities.is_PCA(state, caller):
             self.issue_pca_warnings(stmt, state, interpreter)
             state.result = {StatisticalTypeLattice.Status.DataFrameFromPCA}
