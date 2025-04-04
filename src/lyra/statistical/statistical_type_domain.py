@@ -689,6 +689,8 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
                 # If there is at least one ordered Series, the DataFrame is not shuffled
                 if any([v == "increasing" or v == "decreasing" for v in dict(right[6]).values()]):
                     left.is_shuffled = Status.NO
+                else:
+                    left.is_shuffled = Status.YES
                 if right[2] == True:
                     left.is_high_dimensionality = Status.YES
                     warnings.warn(
