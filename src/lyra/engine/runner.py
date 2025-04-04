@@ -118,11 +118,7 @@ class Runner:
                             f"Warning [possible]: At the and of the program {v} might still have duplicates that were not dropped, using drop_duplicates() might be necessary.",
                             category=DuplicatesNotDroppedWarning, stacklevel=2)
                     if v in last_node_results_state.store and StatisticalTypeLattice._is_dataframe_type(last_node_results_state.store[v].element):
-                        if v.is_shuffled == Status.MAYBE:
-                            warnings.warn(
-                            f"Warning [possible]: At the and of the program {v} might be not shuffled, using sample() might be necessary to guarantee randomness.",
-                            category=NotShuffledWarning, stacklevel=2)
-                        elif v.is_shuffled == Status.NO:
+                        if v.is_shuffled == Status.NO:
                             warnings.warn(
                             f"Warning [possible]: At the and of the program {v} might be not shuffled and at the read_csv statement it contained a increasing/decreasing/constant Series, using sample() might be necessary to guarantee randomness.",
                             category=NotShuffledWarning, stacklevel=2)
