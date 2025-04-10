@@ -16,6 +16,8 @@ import pandas
 import numpy
 import seaborn
 import matplotlib.pyplot
+import plotly.express
+
 
 from lyra.abstract_domains.state import State
 from lyra.core.expressions import BinaryArithmeticOperation, Subscription, Slicing, \
@@ -279,6 +281,13 @@ class CallSemantics(Semantics):
                 elif hasattr(matplotlib.pyplot, stmt.name):                # Library call
                     name = '{}_library_call_semantics'.format(stmt.name)
                 stmt.arguments.pop(0)
+            elif stmt.arguments[0].library == "plotly.express":
+                if hasattr(plotly.express, stmt.arguments[0].name):
+                    name = '{}_class_call_semantics'.format(stmt.name)
+                elif hasattr(plotly.express, stmt.name):
+                    name = '{}_library_call_semantics'.format(stmt.name)
+                stmt.arguments.pop(0)
+
 
         if hasattr(self, name):
             return getattr(self, name)(stmt, state, interpreter)
