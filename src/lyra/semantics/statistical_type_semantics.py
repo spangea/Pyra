@@ -194,7 +194,7 @@ class StatisticalTypeSemantics(
                 target = stmt.left.target.variable if isinstance(stmt.left.target, VariableAccess) else stmt.left.target
                 key = stmt.left.key.literal if isinstance(stmt.left.key, LiteralEvaluation) else stmt.left.key
 
-            state.result = {Subscription(stmt.typ if isinstance(stmt, SubscriptionAccess) else stmt.left.typ, target, key)}
+            state.result = {Subscription(TopLyraType, target, key)}
             return state
 
         # Check for AttributeAccess in scenarios like df.loc[0]
@@ -221,7 +221,7 @@ class StatisticalTypeSemantics(
         for primary, index in itertools.product(target, key):
             # Create a temporary Subscription object for consistent handling
             temp_subscription = Subscription(
-                stmt.typ if hasattr(stmt, 'typ') else None,
+                TopLyraType,
                 primary if not isinstance(primary, StatisticalTypeLattice.Status) else stmt.target,
                 index if not isinstance(index, StatisticalTypeLattice.Status) else stmt.key
             )

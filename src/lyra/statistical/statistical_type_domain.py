@@ -612,22 +612,22 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
             if str(dtype) in ['int64', 'float64']:
                 if col in df_info_sorting:
                     if df_info_sorting[col] == "constant":
-                        sub = Subscription(None, caller, Literal(StringLyraType(), col),Status.YES, Status.YES)
+                        sub = Subscription(TopLyraType, caller, Literal(StringLyraType(), col),Status.YES, Status.YES)
                         self._assign(sub, StatisticalTypeLattice.Status.NumericSeries)
                     elif df_info_sorting[col] == "increasing":
-                        sub = Subscription(None, caller, Literal(StringLyraType(), col),Status.YES, Status.NO)
+                        sub = Subscription(TopLyraType, caller, Literal(StringLyraType(), col),Status.YES, Status.NO)
                         self._assign(sub, StatisticalTypeLattice.Status.NumericSeries)
                     elif df_info_sorting[col] == "decreasing":
-                        sub = Subscription(None, caller, Literal(StringLyraType(), col), Status.NO, Status.YES)
+                        sub = Subscription(TopLyraType, caller, Literal(StringLyraType(), col), Status.NO, Status.YES)
                         self._assign(sub, StatisticalTypeLattice.Status.NumericSeries)
                     elif df_info_sorting[col] == "not_sorted":
-                        sub = Subscription(None, caller, Literal(StringLyraType(), col), Status.NO, Status.NO)
+                        sub = Subscription(TopLyraType, caller, Literal(StringLyraType(), col), Status.NO, Status.NO)
                         self._assign(sub, StatisticalTypeLattice.Status.NumericSeries)
                 else:
-                    sub = Subscription(None, caller, Literal(StringLyraType(), col))
+                    sub = Subscription(TopLyraType, caller, Literal(StringLyraType(), col))
                     self._assign(sub, StatisticalTypeLattice.Status.NumericSeries)
             elif str(dtype) == 'object':
-                sub = Subscription(None, caller, Literal(StringLyraType(), col))
+                sub = Subscription(TopLyraType, caller, Literal(StringLyraType(), col))
                 self._assign(sub, StatisticalTypeLattice.Status.CatSeries)
             else:
                 raise ValueError(f"Unexpected dtype: {dtype}")

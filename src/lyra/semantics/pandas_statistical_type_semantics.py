@@ -418,9 +418,9 @@ class PandasStatisticalTypeSemantics:
                 if isinstance(arg, Keyword) and arg.name == "columns":
                     for a in arg.value:
                         if isinstance(a, str):
-                            sub = Subscription(None, caller, '"' + a + '"')
+                            sub = Subscription(TopLyraType, caller, '"' + a + '"')
                         else:
-                            sub = Subscription(None, caller, a.id)
+                            sub = Subscription(TopLyraType, caller, a.id)
                         state._assign(sub, StatisticalTypeLattice.Status.CatSeries)
             state.result = {StatisticalTypeLattice.Status.DataFrame}
             return state
