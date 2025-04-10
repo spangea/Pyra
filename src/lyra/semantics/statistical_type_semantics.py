@@ -627,19 +627,66 @@ class StatisticalTypeSemantics(
     ) -> StatisticalTypeState:
         return self.plot_call_semantics(stmt, state, interpreter)
 
+    def scatter_3d_call_semantics(
+        self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+    ) -> StatisticalTypeState:
+        return self.plot_call_semantics(stmt, state, interpreter)
+
     def plot_call_semantics(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ) -> StatisticalTypeState:
+        data = None
         for arg in stmt.arguments:
             arg_to_print = arg if not isinstance(arg, StatisticalTypeLattice.Status) else stmt
             if isinstance(arg, Keyword) and arg.name == "data":
                 arg_to_print = arg.name
-                if interpreter.warning_level == "possible":
-                    warnings.warn(
-                        f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} could contain nominal-scale data, a bar plot should be used.",
-                        category=CategoricalPlotWarning,
-                        stacklevel=2,
-                    )
+                # If the value of the data argument is a DataFrame, raise a warning
+                for v in state.variables:
+                    if utilities.is_DataFrame(state, v):
+                        data = v
+                        if interpreter.warning_level == "possible":
+                            warnings.warn(
+                                f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} could contain categorical data, a bar plot should be used.",
+                                category=CategoricalPlotWarning,
+                                stacklevel=2,
+                            )
+                            break
+        if data is None: # Only used in case of positional argument with x, y, z keywords
+            tmp_arg = None
+            if isinstance(stmt.arguments[0], VariableAccess):
+                tmp_arg = stmt.arguments[0].variable
+            elif isinstance(stmt.arguments[0], VariableIdentifier):
+                tmp_arg = stmt.arguments[0]
+            if tmp_arg and utilities.is_DataFrame(state, tmp_arg):
+                data = tmp_arg
+        for arg in stmt.arguments:
+            arg_to_print = arg if not isinstance(arg, StatisticalTypeLattice.Status) else stmt
+            if isinstance(arg, Keyword) and arg.name in ["x", "y", "z"]:
+                # Check if the argument is a subscription of data
+                possible_sub_name = arg.value
+                if data:
+                    for sub in state.subscriptions[data]:
+                        if sub.key.val == possible_sub_name:
+                            if utilities.is_CatSeries(state, sub):
+                                warnings.warn(
+                                    f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a categorical Series, a bar plot should be used.",
+                                    category=CategoricalPlotWarning,
+                                    stacklevel=2,
+                                )
+                            elif utilities.is_StringSeries(state, sub):
+                                warnings.warn(
+                                    f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a string Series, a bar plot should be used.",
+                                    category=CategoricalPlotWarning,
+                                    stacklevel=2,
+                                )
+                            elif utilities.is_Series(state, sub) and not utilities.is_NumericSeries(state, sub):
+                                if interpreter.warning_level == "possible":
+                                    warnings.warn(
+                                        f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} could contain categorical data, a bar plot should be used. ",
+                                        category=CategoricalPlotWarning,
+                                        stacklevel=2,
+                                    )
+                            break
             if utilities.is_StringArray(state, arg):
                 warnings.warn(
                     f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a string array, a bar plot should be used.",
@@ -664,10 +711,10 @@ class StatisticalTypeSemantics(
                     category=CategoricalPlotWarning,
                     stacklevel=2,
                 )
-            elif utilities.is_Array(state, arg) or utilities.is_Series(state, arg) or utilities.is_Top(state, arg):
+            elif (utilities.is_Array(state, arg) or utilities.is_Top(state, arg)) and not utilities.is_NumericArray(state, arg):
                 if interpreter.warning_level == "possible":
                     warnings.warn(
-                        f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} could contain nominal-scale data, a bar plot should be used.",
+                        f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} could contain categorical data, a bar plot should be used. ",
                         category=CategoricalPlotWarning,
                         stacklevel=2,
                     )
@@ -680,22 +727,27 @@ class StatisticalTypeSemantics(
                         stacklevel=2,
                         category=PCAVisualizationWarning
                     )
-                if arg in state.subscriptions:
-                    for sub in state.subscriptions[arg]:
-                        if utilities.is_CatSeries(state, sub):
-                            warnings.warn(
-                                f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {sub} is a categorical Series, a bar plot should be used.",
-                                category=CategoricalPlotWarning,
-                                stacklevel=2,
-                            )
-                        elif utilities.is_StringSeries(state, sub):
-                            warnings.warn(
-                                f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {sub} is a string Series, a bar plot should be used.",
-                                category=CategoricalPlotWarning,
-                                stacklevel=2,
-                            )
             # Also a subscription to a DataFrameFromPCA a PCAVisualizationWarning must be raised
             elif isinstance(arg, SubscriptionAccess):
+                if utilities.is_CatSeries(state, arg):
+                    warnings.warn(
+                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a categorical Series, a bar plot should be used.",
+                        category=CategoricalPlotWarning,
+                        stacklevel=2,
+                    )
+                elif utilities.is_StringSeries(state, arg):
+                    warnings.warn(
+                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a string Series, a bar plot should be used.",
+                        category=CategoricalPlotWarning,
+                        stacklevel=2,
+                    )
+                elif utilities.is_Series(state, arg) and not utilities.is_NumericSeries(state, arg):
+                    if interpreter.warning_level == "possible":
+                        warnings.warn(
+                            f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} could contain categorical data, a bar plot should be used. ",
+                            category=CategoricalPlotWarning,
+                            stacklevel=2,
+                        )
                 if isinstance(arg.target, VariableAccess):
                     arg = arg.target.variable
                 else:
@@ -706,6 +758,27 @@ class StatisticalTypeSemantics(
                         stacklevel=2,
                         category=PCAVisualizationWarning
                     )
+            elif utilities.is_Series(state, arg):
+                if utilities.is_CatSeries(state, arg):
+                    warnings.warn(
+                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a categorical Series, a bar plot should be used.",
+                        category=CategoricalPlotWarning,
+                        stacklevel=2,
+                    )
+                elif utilities.is_StringSeries(state, arg):
+                    warnings.warn(
+                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a string Series, a bar plot should be used.",
+                        category=CategoricalPlotWarning,
+                        stacklevel=2,
+                    )
+                elif utilities.is_Series(state, arg) and not utilities.is_NumericSeries(state, arg):
+                    if interpreter.warning_level == "possible":
+                        warnings.warn(
+                            f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} could contain categorical data, a bar plot should be used. ",
+                            category=CategoricalPlotWarning,
+                            stacklevel=2,
+                        )
+
         state.result = {StatisticalTypeLattice.Status.Plot}
         return state
 
