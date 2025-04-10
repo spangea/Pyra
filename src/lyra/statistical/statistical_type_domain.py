@@ -703,13 +703,13 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
                 else:
                     left.has_duplicates = Status.NO
                 if right[4] == True:
-                    left.is_small = Status.YES
-                else:
-                    left.is_small = Status.NO
-                if right[5] == True:
                     left.has_na_values = Status.YES
                 else:
                     left.has_na_values = Status.NO
+                if right[5] == True:
+                    left.is_small = Status.YES
+                else:
+                    left.is_small = Status.NO
                 if left in self.variables:
                     self.variables.remove(left)
                 self.variables.add(left)
