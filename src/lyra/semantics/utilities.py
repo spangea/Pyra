@@ -80,6 +80,22 @@ def is_Series(state, caller):
             if isinstance(caller.typ, SeriesLyraType):
                 return True
     elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
+        if isinstance(caller, SubscriptionAccess):
+            if isinstance(caller.target, VariableAccess):
+                tmp_target = caller.target.variable
+                for v in state.variables:
+                    if v.name == tmp_target.name:
+                        tmp_target = v
+            else:
+                tmp_target = caller.target
+            if isinstance(caller.key, LiteralEvaluation):
+                tmp_key = caller.key.literal
+            else:
+                tmp_key = caller.key
+            caller = Subscription(
+                TopLyraType, tmp_target, tmp_key
+            )
+
         if caller in state.store and state.store[caller]._less_equal(
             StatisticalTypeLattice(StatisticalTypeLattice.Status.Series)
         ):
@@ -118,6 +134,22 @@ def is_StringSeries(state, caller):
             ):
                 return True
     elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
+        if isinstance(caller, SubscriptionAccess):
+            if isinstance(caller.target, VariableAccess):
+                tmp_target = caller.target.variable
+                for v in state.variables:
+                    if v.name == tmp_target.name:
+                        tmp_target = v
+            else:
+                tmp_target = caller.target
+            if isinstance(caller.key, LiteralEvaluation):
+                tmp_key = caller.key.literal
+            else:
+                tmp_key = caller.key
+            caller = Subscription(
+                TopLyraType, tmp_target, tmp_key
+            )
+
         if caller in state.store and state.store[caller]._less_equal(
                 StatisticalTypeLattice(StatisticalTypeLattice.Status.StringSeries)
         ):
@@ -140,6 +172,22 @@ def is_RatioSeries(state, caller):
             ):
                 return True
     elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
+        if isinstance(caller, SubscriptionAccess):
+            if isinstance(caller.target, VariableAccess):
+                tmp_target = caller.target.variable
+                for v in state.variables:
+                    if v.name == tmp_target.name:
+                        tmp_target = v
+            else:
+                tmp_target = caller.target
+            if isinstance(caller.key, LiteralEvaluation):
+                tmp_key = caller.key.literal
+            else:
+                tmp_key = caller.key
+            caller = Subscription(
+                TopLyraType, tmp_target, tmp_key
+            )
+
         if caller in state.store and state.store[caller]._less_equal(
             StatisticalTypeLattice(StatisticalTypeLattice.Status.RatioSeries)
         ):
@@ -161,6 +209,22 @@ def is_BoolSeries(state, caller):
             ):
                 return True
     elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
+        if isinstance(caller, SubscriptionAccess):
+            if isinstance(caller.target, VariableAccess):
+                tmp_target = caller.target.variable
+                for v in state.variables:
+                    if v.name == tmp_target.name:
+                        tmp_target = v
+            else:
+                tmp_target = caller.target
+            if isinstance(caller.key, LiteralEvaluation):
+                tmp_key = caller.key.literal
+            else:
+                tmp_key = caller.key
+            caller = Subscription(
+                TopLyraType, tmp_target, tmp_key
+            )
+
         if caller in state.store and state.store[caller]._less_equal(
             StatisticalTypeLattice(StatisticalTypeLattice.Status.BoolSeries)
         ):
@@ -182,6 +246,22 @@ def is_CatSeries(state, caller):
             ):
                 return True
     elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
+        if isinstance(caller, SubscriptionAccess):
+            if isinstance(caller.target, VariableAccess):
+                tmp_target = caller.target.variable
+                for v in state.variables:
+                    if v.name == tmp_target.name:
+                        tmp_target = v
+            else:
+                tmp_target = caller.target
+            if isinstance(caller.key, LiteralEvaluation):
+                tmp_key = caller.key.literal
+            else:
+                tmp_key = caller.key
+            caller = Subscription(
+                TopLyraType, tmp_target, tmp_key
+            )
+
         if caller in state.store and state.store[caller] == StatisticalTypeLattice(
             StatisticalTypeLattice.Status.CatSeries
         ):
@@ -267,6 +347,22 @@ def is_ExpSeries(state, caller):
             ):
                 return True
     elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
+        if isinstance(caller, SubscriptionAccess):
+            if isinstance(caller.target, VariableAccess):
+                tmp_target = caller.target.variable
+                for v in state.variables:
+                    if v.name == tmp_target.name:
+                        tmp_target = v
+            else:
+                tmp_target = caller.target
+            if isinstance(caller.key, LiteralEvaluation):
+                tmp_key = caller.key.literal
+            else:
+                tmp_key = caller.key
+            caller = Subscription(
+                TopLyraType, tmp_target, tmp_key
+            )
+
         if caller in state.store and state.store[caller] == StatisticalTypeLattice(
             StatisticalTypeLattice.Status.ExpSeries
         ):
@@ -288,6 +384,22 @@ def is_NumericSeries(state, caller):
             ):
                 return True
     elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
+        if isinstance(caller, SubscriptionAccess):
+            if isinstance(caller.target, VariableAccess):
+                tmp_target = caller.target.variable
+                for v in state.variables:
+                    if v.name == tmp_target.name:
+                        tmp_target = v
+            else:
+                tmp_target = caller.target
+            if isinstance(caller.key, LiteralEvaluation):
+                tmp_key = caller.key.literal
+            else:
+                tmp_key = caller.key
+            caller = Subscription(
+                TopLyraType, tmp_target, tmp_key
+            )
+
         if caller in state.store and state.store[caller] == StatisticalTypeLattice(
             StatisticalTypeLattice.Status.NumericSeries
         ):
@@ -312,6 +424,22 @@ def is_ScaledSeries(state, caller):
             }:
                 return True
     elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
+        if isinstance(caller, SubscriptionAccess):
+            if isinstance(caller.target, VariableAccess):
+                tmp_target = caller.target.variable
+                for v in state.variables:
+                    if v.name == tmp_target.name:
+                        tmp_target = v
+            else:
+                tmp_target = caller.target
+            if isinstance(caller.key, LiteralEvaluation):
+                tmp_key = caller.key.literal
+            else:
+                tmp_key = caller.key
+            caller = Subscription(
+                TopLyraType, tmp_target, tmp_key
+            )
+
         if caller in state.store and state.store[caller] in {
             StatisticalTypeLattice(StatisticalTypeLattice.Status.NormSeries),
             StatisticalTypeLattice(StatisticalTypeLattice.Status.StdSeries),
@@ -333,6 +461,26 @@ def is_NormSeries(state, caller):
                 StatisticalTypeLattice(StatisticalTypeLattice.Status.NormSeries)
             ):
                 return True
+    elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
+        if isinstance(caller, SubscriptionAccess):
+            if isinstance(caller.target, VariableAccess):
+                tmp_target = caller.target.variable
+                for v in state.variables:
+                    if v.name == tmp_target.name:
+                        tmp_target = v
+            else:
+                tmp_target = caller.target
+            if isinstance(caller.key, LiteralEvaluation):
+                tmp_key = caller.key.literal
+            else:
+                tmp_key = caller.key
+            caller = Subscription(
+                TopLyraType, tmp_target, tmp_key
+            )
+        if caller in state.store and state.store[caller]._less_equal(
+            StatisticalTypeLattice(StatisticalTypeLattice.Status.NormSeries)
+        ):
+            return True
     if state.get_type(caller) == {StatisticalTypeLattice.Status.NormSeries}:
         return True
     return False
@@ -346,6 +494,26 @@ def is_StdSeries(state, caller):
                 StatisticalTypeLattice(StatisticalTypeLattice.Status.StdSeries)
             ):
                 return True
+    elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
+        if isinstance(caller, SubscriptionAccess):
+            if isinstance(caller.target, VariableAccess):
+                tmp_target = caller.target.variable
+                for v in state.variables:
+                    if v.name == tmp_target.name:
+                        tmp_target = v
+            else:
+                tmp_target = caller.target
+            if isinstance(caller.key, LiteralEvaluation):
+                tmp_key = caller.key.literal
+            else:
+                tmp_key = caller.key
+            caller = Subscription(
+                TopLyraType, tmp_target, tmp_key
+            )
+        if caller in state.store and state.store[caller]._less_equal(
+            StatisticalTypeLattice(StatisticalTypeLattice.Status.StdSeries)
+        ):
+            return True
     if state.get_type(caller) == {StatisticalTypeLattice.Status.StdSeries}:
         return True
     return False
@@ -831,7 +999,7 @@ class SelfUtilitiesSemantics:
 
     def forget_arg(self, caller, arg, state: StatisticalTypeState):
         if isinstance(arg, LiteralEvaluation):
-            s = Subscription(typing.Any, caller, arg.literal)
+            s = Subscription(TopLyraType, caller, arg.literal)
             if s in state.store:
                 state.forget_variable(s)
             s = Subscription(TopLyraType, caller, arg.literal)
@@ -839,11 +1007,11 @@ class SelfUtilitiesSemantics:
                 state.forget_variable(s)
         elif isinstance(arg, ListDisplayAccess):
             for i in arg.items:
-                s = Subscription(typing.Any, caller, i.literal)
+                s = Subscription(TopLyraType, caller, i.literal)
                 if s in state.store:
                     state.forget_variable(s)
         elif isinstance(arg, str):
-            s = Subscription(typing.Any, caller, Literal(StringLyraType(), arg))
+            s = Subscription(TopLyraType, caller, Literal(StringLyraType(), arg))
             if s in state.store:
                 state.forget_variable(s)
 
