@@ -43,7 +43,9 @@ The code fragment contains several issues that could lead to misleading results 
 - The `train_test_split` method is called without setting the `random_state` parameter, meaning the split will differ each time the code is run. This can result in non-reproducible outcomes.
 - The data is scaled before the train-test split. This can cause data leakage, as the scaling parameters are computed using the entire dataset, including the test set. The scaling should be performed **after** the split to avoid this issue.
 
-Pyra detects these issues and raises warnings, and raises the following warning
+Pyra detects these issues and raises warnings, and raises the following warnings:
+
+![warnings](https://github.com/user-attachments/assets/6c11faed-2bdb-4648-94a3-2f8e33295d69)
 
 ## Getting Started 
 
