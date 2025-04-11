@@ -4,7 +4,7 @@
   <img src ="https://github.com/spangea/Pyra/blob/datascience/logo.jpeg" width="25%"/>
 </p>
 
-Pyra is a high-level linter static analyzer for data science applications written in Python, that helps developers identify potential issues in their data science code written in Python.
+Pyra is a high-level linter static analyzer for data science applications written in Python, that helps developers identify potential issues in their data science code written in Python, as an extension of [Lyra](https://github.com/caterinaurban/Lyra).
 
 Pyra is based on the peer-reviewed publication:
 > Greta Dolcetti, Agostino Cortesi, Caterina Urban, Enea Zaffanella. _**"Towards a High Level Linter for Data Science"**_. In Proceedings of the 10th ACM SIGPLAN International Workshop on Numerical and Symbolic Abstract Domains (NSAD 2024), co-located with SPLASH 2024.
