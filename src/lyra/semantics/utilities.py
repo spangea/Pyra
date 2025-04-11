@@ -25,9 +25,9 @@ from lyra.core.types import (
 )
 from lyra.engine.forward import ForwardInterpreter
 
-from lyra.statistical.statistical_type_domain import (
-    StatisticalTypeState,
-    StatisticalTypeLattice,
+from lyra.datascience.datascience_type_domain import (
+    DatascienceTypeState,
+    DatascienceTypeLattice,
 )
 import copy
 from lyra.core.types import TopLyraType
@@ -37,10 +37,10 @@ def is_PCA(state, caller):
         caller = caller.variable
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
-            if state.get_type(caller) == StatisticalTypeLattice.Status.PCA:
+            if state.get_type(caller) == DatascienceTypeLattice.Status.PCA:
                 return True
-    elif isinstance(caller, StatisticalTypeLattice.Status) and \
-        caller == StatisticalTypeLattice.Status.PCA:
+    elif isinstance(caller, DatascienceTypeLattice.Status) and \
+        caller == DatascienceTypeLattice.Status.PCA:
         return True
     return False
 
@@ -49,7 +49,7 @@ def is_DataFrame(state, caller):
         caller = caller.variable
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
-            if state.store[caller]._less_equal(StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame)):
+            if state.store[caller]._less_equal(DatascienceTypeLattice(DatascienceTypeLattice.Status.DataFrame)):
                 return True
         else:
             if isinstance(caller.typ, DataFrameLyraType):
@@ -59,7 +59,7 @@ def is_DataFrame(state, caller):
             isinstance(caller.target.typ, DataFrameLyraType)
             or (
                 caller.target in state.store
-                and state.get_type(caller.target)._less_equal(StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame))
+                and state.get_type(caller.target)._less_equal(DatascienceTypeLattice(DatascienceTypeLattice.Status.DataFrame))
             )
         ):
             return True
@@ -73,7 +73,7 @@ def is_Series(state, caller):
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
             if state.store[caller]._less_equal(
-                StatisticalTypeLattice(StatisticalTypeLattice.Status.Series)
+                DatascienceTypeLattice(DatascienceTypeLattice.Status.Series)
             ):
                 return True
         else:
@@ -97,7 +97,7 @@ def is_Series(state, caller):
             )
 
         if caller in state.store and state.store[caller]._less_equal(
-            StatisticalTypeLattice(StatisticalTypeLattice.Status.Series)
+            DatascienceTypeLattice(DatascienceTypeLattice.Status.Series)
         ):
             return True
         elif not isinstance(caller.key, ListDisplay) and (
@@ -105,21 +105,21 @@ def is_Series(state, caller):
             or (
             caller.target in state.store
             and state.get_type(caller.target)
-            == StatisticalTypeLattice.Status.DataFrame
+            == DatascienceTypeLattice.Status.DataFrame
             )
             or (
             hasattr(caller.target, 'variable')
             and caller.target.variable in state.store
             and state.get_type(caller.target.variable)
-            == StatisticalTypeLattice.Status.DataFrame
+            == DatascienceTypeLattice.Status.DataFrame
             )
         ):
             return True
     elif isinstance(caller, Input) and isinstance(caller.typ, SeriesLyraType):
         return True
-    elif isinstance(caller, StatisticalTypeLattice.Status) and StatisticalTypeLattice(
+    elif isinstance(caller, DatascienceTypeLattice.Status) and DatascienceTypeLattice(
         caller
-    )._less_equal(StatisticalTypeLattice(StatisticalTypeLattice.Status.Series)):
+    )._less_equal(DatascienceTypeLattice(DatascienceTypeLattice.Status.Series)):
         return True
     return False
 
@@ -130,7 +130,7 @@ def is_StringSeries(state, caller):
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
             if state.store[caller] == (
-                    StatisticalTypeLattice(StatisticalTypeLattice.Status.StringSeries)
+                    DatascienceTypeLattice(DatascienceTypeLattice.Status.StringSeries)
             ):
                 return True
     elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
@@ -151,12 +151,12 @@ def is_StringSeries(state, caller):
             )
 
         if caller in state.store and state.store[caller]._less_equal(
-                StatisticalTypeLattice(StatisticalTypeLattice.Status.StringSeries)
+                DatascienceTypeLattice(DatascienceTypeLattice.Status.StringSeries)
         ):
             return True
     elif (
-            isinstance(caller, StatisticalTypeLattice.Status)
-            and caller == StatisticalTypeLattice.Status.StringSeries
+            isinstance(caller, DatascienceTypeLattice.Status)
+            and caller == DatascienceTypeLattice.Status.StringSeries
     ):
         return True
     return False
@@ -168,7 +168,7 @@ def is_RatioSeries(state, caller):
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
             if state.store[caller] == (
-                StatisticalTypeLattice(StatisticalTypeLattice.Status.RatioSeries)
+                DatascienceTypeLattice(DatascienceTypeLattice.Status.RatioSeries)
             ):
                 return True
     elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
@@ -189,12 +189,12 @@ def is_RatioSeries(state, caller):
             )
 
         if caller in state.store and state.store[caller]._less_equal(
-            StatisticalTypeLattice(StatisticalTypeLattice.Status.RatioSeries)
+            DatascienceTypeLattice(DatascienceTypeLattice.Status.RatioSeries)
         ):
             return True
     elif (
-        isinstance(caller, StatisticalTypeLattice.Status)
-        and caller == StatisticalTypeLattice.Status.RatioSeries
+        isinstance(caller, DatascienceTypeLattice.Status)
+        and caller == DatascienceTypeLattice.Status.RatioSeries
     ):
         return True
     return False
@@ -205,7 +205,7 @@ def is_BoolSeries(state, caller):
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
             if state.store[caller] == (
-                StatisticalTypeLattice(StatisticalTypeLattice.Status.BoolSeries)
+                DatascienceTypeLattice(DatascienceTypeLattice.Status.BoolSeries)
             ):
                 return True
     elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
@@ -226,12 +226,12 @@ def is_BoolSeries(state, caller):
             )
 
         if caller in state.store and state.store[caller]._less_equal(
-            StatisticalTypeLattice(StatisticalTypeLattice.Status.BoolSeries)
+            DatascienceTypeLattice(DatascienceTypeLattice.Status.BoolSeries)
         ):
             return True
     elif (
-        isinstance(caller, StatisticalTypeLattice.Status)
-        and caller == StatisticalTypeLattice.Status.BoolSeries
+        isinstance(caller, DatascienceTypeLattice.Status)
+        and caller == DatascienceTypeLattice.Status.BoolSeries
     ):
         return True
     return False
@@ -241,8 +241,8 @@ def is_CatSeries(state, caller):
         caller = caller.variable
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
-            if state.store[caller] == StatisticalTypeLattice(
-                StatisticalTypeLattice.Status.CatSeries
+            if state.store[caller] == DatascienceTypeLattice(
+                DatascienceTypeLattice.Status.CatSeries
             ):
                 return True
     elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
@@ -262,13 +262,13 @@ def is_CatSeries(state, caller):
                 TopLyraType, tmp_target, tmp_key
             )
 
-        if caller in state.store and state.store[caller] == StatisticalTypeLattice(
-            StatisticalTypeLattice.Status.CatSeries
+        if caller in state.store and state.store[caller] == DatascienceTypeLattice(
+            DatascienceTypeLattice.Status.CatSeries
         ):
             return True
     elif (
-        isinstance(caller, StatisticalTypeLattice.Status)
-        and caller == StatisticalTypeLattice.Status.CatSeries
+        isinstance(caller, DatascienceTypeLattice.Status)
+        and caller == DatascienceTypeLattice.Status.CatSeries
     ):
         return True
     return False
@@ -278,18 +278,18 @@ def is_Tensor(state, caller):
         caller = caller.variable
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
-            if state.store[caller] == StatisticalTypeLattice(
-                StatisticalTypeLattice.Status.Tensor
+            if state.store[caller] == DatascienceTypeLattice(
+                DatascienceTypeLattice.Status.Tensor
             ):
                 return True
     elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
-        if caller in state.store and state.store[caller] == StatisticalTypeLattice(
-            StatisticalTypeLattice.Status.Tensor
+        if caller in state.store and state.store[caller] == DatascienceTypeLattice(
+            DatascienceTypeLattice.Status.Tensor
         ):
             return True
     elif (
-        isinstance(caller, StatisticalTypeLattice.Status)
-        and caller == StatisticalTypeLattice.Status.Tensor
+        isinstance(caller, DatascienceTypeLattice.Status)
+        and caller == DatascienceTypeLattice.Status.Tensor
     ):
         return True
     return False
@@ -300,19 +300,19 @@ def is_SplittedData(state, caller):
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
             if state.store[caller] in {
-                StatisticalTypeLattice(StatisticalTypeLattice.Status.SplittedTrainData),
-                StatisticalTypeLattice(StatisticalTypeLattice.Status.SplittedTestData),
+                DatascienceTypeLattice(DatascienceTypeLattice.Status.SplittedTrainData),
+                DatascienceTypeLattice(DatascienceTypeLattice.Status.SplittedTestData),
             }:
                 return True
     elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
         if caller in state.store and state.store[caller] in {
-            StatisticalTypeLattice(StatisticalTypeLattice.Status.SplittedTrainData),
-            StatisticalTypeLattice(StatisticalTypeLattice.Status.SplittedTestData),
+            DatascienceTypeLattice(DatascienceTypeLattice.Status.SplittedTrainData),
+            DatascienceTypeLattice(DatascienceTypeLattice.Status.SplittedTestData),
         }:
             return True
-    elif isinstance(caller, StatisticalTypeLattice.Status) and caller in {
-        StatisticalTypeLattice.Status.SplittedTrainData,
-        StatisticalTypeLattice.Status.SplittedTestData,
+    elif isinstance(caller, DatascienceTypeLattice.Status) and caller in {
+        DatascienceTypeLattice.Status.SplittedTrainData,
+        DatascienceTypeLattice.Status.SplittedTestData,
     }:
         return True
     return False
@@ -323,16 +323,16 @@ def is_SplittedTestData(state, caller):
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
             if state.store[caller] in {
-                StatisticalTypeLattice(StatisticalTypeLattice.Status.SplittedTestData)
+                DatascienceTypeLattice(DatascienceTypeLattice.Status.SplittedTestData)
             }:
                 return True
     elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
         if caller in state.store and state.store[caller] in {
-            StatisticalTypeLattice(StatisticalTypeLattice.Status.SplittedTestData)
+            DatascienceTypeLattice(DatascienceTypeLattice.Status.SplittedTestData)
         }:
             return True
-    elif isinstance(caller, StatisticalTypeLattice.Status) and caller in {
-        StatisticalTypeLattice.Status.SplittedTestData
+    elif isinstance(caller, DatascienceTypeLattice.Status) and caller in {
+        DatascienceTypeLattice.Status.SplittedTestData
     }:
         return True
     return False
@@ -342,8 +342,8 @@ def is_ExpSeries(state, caller):
         caller = caller.variable
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
-            if state.store[caller] == StatisticalTypeLattice(
-                StatisticalTypeLattice.Status.ExpSeries
+            if state.store[caller] == DatascienceTypeLattice(
+                DatascienceTypeLattice.Status.ExpSeries
             ):
                 return True
     elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
@@ -363,13 +363,13 @@ def is_ExpSeries(state, caller):
                 TopLyraType, tmp_target, tmp_key
             )
 
-        if caller in state.store and state.store[caller] == StatisticalTypeLattice(
-            StatisticalTypeLattice.Status.ExpSeries
+        if caller in state.store and state.store[caller] == DatascienceTypeLattice(
+            DatascienceTypeLattice.Status.ExpSeries
         ):
             return True
     elif (
-        isinstance(caller, StatisticalTypeLattice.Status)
-        and caller == StatisticalTypeLattice.Status.ExpSeries
+        isinstance(caller, DatascienceTypeLattice.Status)
+        and caller == DatascienceTypeLattice.Status.ExpSeries
     ):
         return True
     return False
@@ -379,8 +379,8 @@ def is_NumericSeries(state, caller):
         caller = caller.variable
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
-            if state.store[caller] == StatisticalTypeLattice(
-                StatisticalTypeLattice.Status.NumericSeries
+            if state.store[caller] == DatascienceTypeLattice(
+                DatascienceTypeLattice.Status.NumericSeries
             ):
                 return True
     elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
@@ -400,13 +400,13 @@ def is_NumericSeries(state, caller):
                 TopLyraType, tmp_target, tmp_key
             )
 
-        if caller in state.store and state.store[caller] == StatisticalTypeLattice(
-            StatisticalTypeLattice.Status.NumericSeries
+        if caller in state.store and state.store[caller] == DatascienceTypeLattice(
+            DatascienceTypeLattice.Status.NumericSeries
         ):
             return True
     elif (
-        isinstance(caller, StatisticalTypeLattice.Status)
-        and caller == StatisticalTypeLattice.Status.NumericSeries
+        isinstance(caller, DatascienceTypeLattice.Status)
+        and caller == DatascienceTypeLattice.Status.NumericSeries
     ):
         return True
     return False
@@ -417,10 +417,10 @@ def is_ScaledSeries(state, caller):
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
             if state.store[caller] in {
-                # StatisticalTypeLattice.Status.NormSeries,
-                # StatisticalTypeLattice.Status.StdSeries,
-                StatisticalTypeLattice(StatisticalTypeLattice.Status.NormSeries),
-                StatisticalTypeLattice(StatisticalTypeLattice.Status.StdSeries),
+                # DatascienceTypeLattice.Status.NormSeries,
+                # DatascienceTypeLattice.Status.StdSeries,
+                DatascienceTypeLattice(DatascienceTypeLattice.Status.NormSeries),
+                DatascienceTypeLattice(DatascienceTypeLattice.Status.StdSeries),
             }:
                 return True
     elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
@@ -441,13 +441,13 @@ def is_ScaledSeries(state, caller):
             )
 
         if caller in state.store and state.store[caller] in {
-            StatisticalTypeLattice(StatisticalTypeLattice.Status.NormSeries),
-            StatisticalTypeLattice(StatisticalTypeLattice.Status.StdSeries),
+            DatascienceTypeLattice(DatascienceTypeLattice.Status.NormSeries),
+            DatascienceTypeLattice(DatascienceTypeLattice.Status.StdSeries),
         }:
             return True
-    elif isinstance(caller, StatisticalTypeLattice.Status) and caller in {
-        StatisticalTypeLattice.Status.NormSeries,
-        StatisticalTypeLattice.Status.StdSeries,
+    elif isinstance(caller, DatascienceTypeLattice.Status) and caller in {
+        DatascienceTypeLattice.Status.NormSeries,
+        DatascienceTypeLattice.Status.StdSeries,
     }:
         return True
     return False
@@ -458,7 +458,7 @@ def is_NormSeries(state, caller):
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
             if state.store[caller]._less_equal(
-                StatisticalTypeLattice(StatisticalTypeLattice.Status.NormSeries)
+                DatascienceTypeLattice(DatascienceTypeLattice.Status.NormSeries)
             ):
                 return True
     elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
@@ -478,10 +478,10 @@ def is_NormSeries(state, caller):
                 TopLyraType, tmp_target, tmp_key
             )
         if caller in state.store and state.store[caller]._less_equal(
-            StatisticalTypeLattice(StatisticalTypeLattice.Status.NormSeries)
+            DatascienceTypeLattice(DatascienceTypeLattice.Status.NormSeries)
         ):
             return True
-    if state.get_type(caller) == {StatisticalTypeLattice.Status.NormSeries}:
+    if state.get_type(caller) == {DatascienceTypeLattice.Status.NormSeries}:
         return True
     return False
 
@@ -491,7 +491,7 @@ def is_StdSeries(state, caller):
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
             if state.store[caller]._less_equal(
-                StatisticalTypeLattice(StatisticalTypeLattice.Status.StdSeries)
+                DatascienceTypeLattice(DatascienceTypeLattice.Status.StdSeries)
             ):
                 return True
     elif isinstance(caller, Subscription) or isinstance(caller, SubscriptionAccess):
@@ -511,10 +511,10 @@ def is_StdSeries(state, caller):
                 TopLyraType, tmp_target, tmp_key
             )
         if caller in state.store and state.store[caller]._less_equal(
-            StatisticalTypeLattice(StatisticalTypeLattice.Status.StdSeries)
+            DatascienceTypeLattice(DatascienceTypeLattice.Status.StdSeries)
         ):
             return True
-    if state.get_type(caller) == {StatisticalTypeLattice.Status.StdSeries}:
+    if state.get_type(caller) == {DatascienceTypeLattice.Status.StdSeries}:
         return True
     return False
 
@@ -524,7 +524,7 @@ def is_Array(state, caller):
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
             if state.store[caller]._less_equal(
-                StatisticalTypeLattice(StatisticalTypeLattice.Status.Array)
+                DatascienceTypeLattice(DatascienceTypeLattice.Status.Array)
             ):
                 return True
     return False
@@ -535,7 +535,7 @@ def is_NumericArray(state, caller):
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
             if state.store[caller]._less_equal(
-                StatisticalTypeLattice(StatisticalTypeLattice.Status.NumericArray)
+                DatascienceTypeLattice(DatascienceTypeLattice.Status.NumericArray)
             ):
                 return True
     return False
@@ -546,7 +546,7 @@ def is_StringArray(state, caller):
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
             if state.store[caller]._less_equal(
-                StatisticalTypeLattice(StatisticalTypeLattice.Status.StringArray)
+                DatascienceTypeLattice(DatascienceTypeLattice.Status.StringArray)
             ):
                 return True
     return False
@@ -557,7 +557,7 @@ def is_BoolArray(state, caller):
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
             if state.store[caller]._less_equal(
-                StatisticalTypeLattice(StatisticalTypeLattice.Status.BoolArray)
+                DatascienceTypeLattice(DatascienceTypeLattice.Status.BoolArray)
             ):
                 return True
     return False
@@ -568,7 +568,7 @@ def is_List(state, caller):
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
             if state.store[caller]._less_equal(
-                StatisticalTypeLattice(StatisticalTypeLattice.Status.List)
+                DatascienceTypeLattice(DatascienceTypeLattice.Status.List)
             ):
                 return True
         else:
@@ -584,7 +584,7 @@ def is_NumericList(state, caller):
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
             if state.store[caller]._less_equal(
-                StatisticalTypeLattice(StatisticalTypeLattice.Status.NumericList)
+                DatascienceTypeLattice(DatascienceTypeLattice.Status.NumericList)
             ):
                 return True
     if isinstance(caller, ListDisplay):
@@ -605,7 +605,7 @@ def is_StringList(state, caller):
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
             if state.store[caller]._less_equal(
-                StatisticalTypeLattice(StatisticalTypeLattice.Status.StringList)
+                DatascienceTypeLattice(DatascienceTypeLattice.Status.StringList)
             ):
                 return True
     if isinstance(caller, ListDisplay):
@@ -626,7 +626,7 @@ def is_BoolList(state, caller):
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
             if state.store[caller]._less_equal(
-                StatisticalTypeLattice(StatisticalTypeLattice.Status.BoolList)
+                DatascienceTypeLattice(DatascienceTypeLattice.Status.BoolList)
             ):
                 return True
     if isinstance(caller, ListDisplay):
@@ -647,7 +647,7 @@ def is_Set(state, caller):
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
             if state.store[caller]._less_equal(
-                StatisticalTypeLattice(StatisticalTypeLattice.Status.Set)
+                DatascienceTypeLattice(DatascienceTypeLattice.Status.Set)
             ):
                 return True
         else:
@@ -661,7 +661,7 @@ def is_Dict(state, caller):
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
             if state.store[caller]._less_equal(
-                StatisticalTypeLattice(StatisticalTypeLattice.Status.Dict)
+                DatascienceTypeLattice(DatascienceTypeLattice.Status.Dict)
             ):
                 return True
         else:
@@ -677,7 +677,7 @@ def is_String(state, caller):
         return True
     elif (
         isinstance(caller, VariableIdentifier)
-        and state.get_type(caller) == StatisticalTypeLattice.Status.String
+        and state.get_type(caller) == DatascienceTypeLattice.Status.String
     ):
         return True
     elif isinstance(caller, Literal) and isinstance(caller.typ, StringLyraType):
@@ -694,7 +694,7 @@ def is_Numeric(state, caller):
         return True
     elif (
         isinstance(caller, VariableIdentifier)
-        and state.get_type(caller) == StatisticalTypeLattice.Status.Numeric
+        and state.get_type(caller) == DatascienceTypeLattice.Status.Numeric
     ):
         return True
     elif isinstance(caller, Literal) and (
@@ -715,7 +715,7 @@ def is_Boolean(state, caller):
         return True
     elif (
         isinstance(caller, VariableIdentifier)
-        and state.get_type(caller) == StatisticalTypeLattice.Status.Boolean
+        and state.get_type(caller) == DatascienceTypeLattice.Status.Boolean
     ):
         return True
     elif isinstance(caller, Literal) and (
@@ -731,12 +731,12 @@ def is_Boolean(state, caller):
 
 def is_Scaler(state, caller):
     scalerTypes = {
-        StatisticalTypeLattice.Status.MinMaxScaler, StatisticalTypeLattice.Status.MaxAbsScaler,
-        StatisticalTypeLattice.Status.StandardScaler, StatisticalTypeLattice.Status.FunctionTransformer,
-        StatisticalTypeLattice.Status.KernelCenterer, StatisticalTypeLattice.Status.Normalizer,
-        StatisticalTypeLattice.Status.PolynomialFeatures, StatisticalTypeLattice.Status.PowerTransformer,
-        StatisticalTypeLattice.Status.QuantileTransformer, StatisticalTypeLattice.Status.RobustScaler,
-        StatisticalTypeLattice.Status.SplineTransformer
+        DatascienceTypeLattice.Status.MinMaxScaler, DatascienceTypeLattice.Status.MaxAbsScaler,
+        DatascienceTypeLattice.Status.StandardScaler, DatascienceTypeLattice.Status.FunctionTransformer,
+        DatascienceTypeLattice.Status.KernelCenterer, DatascienceTypeLattice.Status.Normalizer,
+        DatascienceTypeLattice.Status.PolynomialFeatures, DatascienceTypeLattice.Status.PowerTransformer,
+        DatascienceTypeLattice.Status.QuantileTransformer, DatascienceTypeLattice.Status.RobustScaler,
+        DatascienceTypeLattice.Status.SplineTransformer
     }
     if isinstance(caller, VariableAccess):
         caller = caller.variable
@@ -744,18 +744,18 @@ def is_Scaler(state, caller):
         if caller in state.store and not state.store[caller].is_top():
             if state.get_type(caller) in scalerTypes:
                 return True
-    elif isinstance(caller, StatisticalTypeLattice.Status) and caller in scalerTypes:
+    elif isinstance(caller, DatascienceTypeLattice.Status) and caller in scalerTypes:
         return True
     return False
 
 
 def is_Standardizer(state, caller):
     standardizerTypes = {
-        StatisticalTypeLattice.Status.PowerTransformer,
-        StatisticalTypeLattice.Status.RobustScaler,
-        StatisticalTypeLattice.Status.StandardScaler,
-        StatisticalTypeLattice.Status.QuantileTransformer,
-        StatisticalTypeLattice.Status.KernelCenterer
+        DatascienceTypeLattice.Status.PowerTransformer,
+        DatascienceTypeLattice.Status.RobustScaler,
+        DatascienceTypeLattice.Status.StandardScaler,
+        DatascienceTypeLattice.Status.QuantileTransformer,
+        DatascienceTypeLattice.Status.KernelCenterer
     }
     if isinstance(caller, VariableAccess):
         caller = caller.variable
@@ -763,16 +763,16 @@ def is_Standardizer(state, caller):
         if caller in state.store and not state.store[caller].is_top():
             if state.get_type(caller) in standardizerTypes:
                 return True
-    elif isinstance(caller, StatisticalTypeLattice.Status) and caller in standardizerTypes:
+    elif isinstance(caller, DatascienceTypeLattice.Status) and caller in standardizerTypes:
         return True
     return False
 
 
 def is_Normalizer(state, caller):
     normalizerTypes = {
-        StatisticalTypeLattice.Status.MaxAbsScaler,
-        StatisticalTypeLattice.Status.MinMaxScaler,
-        StatisticalTypeLattice.Status.Normalizer
+        DatascienceTypeLattice.Status.MaxAbsScaler,
+        DatascienceTypeLattice.Status.MinMaxScaler,
+        DatascienceTypeLattice.Status.Normalizer
     }
     if isinstance(caller, VariableAccess):
         caller = caller.variable
@@ -780,17 +780,17 @@ def is_Normalizer(state, caller):
         if caller in state.store and not state.store[caller].is_top():
             if state.get_type(caller) in normalizerTypes:
                 return True
-    elif isinstance(caller, StatisticalTypeLattice.Status) and caller in normalizerTypes:
+    elif isinstance(caller, DatascienceTypeLattice.Status) and caller in normalizerTypes:
         return True
     return False
 
 
 def is_Encoder(state, caller):
     encoderTypes = {
-        StatisticalTypeLattice.Status.OrdinalEncoder, StatisticalTypeLattice.Status.OneHotEncoder,
-        StatisticalTypeLattice.Status.LabelEncoder, StatisticalTypeLattice.Status.LabelBinarizer,
-        StatisticalTypeLattice.Status.KBinsDiscretizer, StatisticalTypeLattice.Status.MultiLabelBinarizer,
-        StatisticalTypeLattice.Status.TargetEncoder
+        DatascienceTypeLattice.Status.OrdinalEncoder, DatascienceTypeLattice.Status.OneHotEncoder,
+        DatascienceTypeLattice.Status.LabelEncoder, DatascienceTypeLattice.Status.LabelBinarizer,
+        DatascienceTypeLattice.Status.KBinsDiscretizer, DatascienceTypeLattice.Status.MultiLabelBinarizer,
+        DatascienceTypeLattice.Status.TargetEncoder
     }
     if isinstance(caller, VariableAccess):
         caller = caller.variable
@@ -798,7 +798,7 @@ def is_Encoder(state, caller):
         if caller in state.store and not state.store[caller].is_top():
             if state.get_type(caller) in encoderTypes:
                 return True
-    elif isinstance(caller, StatisticalTypeLattice.Status) and caller in encoderTypes:
+    elif isinstance(caller, DatascienceTypeLattice.Status) and caller in encoderTypes:
         return True
     return False
 
@@ -808,11 +808,11 @@ def is_FeatureSelected(state, caller):
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
             if state.get_type(caller) in {
-                StatisticalTypeLattice.Status.FeatureSelected
+                DatascienceTypeLattice.Status.FeatureSelected
             }:
                 return True
-    elif isinstance(caller, StatisticalTypeLattice.Status) and caller in {
-        StatisticalTypeLattice.Status.FeatureSelected
+    elif isinstance(caller, DatascienceTypeLattice.Status) and caller in {
+        DatascienceTypeLattice.Status.FeatureSelected
     }:
         return True
     return False
@@ -823,11 +823,11 @@ def is_FeatureSelector(state, caller):
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
             if state.get_type(caller) in {
-                StatisticalTypeLattice.Status.FeatureSelector
+                DatascienceTypeLattice.Status.FeatureSelector
             }:
                 return True
-    elif isinstance(caller, StatisticalTypeLattice.Status) and caller in {
-        StatisticalTypeLattice.Status.FeatureSelector
+    elif isinstance(caller, DatascienceTypeLattice.Status) and caller in {
+        DatascienceTypeLattice.Status.FeatureSelector
     }:
         return True
     return False
@@ -838,11 +838,11 @@ def is_Scaled(state, caller):
     if isinstance(caller, VariableIdentifier):
         if caller in state.store and not state.store[caller].is_top():
             if state.get_type(caller) in {
-                StatisticalTypeLattice.Status.Scaled
+                DatascienceTypeLattice.Status.Scaled
             }:
                 return True
-    elif isinstance(caller, StatisticalTypeLattice.Status) and caller in {
-        StatisticalTypeLattice.Status.Scaled
+    elif isinstance(caller, DatascienceTypeLattice.Status) and caller in {
+        DatascienceTypeLattice.Status.Scaled
     }:
         return True
     return False
@@ -979,7 +979,7 @@ def is_zero_division_NaN(arguments):
 
 class SelfUtilitiesSemantics:
     def get_caller(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
+        self, stmt: Call, state: DatascienceTypeState, interpreter: ForwardInterpreter
     ):
         tmp_state = copy.deepcopy(state)
         dfs = self.semantics(stmt.arguments[0], tmp_state, interpreter, get_caller=True).result
@@ -991,14 +991,14 @@ class SelfUtilitiesSemantics:
         return caller
 
     def semantics_without_inplace(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
-    ) -> StatisticalTypeState:
+        self, stmt: Call, state: DatascienceTypeState, interpreter: ForwardInterpreter
+    ) -> DatascienceTypeState:
         caller = self.get_caller(stmt, state, interpreter)
         remove_inplace(stmt.arguments)
         eval = self.semantics(stmt, state, interpreter)
         state._assign(caller, eval.result.pop())
 
-    def forget_arg(self, caller, arg, state: StatisticalTypeState):
+    def forget_arg(self, caller, arg, state: DatascienceTypeState):
         if isinstance(arg, LiteralEvaluation):
             s = Subscription(TopLyraType, caller, arg.literal)
             if s in state.store:
@@ -1016,7 +1016,7 @@ class SelfUtilitiesSemantics:
             if s in state.store:
                 state.forget_variable(s)
 
-    def forget_columns(self, caller, stmt, state: StatisticalTypeState):
+    def forget_columns(self, caller, stmt, state: DatascienceTypeState):
         for arg in stmt.arguments:
             if isinstance(arg, Keyword) and arg.name == "columns":
                 if isinstance(arg.value, list):
@@ -1028,25 +1028,25 @@ class SelfUtilitiesSemantics:
                 self.forget_arg(caller, arg, state)
 
     def return_same_type_as_caller(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
-    ) -> StatisticalTypeState:
+        self, stmt: Call, state: DatascienceTypeState, interpreter: ForwardInterpreter
+    ) -> DatascienceTypeState:
         caller = self.get_caller(stmt, state, interpreter)
         if caller in state.store:
-            # If statistical type info is already present, it is convenient to use it because it could be preciser
-            statistical_type = state.get_type(caller)
-            state.result = {statistical_type}
+            # If datascience type info is already present, it is convenient to use it because it could be preciser
+            datascience_type = state.get_type(caller)
+            state.result = {datascience_type}
         else:
             if is_DataFrame(state, caller):
-                state.result = {StatisticalTypeLattice.Status.DataFrame}
+                state.result = {DatascienceTypeLattice.Status.DataFrame}
             elif is_Series(state, caller):
-                # TODO: here we can be more precise if we return a statistical type element (not a Input/LyraType)
-                state.result = {StatisticalTypeLattice.Status.Series}
+                # TODO: here we can be more precise if we return a datascience type element (not a Input/LyraType)
+                state.result = {DatascienceTypeLattice.Status.Series}
             elif is_String(state, caller):
-                state.result = {StatisticalTypeLattice.Status.String}
+                state.result = {DatascienceTypeLattice.Status.String}
             elif is_Numeric(state, caller):
-                state.result = {StatisticalTypeLattice.Status.Numeric}
+                state.result = {DatascienceTypeLattice.Status.Numeric}
             elif is_Set(state, caller):
-                state.result = {StatisticalTypeLattice.Status.Set}
+                state.result = {DatascienceTypeLattice.Status.Set}
             elif is_Scaler(state, caller):
                 state.result = state.get_type(caller)
             elif is_Encoder(state, caller):

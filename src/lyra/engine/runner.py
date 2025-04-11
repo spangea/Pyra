@@ -24,8 +24,8 @@ from lyra.engine.result import AnalysisResult
 from lyra.frontend.cfg_generator import ast_to_cfgs
 from lyra.frontend.cfg_generator import ast_to_fargs
 from lyra.visualization.graph_renderer import AnalysisResultRenderer
-from lyra.statistical.statistical_type_domain import StatisticalTypeState, StatisticalTypeLattice
-from lyra.core.statistical_warnings import DuplicatesNotDroppedWarning, NotShuffledWarning, MissingDataWarning
+from lyra.datascience.datascience_type_domain import DatascienceTypeState, DatascienceTypeLattice
+from lyra.core.datascience_warnings import DuplicatesNotDroppedWarning, NotShuffledWarning, MissingDataWarning
 import warnings
 
 class Runner:
@@ -102,7 +102,7 @@ class Runner:
     def run(self, fname: str = '') -> AnalysisResult:
         start = time.time()
         result = self.interpreter().analyze(self.cfgs[fname], self.state())
-        if isinstance(self.state(), StatisticalTypeState):
+        if isinstance(self.state(), DatascienceTypeState):
             last_node_results = list(result.get_node_result(self.cfgs[fname].out_node).values())[0]
             assert len(last_node_results) == 1
             last_node_results_state = last_node_results[0]
@@ -117,7 +117,7 @@ class Runner:
                             warnings.warn(
                             f"Warning [possible]: At the and of the program {v} might still have duplicates that were not dropped, using drop_duplicates() might be necessary.",
                             category=DuplicatesNotDroppedWarning, stacklevel=2)
-                    if v in last_node_results_state.store and StatisticalTypeLattice._is_dataframe_type(last_node_results_state.store[v].element):
+                    if v in last_node_results_state.store and DatascienceTypeLattice._is_dataframe_type(last_node_results_state.store[v].element):
                         if v.is_shuffled == Status.NO:
                             warnings.warn(
                             f"Warning [possible]: At the and of the program {v} might be not shuffled and at the read_csv statement it contained a increasing/decreasing/constant Series, using sample() might be necessary to guarantee randomness.",

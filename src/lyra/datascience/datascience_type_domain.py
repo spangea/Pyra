@@ -23,12 +23,12 @@ from lyra.core.statements import VariableAccess, AttributeAccess
 
 from lyra.abstract_domains.basis import BasisWithSummarization
 
-from lyra.core.statistical_warnings import InconsistentTypeWarning, NoneRetAssignmentWarning, HighDimensionalityWarning
+from lyra.core.datascience_warnings import InconsistentTypeWarning, NoneRetAssignmentWarning, HighDimensionalityWarning
 
 # TODO: Check correctness and update documentation and operators
 
 
-class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMixin):
+class DatascienceTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMixin):
     from enum import IntEnum
 
     class Status(IntEnum):
@@ -118,9 +118,9 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
         Numeric = 1
         Boolean = 0
 
-    def __init__(self, statistical_type: Status = Status.Top):
+    def __init__(self, datascience_type: Status = Status.Top):
         super().__init__()
-        self._element = statistical_type
+        self._element = datascience_type
 
     @classmethod
     def from_lyra_type(cls, lyra_type: LyraType):
@@ -141,88 +141,88 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
             return "⊥"
         return self.element.name
 
-    def _neg(self) -> 'StatisticalTypeLattice':
+    def _neg(self) -> 'DatascienceTypeLattice':
         if self.is_bottom() :
             return self._replace(self.bottom())
-        elif self.element == StatisticalTypeLattice.Status.Series:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Series))
-        elif self.element == StatisticalTypeLattice.Status.Numeric:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Numeric))
-        elif self.element == StatisticalTypeLattice.Status.DataFrame:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame))
+        elif self.element == DatascienceTypeLattice.Status.Series:
+            return self._replace(DatascienceTypeLattice(DatascienceTypeLattice.Status.Series))
+        elif self.element == DatascienceTypeLattice.Status.Numeric:
+            return self._replace(DatascienceTypeLattice(DatascienceTypeLattice.Status.Numeric))
+        elif self.element == DatascienceTypeLattice.Status.DataFrame:
+            return self._replace(DatascienceTypeLattice(DatascienceTypeLattice.Status.DataFrame))
         return self._replace(self.top())
 
-    def _add(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
+    def _add(self, other: 'DatascienceTypeLattice') -> 'DatascienceTypeLattice':
         if self.is_bottom() or other.is_bottom():
             return self._replace(self.bottom())
         elif self.element == other.element:
-            if (self.element == StatisticalTypeLattice.Status.Series
-                    or self.element == StatisticalTypeLattice.Status.Numeric
-                    or self.element == StatisticalTypeLattice.Status.String
-                    or self.element == StatisticalTypeLattice.Status.DataFrame
-                    or self.element == StatisticalTypeLattice.Status.Tensor):
+            if (self.element == DatascienceTypeLattice.Status.Series
+                    or self.element == DatascienceTypeLattice.Status.Numeric
+                    or self.element == DatascienceTypeLattice.Status.String
+                    or self.element == DatascienceTypeLattice.Status.DataFrame
+                    or self.element == DatascienceTypeLattice.Status.Tensor):
                 return self
 
-        elif self.element == StatisticalTypeLattice.Status.Series and other.element == StatisticalTypeLattice.Status.Numeric:
+        elif self.element == DatascienceTypeLattice.Status.Series and other.element == DatascienceTypeLattice.Status.Numeric:
             return self
-        elif (self.element == StatisticalTypeLattice.Status.DataFrame and
-              other.element in {StatisticalTypeLattice.Status.Numeric,
-                                StatisticalTypeLattice.Status.Series,
-                                StatisticalTypeLattice.Status.Dict,
-                                StatisticalTypeLattice.Status.List}):
+        elif (self.element == DatascienceTypeLattice.Status.DataFrame and
+              other.element in {DatascienceTypeLattice.Status.Numeric,
+                                DatascienceTypeLattice.Status.Series,
+                                DatascienceTypeLattice.Status.Dict,
+                                DatascienceTypeLattice.Status.List}):
             return self
         return self._replace(self.top())
 
-    def _sub(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
+    def _sub(self, other: 'DatascienceTypeLattice') -> 'DatascienceTypeLattice':
         if self.is_bottom() or other.is_bottom():
             return self._replace(self.bottom())
         elif self.element == other.element:
-            if (self.element == StatisticalTypeLattice.Status.Series
-                    or self.element == StatisticalTypeLattice.Status.Numeric
-                    or self.element == StatisticalTypeLattice.Status.String
-                    or self.element == StatisticalTypeLattice.Status.DataFrame
-                    or self.element == StatisticalTypeLattice.Status.Tensor):
+            if (self.element == DatascienceTypeLattice.Status.Series
+                    or self.element == DatascienceTypeLattice.Status.Numeric
+                    or self.element == DatascienceTypeLattice.Status.String
+                    or self.element == DatascienceTypeLattice.Status.DataFrame
+                    or self.element == DatascienceTypeLattice.Status.Tensor):
                 return self
         return self._replace(self.top())
 
-    def _mult(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
+    def _mult(self, other: 'DatascienceTypeLattice') -> 'DatascienceTypeLattice':
         if self.is_bottom() or other.is_bottom():
             return self._replace(self.bottom())
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Series:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Series))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.Numeric:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Numeric))
-        elif self.element == other.element and other.element == StatisticalTypeLattice.Status.DataFrame:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame))
-        elif {self.element, other.element} == {StatisticalTypeLattice.Status.DataFrame,
-                                               StatisticalTypeLattice.Status.Numeric
+        elif self.element == other.element and other.element == DatascienceTypeLattice.Status.Series:
+            return self._replace(DatascienceTypeLattice(DatascienceTypeLattice.Status.Series))
+        elif self.element == other.element and other.element == DatascienceTypeLattice.Status.Numeric:
+            return self._replace(DatascienceTypeLattice(DatascienceTypeLattice.Status.Numeric))
+        elif self.element == other.element and other.element == DatascienceTypeLattice.Status.DataFrame:
+            return self._replace(DatascienceTypeLattice(DatascienceTypeLattice.Status.DataFrame))
+        elif {self.element, other.element} == {DatascienceTypeLattice.Status.DataFrame,
+                                               DatascienceTypeLattice.Status.Numeric
                                                }:
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame))
+            return self._replace(DatascienceTypeLattice(DatascienceTypeLattice.Status.DataFrame))
         return self._replace(self.top())
 
-    def _div(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
+    def _div(self, other: 'DatascienceTypeLattice') -> 'DatascienceTypeLattice':
         if self.is_bottom() or other.is_bottom():
             return self._replace(self.bottom())
         elif self.element == other.element:
-            if self.element == StatisticalTypeLattice.Status.Series:
-                return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.RatioSeries))
-            elif (self.element == StatisticalTypeLattice.Status.Numeric
-                    or self.element == StatisticalTypeLattice.Status.DataFrame
-                    or self.element == StatisticalTypeLattice.Status.Tensor):
+            if self.element == DatascienceTypeLattice.Status.Series:
+                return self._replace(DatascienceTypeLattice(DatascienceTypeLattice.Status.RatioSeries))
+            elif (self.element == DatascienceTypeLattice.Status.Numeric
+                    or self.element == DatascienceTypeLattice.Status.DataFrame
+                    or self.element == DatascienceTypeLattice.Status.Tensor):
                 return self
         return self._replace(self.top())
 
-    def _mod(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
+    def _mod(self, other: 'DatascienceTypeLattice') -> 'DatascienceTypeLattice':
         if self.is_bottom() or other.is_bottom():
             return self._replace(self.bottom())
         elif self.element == other.element:
-            if (self.element == StatisticalTypeLattice.Status.Series
-                    or self.element == StatisticalTypeLattice.Status.Numeric
-                    or self.element == StatisticalTypeLattice.Status.DataFrame):
+            if (self.element == DatascienceTypeLattice.Status.Series
+                    or self.element == DatascienceTypeLattice.Status.Numeric
+                    or self.element == DatascienceTypeLattice.Status.DataFrame):
                 return self
         return self._replace(self.top())
 
-    def _concat(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
+    def _concat(self, other: 'DatascienceTypeLattice') -> 'DatascienceTypeLattice':
         return self._replace(self.top())
 
     def to_json(self) -> str:
@@ -231,114 +231,114 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
     @staticmethod
     def from_json(json: str) -> 'JSONMixin':
         if json == '⊥':
-            return StatisticalTypeLattice().bottom()
+            return DatascienceTypeLattice().bottom()
         if json == 'Boolean':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.Boolean)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.Boolean)
         elif json == 'Numeric':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.Numeric)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.Numeric)
         elif json == 'String':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.String)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.String)
         elif json == 'RatioSeries':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.RatioSeries)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.RatioSeries)
         elif json == 'DataFrame':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.DataFrame)
         elif json == 'DataFrameFromPCA':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrameFromPCA)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.DataFrameFromPCA)
         elif json == 'Series':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.Series)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.Series)
         elif json == 'StringSeries':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.StringSeries)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.StringSeries)
         elif json == 'NumericSeries':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.NumericSeries)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.NumericSeries)
         elif json == 'ExpSeries':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.ExpSeries)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.ExpSeries)
         elif json == 'StdSeries':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.StdSeries)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.StdSeries)
         elif json == 'NormSeries':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.NormSeries)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.NormSeries)
         elif json == 'CatSeries':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.CatSeries)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.CatSeries)
         elif json == 'Array':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.Array)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.Array)
         elif json == 'BoolArray':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.BoolArray)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.BoolArray)
         elif json == 'StringArray':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.StringArray)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.StringArray)
         elif json == 'NumericArray':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.NumericArray)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.NumericArray)
         elif json == 'List':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.List)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.List)
         elif json == 'BoolList':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.BoolList)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.BoolList)
         elif json == 'StringList':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.StringList)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.StringList)
         elif json == 'NumericList':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.NumericList)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.NumericList)
         elif json == 'Tuple':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.Tuple)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.Tuple)
         elif json == 'Dict':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.Dict)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.Dict)
         elif json == 'Set':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.Set)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.Set)
         elif json == 'MaxAbsScaler':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.MaxAbsScaler)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.MaxAbsScaler)
         elif json == 'MinMaxScaler':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.MinMaxScaler)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.MinMaxScaler)
         elif json == 'StandardScaler':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.StandardScaler)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.StandardScaler)
         elif json == 'KBinsDiscretizer':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.KBinsDiscretizer)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.KBinsDiscretizer)
         elif json == 'MultiLabelBinarizer':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.MultiLabelBinarizer)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.MultiLabelBinarizer)
         elif json == 'TargetEncoder':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.TargetEncoder)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.TargetEncoder)
         elif json == 'OrdinalEncoder':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.OrdinalEncoder)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.OrdinalEncoder)
         elif json == 'Binarizer':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.Binarizer)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.Binarizer)
         elif json == 'OneHotEncoder':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.OneHotEncoder)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.OneHotEncoder)
         elif json == 'LabelEncoder':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.LabelEncoder)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.LabelEncoder)
         elif json == 'FunctionTransformer':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.FunctionTransformer)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.FunctionTransformer)
         elif json == 'KernelCenterer':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.KernelCenterer)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.KernelCenterer)
         elif json == 'Normalizer':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.Normalizer)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.Normalizer)
         elif json == 'PolynomialFeatures':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.PolynomialFeatures)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.PolynomialFeatures)
         elif json == 'PowerTransformer':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.PowerTransformer)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.PowerTransformer)
         elif json == 'QuantileTransformer':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.QuantileTransformer)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.QuantileTransformer)
         elif json == 'RobustScaler':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.RobustScaler)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.RobustScaler)
         elif json == 'SplineTransformer':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.SplineTransformer)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.SplineTransformer)
         elif json == 'Scaled':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.Scaled)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.Scaled)
         elif json == 'Tensor':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.Tensor)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.Tensor)
         elif json == 'SplittedTestData':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.SplittedTestData)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.SplittedTestData)
         elif json == 'SplittedTrainData':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.SplittedTrainData)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.SplittedTrainData)
         elif json == ('FeatureSelector'):
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.FeatureSelector)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.FeatureSelector)
         elif json == 'FeatureSelected':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.FeatureSelected)
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.FeatureSelected)
         elif json == 'Top':
-            return StatisticalTypeLattice(StatisticalTypeLattice.Status.Top)
-        return StatisticalTypeLattice()
+            return DatascienceTypeLattice(DatascienceTypeLattice.Status.Top)
+        return DatascienceTypeLattice()
 
     def top(self):
-        return self._replace(StatisticalTypeLattice())
+        return self._replace(DatascienceTypeLattice())
 
     def is_top(self) -> bool:
-        return self.element == StatisticalTypeLattice.Status.Top
+        return self.element == DatascienceTypeLattice.Status.Top
 
-    def _less_equal(self, other: 'StatisticalTypeLattice') -> bool:
+    def _less_equal(self, other: 'DatascienceTypeLattice') -> bool:
         if other.is_top():
             return True
         elif self.element == other.element:
@@ -346,84 +346,84 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
         elif self.is_bottom():
             return True
         elif (self.element in self._numeric_series_types()
-              and other.element in {StatisticalTypeLattice.Status.NumericSeries, StatisticalTypeLattice.Status.Series}):
+              and other.element in {DatascienceTypeLattice.Status.NumericSeries, DatascienceTypeLattice.Status.Series}):
             return True
         elif (self.element in self._string_series_types()
-              and other.element in {StatisticalTypeLattice.Status.StringSeries, StatisticalTypeLattice.Status.Series}):
+              and other.element in {DatascienceTypeLattice.Status.StringSeries, DatascienceTypeLattice.Status.Series}):
             return True
-        elif self.element in self._array_types() and other.element == StatisticalTypeLattice.Status.Array:
+        elif self.element in self._array_types() and other.element == DatascienceTypeLattice.Status.Array:
             return True
-        elif self.element in self._list_types() and other.element == StatisticalTypeLattice.Status.List:
+        elif self.element in self._list_types() and other.element == DatascienceTypeLattice.Status.List:
             return True
-        elif self.element in self._scalar_types() and other.element == StatisticalTypeLattice.Status.Scalar:
+        elif self.element in self._scalar_types() and other.element == DatascienceTypeLattice.Status.Scalar:
             return True
-        elif self.element == StatisticalTypeLattice.Status.DataFrameFromPCA and other.element == StatisticalTypeLattice.Status.DataFrame:
+        elif self.element == DatascienceTypeLattice.Status.DataFrameFromPCA and other.element == DatascienceTypeLattice.Status.DataFrame:
             return True
-        elif (self.element in {StatisticalTypeLattice.Status.NumericSeries, StatisticalTypeLattice.Status.StringSeries,
-                               StatisticalTypeLattice.Status.BoolSeries}
-              and other.element == StatisticalTypeLattice.Status.Series):
+        elif (self.element in {DatascienceTypeLattice.Status.NumericSeries, DatascienceTypeLattice.Status.StringSeries,
+                               DatascienceTypeLattice.Status.BoolSeries}
+              and other.element == DatascienceTypeLattice.Status.Series):
             return True
         return False
 
     @classmethod
     def get_all_types(cls):
-        return {cls(t) for t in StatisticalTypeLattice.Status}
+        return {cls(t) for t in DatascienceTypeLattice.Status}
 
     @classmethod
     def _dataframes_types(cls):
-        s = (StatisticalTypeLattice.Status.DataFrame,
-             StatisticalTypeLattice.Status.DataFrameFromPCA)
+        s = (DatascienceTypeLattice.Status.DataFrame,
+             DatascienceTypeLattice.Status.DataFrameFromPCA)
         return s
 
     @classmethod
     def _list_types(cls):
-        s = (StatisticalTypeLattice.Status.List,
-             StatisticalTypeLattice.Status.BoolList,
-             StatisticalTypeLattice.Status.NumericList,
-             StatisticalTypeLattice.Status.StringList)
+        s = (DatascienceTypeLattice.Status.List,
+             DatascienceTypeLattice.Status.BoolList,
+             DatascienceTypeLattice.Status.NumericList,
+             DatascienceTypeLattice.Status.StringList)
         return s
 
     @classmethod
     def _scalar_types(cls):
-        s = (StatisticalTypeLattice.Status.Boolean,
-             StatisticalTypeLattice.Status.Numeric,
-             StatisticalTypeLattice.Status.Scalar,
-             StatisticalTypeLattice.Status.String)
+        s = (DatascienceTypeLattice.Status.Boolean,
+             DatascienceTypeLattice.Status.Numeric,
+             DatascienceTypeLattice.Status.Scalar,
+             DatascienceTypeLattice.Status.String)
         return s
 
     @classmethod
     def _array_types(cls):
-        s = (StatisticalTypeLattice.Status.Array,
-             StatisticalTypeLattice.Status.BoolArray,
-             StatisticalTypeLattice.Status.NumericArray,
-             StatisticalTypeLattice.Status.StringArray)
+        s = (DatascienceTypeLattice.Status.Array,
+             DatascienceTypeLattice.Status.BoolArray,
+             DatascienceTypeLattice.Status.NumericArray,
+             DatascienceTypeLattice.Status.StringArray)
         return s
 
     @classmethod
     def _series_types(cls):
-        s = (StatisticalTypeLattice.Status.Series,
-             StatisticalTypeLattice.Status.NumericSeries,
-             StatisticalTypeLattice.Status.RatioSeries,
-             StatisticalTypeLattice.Status.ExpSeries,
-             StatisticalTypeLattice.Status.StdSeries,
-             StatisticalTypeLattice.Status.NormSeries,
-             StatisticalTypeLattice.Status.StringSeries,
-             StatisticalTypeLattice.Status.CatSeries
+        s = (DatascienceTypeLattice.Status.Series,
+             DatascienceTypeLattice.Status.NumericSeries,
+             DatascienceTypeLattice.Status.RatioSeries,
+             DatascienceTypeLattice.Status.ExpSeries,
+             DatascienceTypeLattice.Status.StdSeries,
+             DatascienceTypeLattice.Status.NormSeries,
+             DatascienceTypeLattice.Status.StringSeries,
+             DatascienceTypeLattice.Status.CatSeries
              )
         return s
     @classmethod
     def _numeric_series_types(cls):
-        s = (StatisticalTypeLattice.Status.NumericSeries,
-             StatisticalTypeLattice.Status.RatioSeries,
-             StatisticalTypeLattice.Status.ExpSeries,
-             StatisticalTypeLattice.Status.StdSeries,
-             StatisticalTypeLattice.Status.NormSeries)
+        s = (DatascienceTypeLattice.Status.NumericSeries,
+             DatascienceTypeLattice.Status.RatioSeries,
+             DatascienceTypeLattice.Status.ExpSeries,
+             DatascienceTypeLattice.Status.StdSeries,
+             DatascienceTypeLattice.Status.NormSeries)
         return s
 
     @classmethod
     def _string_series_types(cls):
-        s = (StatisticalTypeLattice.Status.StringSeries,
-             StatisticalTypeLattice.Status.CatSeries)
+        s = (DatascienceTypeLattice.Status.StringSeries,
+             DatascienceTypeLattice.Status.CatSeries)
         return s
 
     @classmethod
@@ -431,7 +431,7 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
         return (
                 status in cls._string_series_types() or
                 status in cls._numeric_series_types() or
-                status == StatisticalTypeLattice.Status.BoolSeries
+                status == DatascienceTypeLattice.Status.BoolSeries
         )
 
     @classmethod
@@ -440,83 +440,83 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
 
     @classmethod
     def _atom_types(cls):
-        s = (StatisticalTypeLattice.Status.NoneRet,
-             StatisticalTypeLattice.Status.Plot,
-             StatisticalTypeLattice.Status.Binarizer,
-             StatisticalTypeLattice.Status.LabelBinarizer,
-             StatisticalTypeLattice.Status.OrdinalEncoder,
-             StatisticalTypeLattice.Status.OneHotEncoder,
-             StatisticalTypeLattice.Status.LabelEncoder,
-             StatisticalTypeLattice.Status.KBinsDiscretizer,
-             StatisticalTypeLattice.Status.MultiLabelBinarizer,
-             StatisticalTypeLattice.Status.TargetEncoder,
-             StatisticalTypeLattice.Status.MaxAbsScaler,
-             StatisticalTypeLattice.Status.MinMaxScaler,
-             StatisticalTypeLattice.Status.StandardScaler,
-             StatisticalTypeLattice.Status.FunctionTransformer,
-             StatisticalTypeLattice.Status.KernelCenterer,
-             StatisticalTypeLattice.Status.Normalizer,
-             StatisticalTypeLattice.Status.PolynomialFeatures,
-             StatisticalTypeLattice.Status.PowerTransformer,
-             StatisticalTypeLattice.Status.QuantileTransformer,
-             StatisticalTypeLattice.Status.RobustScaler,
-             StatisticalTypeLattice.Status.SplineTransformer,
-             StatisticalTypeLattice.Status.Scaled,
-             StatisticalTypeLattice.Status.Tuple,
-             StatisticalTypeLattice.Status.Set,
-             StatisticalTypeLattice.Status.Dict,
-             StatisticalTypeLattice.Status.Tensor,
-             StatisticalTypeLattice.Status.SplittedTrainData,
-             StatisticalTypeLattice.Status.SplittedTestData,
-             StatisticalTypeLattice.Status.FeatureSelector,
-             StatisticalTypeLattice.Status.FeatureSelected
+        s = (DatascienceTypeLattice.Status.NoneRet,
+             DatascienceTypeLattice.Status.Plot,
+             DatascienceTypeLattice.Status.Binarizer,
+             DatascienceTypeLattice.Status.LabelBinarizer,
+             DatascienceTypeLattice.Status.OrdinalEncoder,
+             DatascienceTypeLattice.Status.OneHotEncoder,
+             DatascienceTypeLattice.Status.LabelEncoder,
+             DatascienceTypeLattice.Status.KBinsDiscretizer,
+             DatascienceTypeLattice.Status.MultiLabelBinarizer,
+             DatascienceTypeLattice.Status.TargetEncoder,
+             DatascienceTypeLattice.Status.MaxAbsScaler,
+             DatascienceTypeLattice.Status.MinMaxScaler,
+             DatascienceTypeLattice.Status.StandardScaler,
+             DatascienceTypeLattice.Status.FunctionTransformer,
+             DatascienceTypeLattice.Status.KernelCenterer,
+             DatascienceTypeLattice.Status.Normalizer,
+             DatascienceTypeLattice.Status.PolynomialFeatures,
+             DatascienceTypeLattice.Status.PowerTransformer,
+             DatascienceTypeLattice.Status.QuantileTransformer,
+             DatascienceTypeLattice.Status.RobustScaler,
+             DatascienceTypeLattice.Status.SplineTransformer,
+             DatascienceTypeLattice.Status.Scaled,
+             DatascienceTypeLattice.Status.Tuple,
+             DatascienceTypeLattice.Status.Set,
+             DatascienceTypeLattice.Status.Dict,
+             DatascienceTypeLattice.Status.Tensor,
+             DatascienceTypeLattice.Status.SplittedTrainData,
+             DatascienceTypeLattice.Status.SplittedTestData,
+             DatascienceTypeLattice.Status.FeatureSelector,
+             DatascienceTypeLattice.Status.FeatureSelected
              )
         return s
 
-    def _join(self, other: 'StatisticalTypeLattice') -> 'StatisticalTypeLattice':
+    def _join(self, other: 'DatascienceTypeLattice') -> 'DatascienceTypeLattice':
         if self.is_top() or other.is_top():
             return self._replace(self.top())
         elif self.is_bottom() and other.is_bottom():
             return self
         elif self.is_bottom():
-            return self._replace(StatisticalTypeLattice(other.element))
+            return self._replace(DatascienceTypeLattice(other.element))
         elif other.is_bottom():
             return self
         elif self.element == other.element:
             return self
         elif self._less_equal(other):
-            return self._replace(StatisticalTypeLattice(other.element))
+            return self._replace(DatascienceTypeLattice(other.element))
         elif other._less_equal(self):
             return self
         # Computes the join between types of the same group
         # Numeric series
         elif self.element in self._numeric_series_types() and other.element in self._numeric_series_types():
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.NumericSeries))
+            return self._replace(DatascienceTypeLattice(DatascienceTypeLattice.Status.NumericSeries))
         # String series
         elif self.element in self._string_series_types() and other.element in self._string_series_types():
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.StringSeries))
+            return self._replace(DatascienceTypeLattice(DatascienceTypeLattice.Status.StringSeries))
         # Array
         elif self.element in self._array_types() and other.element in self._array_types():
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Array))
+            return self._replace(DatascienceTypeLattice(DatascienceTypeLattice.Status.Array))
         # List
         elif self.element in self._list_types() and other.element in self._list_types():
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.List))
+            return self._replace(DatascienceTypeLattice(DatascienceTypeLattice.Status.List))
         # Scalar values
         elif self.element in self._scalar_types() and other.element in self._scalar_types():
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Scalar))
+            return self._replace(DatascienceTypeLattice(DatascienceTypeLattice.Status.Scalar))
         # DataFrame
         elif self.element in self._dataframes_types() and other.element in self._dataframes_types():
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame))
+            return self._replace(DatascienceTypeLattice(DatascienceTypeLattice.Status.DataFrame))
         # Computes the join between types of different series groups
         elif self._is_series_type(self.element) and self._is_series_type(other.element):
-            return self._replace(StatisticalTypeLattice(StatisticalTypeLattice.Status.Series))
+            return self._replace(DatascienceTypeLattice(DatascienceTypeLattice.Status.Series))
         return self._replace(self.top())
 
-    def _meet(self, other: 'StatisticalTypeLattice'):
+    def _meet(self, other: 'DatascienceTypeLattice'):
         if self.is_bottom() or other.is_bottom():
             return self._replace(self.bottom())
         elif self.is_top():
-            return self._replace(StatisticalTypeLattice(other.element))
+            return self._replace(DatascienceTypeLattice(other.element))
         elif other.is_top():
             return self
         elif self.element == other.element:
@@ -524,14 +524,14 @@ class StatisticalTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
         elif self._less_equal(other):
             return self
         elif other._less_equal(self):
-            return self._replace(StatisticalTypeLattice(other.element))
+            return self._replace(DatascienceTypeLattice(other.element))
         return self._replace(self.bottom())
 
-    def _widening(self, other: 'StatisticalTypeLattice'):
+    def _widening(self, other: 'DatascienceTypeLattice'):
         return self._join(other)
 
 
-def resolve(typ: LyraType) -> StatisticalTypeLattice.Status:
+def resolve(typ: LyraType) -> DatascienceTypeLattice.Status:
     _typ = typ
     # FIXME: this part is useless for our domain
     """
@@ -539,48 +539,48 @@ def resolve(typ: LyraType) -> StatisticalTypeLattice.Status:
         if isinstance(_typ, (ListLyraType, SetLyraType)):
             _typ = _typ.typ
         elif isinstance(_typ, TupleLyraType):
-            _typ = reduce(max, map(resolve, _typ.typs), StatisticalTypeLattice.Status.Boolean)
+            _typ = reduce(max, map(resolve, _typ.typs), DatascienceTypeLattice.Status.Boolean)
         elif isinstance(_typ, DictLyraType):
             _typ = max(resolve(_typ.key_typ), resolve(_typ.val_typ))
     """
-    if isinstance(_typ, StatisticalTypeLattice.Status):
+    if isinstance(_typ, DatascienceTypeLattice.Status):
         return _typ
     elif isinstance(_typ, BooleanLyraType):
-        return StatisticalTypeLattice.Status.Boolean
+        return DatascienceTypeLattice.Status.Boolean
     elif isinstance(_typ, IntegerLyraType) or isinstance(_typ, FloatLyraType):
-        return StatisticalTypeLattice.Status.Numeric
+        return DatascienceTypeLattice.Status.Numeric
     elif isinstance(_typ, DataFrameLyraType):
-        return StatisticalTypeLattice.Status.DataFrame
+        return DatascienceTypeLattice.Status.DataFrame
     elif isinstance(_typ, SeriesLyraType):
-        return StatisticalTypeLattice.Status.Series
+        return DatascienceTypeLattice.Status.Series
     elif isinstance(_typ, StringLyraType):
-        return StatisticalTypeLattice.Status.String
+        return DatascienceTypeLattice.Status.String
     elif isinstance(_typ, ListLyraType):
-        return StatisticalTypeLattice.Status.List
+        return DatascienceTypeLattice.Status.List
     elif isinstance(_typ, DictLyraType):
-        return StatisticalTypeLattice.Status.Dict
+        return DatascienceTypeLattice.Status.Dict
     elif isinstance(_typ, TupleLyraType):
-        return StatisticalTypeLattice.Status.Tuple
+        return DatascienceTypeLattice.Status.Tuple
     elif isinstance(_typ, SetLyraType):
-        return StatisticalTypeLattice.Status.Set
+        return DatascienceTypeLattice.Status.Set
     elif isinstance(_typ, NoneLyraType):
-        return StatisticalTypeLattice.Status.NoneRet
-    return StatisticalTypeLattice.Status.Top
+        return DatascienceTypeLattice.Status.NoneRet
+    return DatascienceTypeLattice.Status.Top
 
 
-class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
+class DatascienceTypeState(Store, StateWithSummarization, InputMixin):
     class Status(defaultdict):
 
         def __missing__(self, key):
-            return {'statistical_type': resolve(key)}
+            return {'datascience_type': resolve(key)}
 
     def __init__(self, variables: Set[VariableIdentifier], precursory: State = None):
         """Map each program variable to the type representing its value.
 
         :param variables: set of program variables
         """
-        lattices = defaultdict(lambda: StatisticalTypeLattice)
-        arguments = StatisticalTypeState.Status()
+        lattices = defaultdict(lambda: DatascienceTypeLattice)
+        arguments = DatascienceTypeState.Status()
         super().__init__(variables, lattices, arguments)
         InputMixin.__init__(self, precursory)
         self._subscriptions = dict() # Initialize _subscriptions as a dictionary
@@ -602,7 +602,7 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
                 self.subscriptions[var].update(previous.subscriptions[var])
         return self
 
-    def replace(self, variable: VariableIdentifier, expression: Expression) -> 'StatisticalTypeState':
+    def replace(self, variable: VariableIdentifier, expression: Expression) -> 'DatascienceTypeState':
         pass
 
     def _add_series_with_dtypes(self, caller, df_info_dtypes, df_info_sorting):
@@ -613,26 +613,26 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
                 if col in df_info_sorting:
                     if df_info_sorting[col] == "constant":
                         sub = Subscription(TopLyraType, caller, Literal(StringLyraType(), col),Status.YES, Status.YES)
-                        self._assign(sub, StatisticalTypeLattice.Status.NumericSeries)
+                        self._assign(sub, DatascienceTypeLattice.Status.NumericSeries)
                     elif df_info_sorting[col] == "increasing":
                         sub = Subscription(TopLyraType, caller, Literal(StringLyraType(), col),Status.YES, Status.NO)
-                        self._assign(sub, StatisticalTypeLattice.Status.NumericSeries)
+                        self._assign(sub, DatascienceTypeLattice.Status.NumericSeries)
                     elif df_info_sorting[col] == "decreasing":
                         sub = Subscription(TopLyraType, caller, Literal(StringLyraType(), col), Status.NO, Status.YES)
-                        self._assign(sub, StatisticalTypeLattice.Status.NumericSeries)
+                        self._assign(sub, DatascienceTypeLattice.Status.NumericSeries)
                     elif df_info_sorting[col] == "not_sorted":
                         sub = Subscription(TopLyraType, caller, Literal(StringLyraType(), col), Status.NO, Status.NO)
-                        self._assign(sub, StatisticalTypeLattice.Status.NumericSeries)
+                        self._assign(sub, DatascienceTypeLattice.Status.NumericSeries)
                 else:
                     sub = Subscription(TopLyraType, caller, Literal(StringLyraType(), col))
-                    self._assign(sub, StatisticalTypeLattice.Status.NumericSeries)
+                    self._assign(sub, DatascienceTypeLattice.Status.NumericSeries)
             elif str(dtype) == 'object':
                 sub = Subscription(TopLyraType, caller, Literal(StringLyraType(), col))
-                self._assign(sub, StatisticalTypeLattice.Status.CatSeries)
+                self._assign(sub, DatascienceTypeLattice.Status.CatSeries)
             else:
                 raise ValueError(f"Unexpected dtype: {dtype}")
 
-    def _assign_variable(self, left: VariableIdentifier, right: Expression) -> 'StatisticalTypeState':
+    def _assign_variable(self, left: VariableIdentifier, right: Expression) -> 'DatascienceTypeState':
         right_copy_ = None
         if type(right) == tuple:    # Only used to gather concrete information about DataFrames when read_csv is called
             assert len(right) == 7 or len(right) == 2
@@ -640,7 +640,7 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
             right = right[0]
         # Continue with the actual assignment as usual
         evaluation = self._evaluation.visit(right, self, dict())
-        typ = StatisticalTypeLattice.from_lyra_type(left.typ)
+        typ = DatascienceTypeLattice.from_lyra_type(left.typ)
         # Deep copy are needed because meet has side effects
         if left in self.store:
             left_copy = copy.deepcopy(self.store[left])
@@ -650,13 +650,13 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
                               category=InconsistentTypeWarning, stacklevel=2)
         # Assignment is destructive
         self.store[left] = evaluation[right]
-        if evaluation[right].element == StatisticalTypeLattice.Status.NoneRet:
+        if evaluation[right].element == DatascienceTypeLattice.Status.NoneRet:
             warnings.warn(f"Warning [definite]: Assignment to None type for variable {left.name} @ line {self.pp}",
                           category=NoneRetAssignmentWarning,
                           stacklevel=2)
         if left.is_dictionary:
-            _typ = StatisticalTypeLattice.from_lyra_type(left.typ.key_typ)
-            typ_ = StatisticalTypeLattice.from_lyra_type(left.typ.val_typ)
+            _typ = DatascienceTypeLattice.from_lyra_type(left.typ.key_typ)
+            typ_ = DatascienceTypeLattice.from_lyra_type(left.typ.val_typ)
             if isinstance(right.typ, DictLyraType):
                 _keys = evaluation.get(KeysIdentifier(right), deepcopy(evaluation[right]))
                 self.keys[left.keys] = _keys.meet(_typ)
@@ -684,7 +684,7 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
             if len(right_copy_) == 7:
                 right = right_copy_
                 # It tuple has the following structure
-                # {(StatisticalTypeLattice.Status.DataFrame, frozenset(dtype_info.items()), is_high_dim, has_duplicates, has_na_values, is_small, frozenset(sorting_info.items()))}
+                # {(DatascienceTypeLattice.Status.DataFrame, frozenset(dtype_info.items()), is_high_dim, has_duplicates, has_na_values, is_small, frozenset(sorting_info.items()))}
                 self._add_series_with_dtypes(left, right[1], right[6])  # No return, just side effect
                 # If there is at least one ordered Series, the DataFrame is not shuffled
                 if any([v == "increasing" or v == "decreasing" for v in dict(right[6]).values()]):
@@ -727,48 +727,48 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
                 self.variables.remove(right_tmp)
         return self
 
-    def _assign_subscription(self, left: Subscription, right: Expression) -> 'StatisticalTypeState':
+    def _assign_subscription(self, left: Subscription, right: Expression) -> 'DatascienceTypeState':
         evaluation = self._evaluation.visit(right, self, dict())
-        typ = StatisticalTypeLattice.from_lyra_type(left.typ)
+        typ = DatascienceTypeLattice.from_lyra_type(left.typ)
         self.store[left] = evaluation[right].meet(typ)
-        if evaluation[right].element == StatisticalTypeLattice.Status.NoneRet:
+        if evaluation[right].element == DatascienceTypeLattice.Status.NoneRet:
                         warnings.warn(f"Warning [definite]: Assignment to None type for variable {left.name} @ line {self.pp}",
                         NoneRetAssignmentWarning,
                         stacklevel=2)
         target = left.target
         if isinstance(target, VariableAccess):
             target = target.variable
-        if target in self.variables and target in self.store and self.store[target].element == StatisticalTypeLattice.Status.DataFrame:
+        if target in self.variables and target in self.store and self.store[target].element == DatascienceTypeLattice.Status.DataFrame:
             if target not in self._subscriptions:
                 self._subscriptions[target] = set()
             self._subscriptions[target].add(left)
         return self
 
-    def _assign_attributeaccess(self, left: Subscription, right: Expression) -> 'StatisticalTypeState':
+    def _assign_attributeaccess(self, left: Subscription, right: Expression) -> 'DatascienceTypeState':
         evaluation = self._evaluation.visit(right, self, dict())
-        typ = StatisticalTypeLattice.from_lyra_type(left.typ)
-        if left.target.variable in self.store and self.store[left.target.variable].element == StatisticalTypeLattice.Status.DataFrame \
-            and left.attr.name == "columns" and evaluation[right]._less_equal(StatisticalTypeLattice(StatisticalTypeLattice.Status.List)):
+        typ = DatascienceTypeLattice.from_lyra_type(left.typ)
+        if left.target.variable in self.store and self.store[left.target.variable].element == DatascienceTypeLattice.Status.DataFrame \
+            and left.attr.name == "columns" and evaluation[right]._less_equal(DatascienceTypeLattice(DatascienceTypeLattice.Status.List)):
             for c in right.items:
                 # Create subscription for each column and save them as Series in the abstract state
                 sub = Subscription(TopLyraType, left.target, c)
                 if sub not in self.store:
-                    self.store[sub] = StatisticalTypeLattice(StatisticalTypeLattice.Status.Series)
+                    self.store[sub] = DatascienceTypeLattice(DatascienceTypeLattice.Status.Series)
                     if left.target not in self._subscriptions:
                         self._subscriptions[left.target] = set()
                     self.subscriptions[left.target].add(sub)
         else:
             self.store[left] = evaluation[right].meet(typ)
-        if evaluation[right].element == StatisticalTypeLattice.Status.NoneRet:
+        if evaluation[right].element == DatascienceTypeLattice.Status.NoneRet:
             warnings.warn(f"Warning [definite]: Assignment to None type for variable {left.name} @ line {self.pp}",
                           NoneRetAssignmentWarning,
                           stacklevel=2)
         return self
 
-    def _assign_slicing(self, left: Slicing, right: Expression) -> 'StatisticalTypeState':
+    def _assign_slicing(self, left: Slicing, right: Expression) -> 'DatascienceTypeState':
         pass
 
-    def _assign_tuple(self, left: TupleDisplay, right: Expression) -> 'StatisticalTypeState':
+    def _assign_tuple(self, left: TupleDisplay, right: Expression) -> 'DatascienceTypeState':
         if hasattr(right, "items") and len(left.items) == len(right.items):
             for l, r in zip(left.items, right.items):
                 self._assign(l,r)
@@ -777,90 +777,90 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
                 self._assign(l,r)
         else:
            for l in left.items:
-               self._assign(l, StatisticalTypeLattice.Status.Top)
+               self._assign(l, DatascienceTypeLattice.Status.Top)
         return self
 
-    def _assume_variable(self, condition: VariableIdentifier, neg: bool = False) -> 'StatisticalTypeState':
-        # Statistical type domain cannot assume any information in state
+    def _assume_variable(self, condition: VariableIdentifier, neg: bool = False) -> 'DatascienceTypeState':
+        # Datascience type domain cannot assume any information in state
         return self
 
-    def _assume_subscription(self, condition: Subscription, neg: bool = False) -> 'StatisticalTypeState':
-        # Statistical type domain cannot assume any information in state
+    def _assume_subscription(self, condition: Subscription, neg: bool = False) -> 'DatascienceTypeState':
+        # Datascience type domain cannot assume any information in state
         return self
 
     def _assume_eq_comparison(self, condition: BinaryComparisonOperation, bwd: bool = False):
-        # Statistical type domain cannot assume any information in state
+        # Datascience type domain cannot assume any information in state
         return self
 
     def _assume_noteq_comparison(self, condition: BinaryComparisonOperation, bwd: bool = False):
-        # Statistical type domain cannot assume any information in state
+        # Datascience type domain cannot assume any information in state
         return self
 
     def _assume_lt_comparison(self, condition: BinaryComparisonOperation, bwd: bool = False):
-        # Statistical type domain cannot assume any information in state
+        # Datascience type domain cannot assume any information in state
         return self
 
     def _assume_lte_comparison(self, condition: BinaryComparisonOperation, bwd: bool = False):
-        # Statistical type domain cannot assume any information in state
+        # Datascience type domain cannot assume any information in state
         return self
 
     def _assume_gt_comparison(self, condition: BinaryComparisonOperation, bwd: bool = False):
-        # Statistical type domain cannot assume any information in state
+        # Datascience type domain cannot assume any information in state
         return self
 
     def _assume_gte_comparison(self, condition: BinaryComparisonOperation, bwd: bool = False):
-        # Statistical type domain cannot assume any information in state
+        # Datascience type domain cannot assume any information in state
         return self
 
     def _assume_is_comparison(self, condition: BinaryComparisonOperation, bwd: bool = False):
-        # Statistical type domain cannot assume any information in state
+        # Datascience type domain cannot assume any information in state
         return self
 
     def _assume_isnot_comparison(self, condition: BinaryComparisonOperation, bwd: bool = False):
-        # Statistical type domain cannot assume any information in state
+        # Datascience type domain cannot assume any information in state
         return self
 
     def _assume_in_comparison(self, condition: BinaryComparisonOperation, bwd: bool = False):
-        # Statistical type domain cannot assume any information in state
+        # Datascience type domain cannot assume any information in state
         return self
 
     def _assume_notin_comparison(self, condition: BinaryComparisonOperation, bwd: bool = False):
-        # Statistical type domain cannot assume any information in state
+        # Datascience type domain cannot assume any information in state
         return self
 
-    def enter_if(self) -> 'StatisticalTypeState':
+    def enter_if(self) -> 'DatascienceTypeState':
         return self
 
-    def exit_if(self) -> 'StatisticalTypeState':
+    def exit_if(self) -> 'DatascienceTypeState':
         return self
 
-    def enter_loop(self) -> 'StatisticalTypeState':
+    def enter_loop(self) -> 'DatascienceTypeState':
         return self
 
-    def exit_loop(self) -> 'StatisticalTypeState':
+    def exit_loop(self) -> 'DatascienceTypeState':
         return self
 
-    def forget_variable(self, variable: VariableIdentifier) -> 'StatisticalTypeState':
+    def forget_variable(self, variable: VariableIdentifier) -> 'DatascienceTypeState':
         # Puts the variable type to top
         self.store[variable].top()
         return self
 
-    def delete_var(self, variable: VariableIdentifier) -> 'StatisticalTypeState':
+    def delete_var(self, variable: VariableIdentifier) -> 'DatascienceTypeState':
         # Deletes the variable from the store if they are present
         if variable in self.store:
             del self.store[variable]
         return self
 
-    def _output(self, output: Expression) -> 'StatisticalTypeState':
+    def _output(self, output: Expression) -> 'DatascienceTypeState':
         pass
 
-    def _substitute_variable(self, left: VariableIdentifier, right: Expression) -> 'StatisticalTypeState':
+    def _substitute_variable(self, left: VariableIdentifier, right: Expression) -> 'DatascienceTypeState':
         pass
 
-    def _substitute_subscription(self, left: Subscription, right: Expression) -> 'StatisticalTypeState':
+    def _substitute_subscription(self, left: Subscription, right: Expression) -> 'DatascienceTypeState':
         pass
 
-    def _substitute_slicing(self, left: Slicing, right: Expression) -> 'StatisticalTypeState':
+    def _substitute_slicing(self, left: Slicing, right: Expression) -> 'DatascienceTypeState':
         pass
 
     def remove_variable(self, variable: VariableIdentifier):
@@ -882,22 +882,22 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
     def get_type(self, id: Expression):
         if id in self.store:
             return self.store[id].element
-        if isinstance(id, StatisticalTypeLattice.Status):
+        if isinstance(id, DatascienceTypeLattice.Status):
             return id
         #raise KeyError(f"{id} not tracked by abstract state")
         # If not tracked, return Top
-        return StatisticalTypeLattice.Status.Top
+        return DatascienceTypeLattice.Status.Top
 
     # expression evaluation
 
     class ExpressionEvaluation(BasisWithSummarization.ExpressionEvaluation):
-        """Visitor that performs the evaluation of an expression in the statistical type lattice."""
+        """Visitor that performs the evaluation of an expression in the datascience type lattice."""
 
         @copy_docstring(ExpressionVisitor.visit_Literal)
         def visit_Literal(self, expr: Literal, state=None, evaluation=None):
             if expr in evaluation:
                 return evaluation  # nothing to be done
-            evaluation[expr] = StatisticalTypeLattice.from_lyra_type(expr.typ)
+            evaluation[expr] = DatascienceTypeLattice.from_lyra_type(expr.typ)
             return evaluation
 
         """
@@ -908,16 +908,16 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
         """
 
         @copy_docstring(ExpressionVisitor.visit_VariableIdentifier)
-        def visit_VariableIdentifier(self, expr: StatisticalTypeLattice, state=None, evaluation=None):
+        def visit_VariableIdentifier(self, expr: DatascienceTypeLattice, state=None, evaluation=None):
             if expr in evaluation:
                 return evaluation  # nothing to be done
-            value: StatisticalTypeLattice = deepcopy(state.store[expr])
-            evaluation[expr] = value.meet(StatisticalTypeLattice.from_lyra_type(expr.typ))
+            value: DatascienceTypeLattice = deepcopy(state.store[expr])
+            evaluation[expr] = value.meet(DatascienceTypeLattice.from_lyra_type(expr.typ))
             if expr.is_dictionary:
                 _value = deepcopy(state.keys[expr.keys])
-                evaluation[expr.keys] = _value.meet(StatisticalTypeLattice.from_lyra_type(expr.typ.key_typ))
+                evaluation[expr.keys] = _value.meet(DatascienceTypeLattice.from_lyra_type(expr.typ.key_typ))
                 value_ = deepcopy(state.values[expr.values])
-                evaluation[expr.values] = value_.meet(StatisticalTypeLattice.from_lyra_type(expr.typ.val_typ))
+                evaluation[expr.values] = value_.meet(DatascienceTypeLattice.from_lyra_type(expr.typ.val_typ))
             return evaluation
 
         """
@@ -935,40 +935,40 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
             if expr in evaluation:
                 return evaluation  # nothing to be done
             evaluated = evaluation
-            value: StatisticalTypeLattice = StatisticalTypeLattice().bottom()
+            value: DatascienceTypeLattice = DatascienceTypeLattice().bottom()
             if isinstance(expr, tuple):
-                evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.List)
+                evaluation[expr] = DatascienceTypeLattice(DatascienceTypeLattice.Status.List)
             else:
                 for item in expr.items:
                     evaluated = self.visit(item, state, evaluated)
                     value = value.join(evaluated[item])
-                if value.element == StatisticalTypeLattice.Status.String:
-                    evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.StringList)
-                elif value.element == StatisticalTypeLattice.Status.Numeric:
-                    evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.NumericList)
-                elif value.element == StatisticalTypeLattice.Status.Boolean:
-                    evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.BoolList)
+                if value.element == DatascienceTypeLattice.Status.String:
+                    evaluation[expr] = DatascienceTypeLattice(DatascienceTypeLattice.Status.StringList)
+                elif value.element == DatascienceTypeLattice.Status.Numeric:
+                    evaluation[expr] = DatascienceTypeLattice(DatascienceTypeLattice.Status.NumericList)
+                elif value.element == DatascienceTypeLattice.Status.Boolean:
+                    evaluation[expr] = DatascienceTypeLattice(DatascienceTypeLattice.Status.BoolList)
                 else:
-                    evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.List)
+                    evaluation[expr] = DatascienceTypeLattice(DatascienceTypeLattice.Status.List)
             return evaluation
 
         @copy_docstring(ExpressionVisitor.visit_TupleDisplay)
         def visit_TupleDisplay(self, expr: TupleDisplay, state=None, evaluation=None):
             if len(state.variables) == 1:
-                evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.List)
+                evaluation[expr] = DatascienceTypeLattice(DatascienceTypeLattice.Status.List)
             else:
-                evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.Tuple)
+                evaluation[expr] = DatascienceTypeLattice(DatascienceTypeLattice.Status.Tuple)
             return evaluation
 
         @copy_docstring(ExpressionVisitor.visit_DictDisplay)
         def visit_DictDisplay(self, expr: DictDisplay, state=None, evaluation=None):
-            evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.Dict)
+            evaluation[expr] = DatascienceTypeLattice(DatascienceTypeLattice.Status.Dict)
             return evaluation
 
 
         @copy_docstring(ExpressionVisitor.visit_SetDisplay)
         def visit_SetDisplay(self, expr: SetDisplay, state=None, evaluation=None):
-            evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.Set)
+            evaluation[expr] = DatascienceTypeLattice(DatascienceTypeLattice.Status.Set)
             return evaluation
 
         """
@@ -988,44 +988,44 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
             evaluated = self.visit(target, state, evaluation)
             if isinstance(target.typ, DictLyraType):
                 evaluation[expr] = evaluated[target.values].meet(
-                    StatisticalTypeLattice.from_lyra_type(target.typ.val_typ))
-            elif isinstance(target.typ, DataFrameLyraType) or state.get_type(target) == StatisticalTypeLattice.Status.DataFrame:
+                    DatascienceTypeLattice.from_lyra_type(target.typ.val_typ))
+            elif isinstance(target.typ, DataFrameLyraType) or state.get_type(target) == DatascienceTypeLattice.Status.DataFrame:
                 if isinstance(expr.key, ListDisplay):
-                    evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame)
+                    evaluation[expr] = DatascienceTypeLattice(DatascienceTypeLattice.Status.DataFrame)
                 else:
-                    evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.Series)
-            elif state.get_type(target) in StatisticalTypeLattice._series_types():
+                    evaluation[expr] = DatascienceTypeLattice(DatascienceTypeLattice.Status.Series)
+            elif state.get_type(target) in DatascienceTypeLattice._series_types():
                 typ = state.get_type(target)
-                if typ in StatisticalTypeLattice._string_series_types():
-                    evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.String)
-                elif typ in StatisticalTypeLattice._numeric_series_types():
-                    evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.Numeric)
+                if typ in DatascienceTypeLattice._string_series_types():
+                    evaluation[expr] = DatascienceTypeLattice(DatascienceTypeLattice.Status.String)
+                elif typ in DatascienceTypeLattice._numeric_series_types():
+                    evaluation[expr] = DatascienceTypeLattice(DatascienceTypeLattice.Status.Numeric)
                 else:
-                    evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.Scalar)
-            elif state.get_type(target) in StatisticalTypeLattice._list_types():
+                    evaluation[expr] = DatascienceTypeLattice(DatascienceTypeLattice.Status.Scalar)
+            elif state.get_type(target) in DatascienceTypeLattice._list_types():
                 typ = state.get_type(target)
-                if typ == StatisticalTypeLattice.Status.BoolList:
-                    evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.Boolean)
-                elif typ == StatisticalTypeLattice.Status.StringList:
-                    evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.String)
-                elif typ == StatisticalTypeLattice.Status.NumericList:
-                    evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.Numeric)
+                if typ == DatascienceTypeLattice.Status.BoolList:
+                    evaluation[expr] = DatascienceTypeLattice(DatascienceTypeLattice.Status.Boolean)
+                elif typ == DatascienceTypeLattice.Status.StringList:
+                    evaluation[expr] = DatascienceTypeLattice(DatascienceTypeLattice.Status.String)
+                elif typ == DatascienceTypeLattice.Status.NumericList:
+                    evaluation[expr] = DatascienceTypeLattice(DatascienceTypeLattice.Status.Numeric)
                 else:
-                    evaluation[expr] = StatisticalTypeLattice()
-            elif state.get_type(target) in StatisticalTypeLattice._array_types():
+                    evaluation[expr] = DatascienceTypeLattice()
+            elif state.get_type(target) in DatascienceTypeLattice._array_types():
                 typ = state.get_type(target)
-                if typ == StatisticalTypeLattice.Status.StringArray:
-                    evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.String)
-                elif typ == StatisticalTypeLattice.Status.NumericArray:
-                    evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.Numeric)
+                if typ == DatascienceTypeLattice.Status.StringArray:
+                    evaluation[expr] = DatascienceTypeLattice(DatascienceTypeLattice.Status.String)
+                elif typ == DatascienceTypeLattice.Status.NumericArray:
+                    evaluation[expr] = DatascienceTypeLattice(DatascienceTypeLattice.Status.Numeric)
                 else:
-                    evaluation[expr] = StatisticalTypeLattice()
+                    evaluation[expr] = DatascienceTypeLattice()
             else:
                 try:
-                    evaluation[expr] = evaluated[target].meet(StatisticalTypeLattice.from_lyra_type(target.typ.typ))
+                    evaluation[expr] = evaluated[target].meet(DatascienceTypeLattice.from_lyra_type(target.typ.typ))
                 except Exception as e:
                     print(e)
-                    evaluation[expr] = StatisticalTypeLattice()
+                    evaluation[expr] = DatascienceTypeLattice()
             return evaluation
         
         def visit_AttributeAccess(self, expr: AttributeAccess, state=None, evaluation=None):
@@ -1041,23 +1041,23 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
                 target = target.target
             evaluated = self.visit(target, state, evaluation)
             if state.get_type(
-                    target) == StatisticalTypeLattice.Status.DataFrame:
-                    evaluation[expr] = StatisticalTypeLattice(StatisticalTypeLattice.Status.DataFrame)
-            elif state.get_type(target) in StatisticalTypeLattice._series_types():
+                    target) == DatascienceTypeLattice.Status.DataFrame:
+                    evaluation[expr] = DatascienceTypeLattice(DatascienceTypeLattice.Status.DataFrame)
+            elif state.get_type(target) in DatascienceTypeLattice._series_types():
                 typ = state.get_type(target)
-                evaluation[expr] = StatisticalTypeLattice(typ)
-            elif state.get_type(target) in StatisticalTypeLattice._list_types():
+                evaluation[expr] = DatascienceTypeLattice(typ)
+            elif state.get_type(target) in DatascienceTypeLattice._list_types():
                 typ = state.get_type(target)
-                evaluation[expr] = StatisticalTypeLattice(typ)
+                evaluation[expr] = DatascienceTypeLattice(typ)
             else:
-                evaluation[expr] = StatisticalTypeLattice()
+                evaluation[expr] = DatascienceTypeLattice()
             return evaluation
 
         @copy_docstring(ExpressionVisitor.visit_Input)
         def visit_Input(self, expr: Input, state=None, evaluation=None):
             if expr in evaluation:
                 return evaluation  # nothing to be done
-            evaluation[expr] = StatisticalTypeLattice.from_lyra_type(expr.typ)
+            evaluation[expr] = DatascienceTypeLattice.from_lyra_type(expr.typ)
             return evaluation
 
         """
@@ -1156,10 +1156,10 @@ class StatisticalTypeState(Store, StateWithSummarization, InputMixin):
             raise ValueError(error)
         """
 
-        def visit_Status(self, status: StatisticalTypeLattice.Status, state=None, evaluation=None):
+        def visit_Status(self, status: DatascienceTypeLattice.Status, state=None, evaluation=None):
             if status in evaluation:
                 return evaluation  # nothing to be done
-            evaluation[status] = StatisticalTypeLattice(status)
+            evaluation[status] = DatascienceTypeLattice(status)
             return evaluation
 
     _evaluation = ExpressionEvaluation()  # static class member shared between all instances

@@ -15,18 +15,18 @@ from lyra.core.types import (
 from lyra.engine.forward import ForwardInterpreter
 
 
-from lyra.statistical.statistical_type_domain import (
-    StatisticalTypeState,
-    StatisticalTypeLattice,
+from lyra.datascience.datascience_type_domain import (
+    DatascienceTypeState,
+    DatascienceTypeLattice,
 )
 
 import lyra.semantics.utilities as utilities
 
 
-class SeabornStatisticalTypeSemantics:
+class SeabornDatascienceTypeSemantics:
 
     def set_seaborn_library_call_semantics(
-        self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
-    ) -> StatisticalTypeState:
-        state.result = {StatisticalTypeLattice.Status.NoneRet}
+        self, stmt: Call, state: DatascienceTypeState, interpreter: ForwardInterpreter
+    ) -> DatascienceTypeState:
+        state.result = {DatascienceTypeLattice.Status.NoneRet}
         return state

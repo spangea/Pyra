@@ -19,31 +19,31 @@ from lyra.engine.forward import ForwardInterpreter
 from lyra.engine.runner import Runner
 from lyra.semantics.backward import DefaultBackwardSemantics
 from lyra.semantics.forward import DefaultForwardSemantics
-from lyra.statistical.statistical_type_domain import StatisticalTypeState
+from lyra.datascience.datascience_type_domain import DatascienceTypeState
 
-from lyra.semantics.statistical_type_semantics import StatisticalTypeSemantics
+from lyra.semantics.datascience_type_semantics import DatascienceTypeSemantics
 
 
-class ForwardStatisticalTypeAnalysis(Runner):
+class ForwardDatascienceTypeAnalysis(Runner):
 
     def __init__(self, warning_level):
         super().__init__()
         self.warning_level = warning_level
 
     def interpreter(self):
-        return ForwardInterpreter(self.cfgs, self.fargs, StatisticalTypeSemantics(), 3, warning_level=self.warning_level)
+        return ForwardInterpreter(self.cfgs, self.fargs, DatascienceTypeSemantics(), 3, warning_level=self.warning_level)
 
     def state(self):
-        return StatisticalTypeState(self.variables)
+        return DatascienceTypeState(self.variables)
 
 
-class BackwardStatisticalTypeAnalysis(Runner):
+class BackwardDatascienceTypeAnalysis(Runner):
 
     def interpreter(self):
-        return BackwardInterpreter(self.cfgs, self.fargs, StatisticalTypeSemantics(), 3)
+        return BackwardInterpreter(self.cfgs, self.fargs, DatascienceTypeSemantics(), 3)
 
     def state(self):
-        return StatisticalTypeState(self.variables)
+        return DatascienceTypeState(self.variables)
 
 class ForwardTypeAnalysis(Runner):
 

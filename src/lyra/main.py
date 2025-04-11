@@ -11,8 +11,8 @@ from lyra.engine.usage.dataframe_usage_analysis import DataFrameColumnUsageAnaly
 
 from lyra.engine.numerical.sign_analysis import ForwardSignAnalysis
 from lyra.engine.assumption.assumption_analysis import ForwardTypeAnalysis
-from lyra.engine.assumption.assumption_analysis import ForwardStatisticalTypeAnalysis
-from lyra.statistical.annotate import annotate
+from lyra.engine.assumption.assumption_analysis import ForwardDatascienceTypeAnalysis
+from lyra.datascience.annotate import annotate
 import lyra.config as config
 
 def main():
@@ -31,7 +31,7 @@ def main():
         default='possible')
     parser.add_argument(
         '--annotate',
-        help='use the results of the ForwardStatisticalTypeAnalysis to annotate the code',
+        help='use the results of the ForwardDatascienceTypeAnalysis to annotate the code',
         action='store_true')
     args = parser.parse_args()
     config.args = args
@@ -46,11 +46,11 @@ def main():
         DataFrameColumnUsageAnalysis().main(args.python_file)
     if args.analysis == "sign":
         ForwardSignAnalysis().main(args.python_file)
-    if args.analysis == 'type-statistical':
+    if args.analysis == 'type-datascience':
         # The value of the warning level has to be either 'possible' or 'definite'
         if args.warning_level not in ['possible', 'definite']:
             raise ValueError('Warning level must be either possible or definite')
-        result = ForwardStatisticalTypeAnalysis(args.warning_level).main(args.python_file)
+        result = ForwardDatascienceTypeAnalysis(args.warning_level).main(args.python_file)
         if(args.annotate):
             annotated_code = annotate(result, args.python_file)
     if args.analysis == 'type-vanilla':
