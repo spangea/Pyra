@@ -1,65 +1,52 @@
-# Lyra - Static Analyzer for Data Science Applications
+# Pyra - A High-level Linter for Data Science Software
 
 <p align="center">
   <img src ="https://raw.githubusercontent.com/caterinaurban/Lyra/master/lyra.png" width="25%"/>
 </p>
 
-[![Build Status](https://travis-ci.org/caterinaurban/Lyra.svg?branch=master)](https://travis-ci.org/caterinaurban/Lyra)
+Pyra is a high-level linter static analyzer for data science applications written in Python, that helps developers identify potential issues in their data science code written in Python.
 
-Lyra is a prototype static analyzer for data science applications written in **Python**. 
-The purpose of Lyra is to provide confidence in the behavior of these applications,
-which nowadays play an increasingly important role 
-in critical decision making in our social, economic, and civic lives.
+Pyra is based on the peer-reviewed publication:
+> Greta Dolcetti, Agostino Cortesi, Caterina Urban, Enea Zaffanella. _**"Towards a High Level Linter for Data Science"**_. In Proceedings of the 10th ACM SIGPLAN International Workshop on Numerical and Symbolic Abstract Domains (NSAD 2024), co-located with SPLASH 2024.
 
-At the moment, Lyra includes the following static program analyses:
 
-### Input Data Usage Analysis
- 
-Lyra automatically detects *unused input data*. For example, consider this program:
+### Abstract datatype analysis
 
+Let us consider the following fragment. The code represents a simple data science pipeline that reads a CSV file, drops duplicates, plots the data, scales it, splits it into training and testing sets, and fits a logistic regression model.
 ```
-english: bool = bool(input())
-math: bool = bool(input())
-science: bool = bool(input())
-bonus: bool = bool(input())
-passing: bool = True
-if not english:
-    english: bool = False         # error: *english* should be *passing*
-if not math:
-    passing: bool = False or bonus
-if not math:
-    passing: bool = False or bonus   # error: *math* should be *science*
-print(passing)
-```
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
 
-Due to the indicated errors, 
-the input data stored in the variables ``english`` and ``science`` remains unused.
+df = pd.read_csv("data.csv")
+# Columns: ['Fruit', 'Amount', 'Label']
+result = df.drop_duplicates(inplace=True)
 
-Lyra automatically detects these problems using an input data usage analysis
-based on *syntactic dependencies between variables*.
-Lyra additionally supports a less precise input data usage analysis 
-based on the *strongly live variant of live variable analysis*.
-Both analyses use *summarization* to reason about 
-input data stored in compound data structures such as lists.
-A more precise input data usage analysis detects 
-unused chunks of lists containing input data by *partitioning*.
+plt.plot(df["Fruit"], df["Amount"])
 
-### Interval Analysis
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(df[["Amount"]])
 
-Lyra automatically computes the *range of possible value of the program variables*. For example:
+X_train, X_test, y_train, y_test =
+    train_test_split(X_scaled, df["Label"])
 
-```
-a: int = int(input())
-if 1 <= a <= 9:
-    b: int = a
-else:
-    b: int = 0
-print(b)
+model = LogisticRegression()
+model.fit(X_train, y_train)
 ```
 
-The range of possible values printed by the program is ``[0, 9]``.
+The code fragment contains several issues that could lead to misleading results and challenges in reproducibility:
+
+- The `drop_duplicates` method is called with `inplace=True`, which modifies the DataFrame in place and returns `None`. This can lead to confusion, as the variable `result` will be assigned `None`.
+- The `plot` method is used to create a line plot with a categorical *x*-axis. This is inappropriate, as line plots are typically used for continuous data. A bar plot would be more suitable in this case.
+- The `train_test_split` method is called without setting the `random_state` parameter, meaning the split will differ each time the code is run. This can result in non-reproducible outcomes.
+- The data is scaled before the train-test split. This can cause data leakage, as the scaling parameters are computed using the entire dataset, including the test set. The scaling should be performed **after** the split to avoid this issue.
+
+Pyra detects these issues and raises warnings, and raises the following warning
 
 ## Getting Started 
+
 
 ### Prerequisites
 
