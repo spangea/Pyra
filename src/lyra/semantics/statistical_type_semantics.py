@@ -637,6 +637,11 @@ class StatisticalTypeSemantics(
     ) -> StatisticalTypeState:
         data = None
         for arg in stmt.arguments:
+            if isinstance(arg, Keyword) and arg.name == "kind" and arg.value in ["bar", "barh"]:
+                state.result = {StatisticalTypeLattice.Status.Plot}
+                return state
+
+        for arg in stmt.arguments:
             arg_to_print = arg if not isinstance(arg, StatisticalTypeLattice.Status) else stmt
             if isinstance(arg, Keyword) and arg.name == "data":
                 arg_to_print = arg.name
@@ -664,7 +669,7 @@ class StatisticalTypeSemantics(
             if isinstance(arg, Keyword) and arg.name in ["x", "y", "z"]:
                 # Check if the argument is a subscription of data
                 possible_sub_name = arg.value
-                if data:
+                if data and data in state.subscriptions:
                     for sub in state.subscriptions[data]:
                         if sub.key.val == possible_sub_name:
                             if utilities.is_CatSeries(state, sub):
@@ -687,6 +692,12 @@ class StatisticalTypeSemantics(
                                         stacklevel=2,
                                     )
                             break
+                elif interpreter.warning_level == "possible":
+                    warnings.warn(
+                                f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} could contain categorical data, a bar plot should be used. ",
+                                category=CategoricalPlotWarning,
+                                stacklevel=2,
+                            )
             if utilities.is_StringArray(state, arg):
                 warnings.warn(
                     f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a string array, a bar plot should be used.",
