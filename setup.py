@@ -1,18 +1,17 @@
 from setuptools import setup, find_packages
 
 config = {
-    'name': 'Lyra',
+    'name': 'Pyra',
     'version': '0.1',
-    'author': 'Caterina Urban',
-    'author_email': 'caterina.urban@gmail.com',
-    'description': 'Static Program Analyzer for Python Data Science Applications',
-    'url': 'http://www.pm.inf.ethz.ch/research/lyra.html',
+    'author': 'Greta Dolcetti, Vincenzo Arceri, Caterina Urban',
+    'author_email': 'greta.dolcetti@unive.it',
+    'description': 'A High-level Linter for Python Data Science Applications',
     'license': 'MPL-2.0',
     'packages': find_packages('src'),
     'package_dir': {'': 'src'},
     'entry_points': {
              'console_scripts': [
-                 'lyra = lyra.main:main',
+                 'pyra = lyra.main:main',
                  ]
              },
     'install_requires': [
