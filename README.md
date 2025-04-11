@@ -49,19 +49,13 @@ Pyra detects these issues and raises warnings, and raises the following warnings
 
 ## Getting Started 
 
-
 ### Prerequisites
 
 * Install **Git**
 
-* Install [**Python 3.6**](http://www.python.org/)
+* Install [**Python 3.9.18**](http://www.python.org/)
 
-* Install ``virtualenv``:
-
-    | Linux or Mac OS X                     |
-    | ------------------------------------- |
-    | `python3.6 -m pip install virtualenv` |
-
+* Install ``pyenv``
 
 ### Installation
 
@@ -69,13 +63,13 @@ Pyra detects these issues and raises warnings, and raises the following warnings
 
     | Linux or Mac OS X                     |
     | ------------------------------------- |
-    | `virtualenv --python=python3.6 <env>` |
+    | `pyenv local 3.9.18` |
 
 * Install Lyra in the virtual environment:
 
     | Linux or Mac OS X                                                       |
     | ----------------------------------------------------------------------- |
-    | `./<env>/bin/pip install git+https://github.com/caterinaurban/Lyra.git` | 
+    | `./<env>/bin/pip install git+https://github.com/spangea/Pyra.git` | 
     
 ### Command Line Usage
 
@@ -83,32 +77,8 @@ To analyze a specific Python program run:
 
    | Linux or Mac OS X                            |
    | ---------------------------------------------|
-   | `./<env>/bin/lyra [OPTIONS] path-to-file.py` | 
+   | `./<env>/bin/pyra --analysis type-datasciencetest.py` | 
+
    
-The following command line options are recognized:
-
-    --analysis [ANALYSIS]   
-    
-                Sets the static analysis to be performed. Possible analysis options are:
-                * ``usage`` (input data usage analysis based on syntactic variable dependencies)
-                * ``liveness`` (input data usage analysis based on strongly live variable analysis)
-                * ``interval`` (interval analysis)
-                Default: ``usage``.
-
-After the analysis, Lyra generates a PDF file showing the control flow graph of the program
-annotated with the result of the analysis before and after each statement in the program.
-
-## Documentation
-
-Lyra's documentation is available online: http://caterinaurban.github.io/Lyra/
-
-## Authors
-
-* **Caterina Urban**, ETH Zurich, Switzerland
-
-## Contributors
-
-* **Simon Wehrli**, ETH Zurich, Switzerland
-* **Madelin Schumacher**, ETH Zurich, Switzerland
-* **Jérôme Dohrau**, ETH Zurich, Switzerland
-* **Lowis Engel**, ETH Zurich, Switzerland
+After the analysis, Pyra generates a PDF file showing the control flow graph of the program
+annotated with the result of the abstract data type analysis before and after each statement in the program. 
