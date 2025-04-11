@@ -29,7 +29,7 @@ from lyra.statistical.statistical_type_domain import (
     StatisticalTypeState,
     StatisticalTypeLattice,
 )
-import typing
+import copy
 from lyra.core.types import TopLyraType
 
 def is_PCA(state, caller):
@@ -981,7 +981,8 @@ class SelfUtilitiesSemantics:
     def get_caller(
         self, stmt: Call, state: StatisticalTypeState, interpreter: ForwardInterpreter
     ):
-        dfs = self.semantics(stmt.arguments[0], state, interpreter, get_caller=True).result
+        tmp_state = copy.deepcopy(state)
+        dfs = self.semantics(stmt.arguments[0], tmp_state, interpreter, get_caller=True).result
         assert len(dfs) == 1, (
             f"Function {stmt.name} is supposed to be called "
             "either on a single DataFrame or Series element"
