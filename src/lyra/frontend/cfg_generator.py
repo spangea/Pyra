@@ -1108,7 +1108,9 @@ class CFGVisitor(ast.NodeVisitor):
 
         iterated = self.visit(node.iter, types=types, libraries=libraries, typ=None, fname=fname)
         target_typ = None
-        if isinstance(iterated, VariableAccess):
+        if not (hasattr(iterated, 'typ') and hasattr(iterated.typ, 'typ')):
+            target_typ = TopLyraType
+        elif isinstance(iterated, VariableAccess):
             if isinstance(iterated.typ, ListLyraType):  # iteration over list items
                 target_typ = iterated.typ.typ
             elif isinstance(iterated.typ, SetLyraType):  # iteration over set items

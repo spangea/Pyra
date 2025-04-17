@@ -751,14 +751,15 @@ class DatascienceTypeState(Store, StateWithSummarization, InputMixin):
         typ = DatascienceTypeLattice.from_lyra_type(left.typ)
         if left.target.variable in self.store and self.store[left.target.variable].element == DatascienceTypeLattice.Status.DataFrame \
             and left.attr.name == "columns" and evaluation[right]._less_equal(DatascienceTypeLattice(DatascienceTypeLattice.Status.List)):
-            for c in right.items:
-                # Create subscription for each column and save them as Series in the abstract state
-                sub = Subscription(TopLyraType, left.target, c)
-                if sub not in self.store:
-                    self.store[sub] = DatascienceTypeLattice(DatascienceTypeLattice.Status.Series)
-                    if left.target not in self._subscriptions:
-                        self._subscriptions[left.target] = set()
-                    self.subscriptions[left.target].add(sub)
+            if hasattr(right, "items"):
+                for c in right.items:
+                    # Create subscription for each column and save them as Series in the abstract state
+                    sub = Subscription(TopLyraType, left.target, c)
+                    if sub not in self.store:
+                        self.store[sub] = DatascienceTypeLattice(DatascienceTypeLattice.Status.Series)
+                        if left.target not in self._subscriptions:
+                            self._subscriptions[left.target] = set()
+                        self.subscriptions[left.target].add(sub)
         else:
             self.store[left] = evaluation[right].meet(typ)
         if evaluation[right].element == DatascienceTypeLattice.Status.NoneRet:

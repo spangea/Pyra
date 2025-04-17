@@ -1406,26 +1406,29 @@ class DatascienceTypeSemantics(
             argument = self.semantics(stmt.arguments[0], state, interpreter).result
             result = set()
             for expression in argument:
-                if isinstance(expression.typ, StringLyraType):
-                    typ = SetLyraType(expression.typ)
-                    result.add(CastOperation(typ, expression))
-                elif isinstance(expression.typ, ListLyraType):
-                    typ = SetLyraType(expression.typ.typ)
-                    result.add(CastOperation(typ, expression))
-                elif isinstance(expression.typ, TupleLyraType):
-                    if all(typ == expression.typ.typs[0] for typ in expression.typ.typs):
-                        typ = SetLyraType(expression.typ.typs[0])
+                if hasattr(expression, "typ"):
+                    if isinstance(expression.typ, StringLyraType):
+                        typ = SetLyraType(expression.typ)
+                        result.add(CastOperation(typ, expression))
+                    elif isinstance(expression.typ, ListLyraType):
+                        typ = SetLyraType(expression.typ.typ)
+                        result.add(CastOperation(typ, expression))
+                    elif isinstance(expression.typ, TupleLyraType):
+                        if all(typ == expression.typ.typs[0] for typ in expression.typ.typs):
+                            typ = SetLyraType(expression.typ.typs[0])
+                            result.add(CastOperation(typ, expression))
+                        else:
+                            error = f"Cast to list of {expression} is not yet implemented!"
+                            raise NotImplementedError(error)
+                    elif isinstance(expression.typ, SetLyraType):
+                        result.add(expression)
+                    elif isinstance(expression.typ, DictLyraType):
+                        typ = SetLyraType(expression.typ.key_typ)
                         result.add(CastOperation(typ, expression))
                     else:
-                        error = f"Cast to list of {expression} is not yet implemented!"
-                        raise NotImplementedError(error)
-                elif isinstance(expression.typ, SetLyraType):
-                    result.add(expression)
-                elif isinstance(expression.typ, DictLyraType):
-                    typ = SetLyraType(expression.typ.key_typ)
-                    result.add(CastOperation(typ, expression))
+                        result.add(DatascienceTypeLattice.Status.Set)
                 else:
-                    result.add(DatascienceTypeLattice.Status.Set)
+                        result.add(DatascienceTypeLattice.Status.Set)
             state.result = result
             return state
         else:

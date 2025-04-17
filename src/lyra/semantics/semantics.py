@@ -32,7 +32,7 @@ from lyra.core.statements import Statement, VariableAccess, LiteralEvaluation, C
     TupleDisplayAccess, ListDisplayAccess, SetDisplayAccess, DictDisplayAccess, \
     SubscriptionAccess, SlicingAccess, LibraryAccess, Delete, AttributeAccess
 from lyra.core.types import LyraType, BooleanLyraType, IntegerLyraType, FloatLyraType, \
-    StringLyraType, TupleLyraType, ListLyraType, SetLyraType, DictLyraType
+    StringLyraType, TupleLyraType, ListLyraType, SetLyraType, DictLyraType, TopLyraType
 from lyra.engine.interpreter import Interpreter
 
 _first1 = re.compile(r'(.)([A-Z][a-z]+)')
@@ -392,8 +392,10 @@ class BuiltInCallSemantics(CallSemantics):
                 typ = ListLyraType(expression.typ.key_typ)
                 result.add(CastOperation(typ, expression))
             else:
-                error = f"Cast to list of expression {expression} with unexpected type!"
-                raise ValueError(error)
+                typ = ListLyraType(TopLyraType)
+                result.add(CastOperation(typ, expression))
+                # error = f"Cast to list of expression {expression} with unexpected type!"
+                # raise ValueError(error)
         state.result = result
         return state
 
