@@ -27,8 +27,8 @@ def main():
         default='usage')
     parser.add_argument(
         '--warning-level',
-        help='warning level to be used (values: possible, definite)',
-        default='possible')
+        help='warning level to be used (values: potential, plausible)',
+        default='potential')
     parser.add_argument(
         '--annotate',
         help='use the results of the ForwardDatascienceTypeAnalysis to annotate the code',
@@ -47,9 +47,9 @@ def main():
     if args.analysis == "sign":
         ForwardSignAnalysis().main(args.python_file)
     if args.analysis == 'type-datascience':
-        # The value of the warning level has to be either 'possible' or 'definite'
-        if args.warning_level not in ['possible', 'definite']:
-            raise ValueError('Warning level must be either possible or definite')
+        # The value of the warning level has to be either 'potential' or 'plausible'
+        if args.warning_level not in ['potential', 'plausible']:
+            raise ValueError('Warning level must be either potential or plausible')
         result = ForwardDatascienceTypeAnalysis(args.warning_level).main(args.python_file)
         if(args.annotate):
             annotated_code = annotate(result, args.python_file)

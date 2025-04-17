@@ -288,7 +288,7 @@ class PandasDatascienceTypeSemantics:
                     break   # After the first keyword argument, all the following must be keyword arguments
         if not is_reproducible:
             warnings.warn(
-                f"Warning [definite]: in {stmt} @ line {stmt.pp.line} the random state is not set, the experiment might not be reproducible.",
+                f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} the random state is not set, the experiment might not be reproducible.",
                 category=ReproducibilityWarning,
                 stacklevel=2,
             )
@@ -931,16 +931,16 @@ class PandasDatascienceTypeSemantics:
                     if item == caller:
                         caller = item
                         break
-            if interpreter.warning_level == "possible":
+            if interpreter.warning_level == "potential":
                 if caller.is_small == Status.NO:
                     warnings.warn(
-                        f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} has many instances, but handling missing values with fillna might change the distribution.",
+                        f"Warning [potential]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} has many instances, but handling missing values with fillna might change the distribution.",
                         category=InappropriateMissingValuesWarning,
                         stacklevel=2,
                     )
                 else:
                     warnings.warn(
-                        f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} may have few instances, handling missing values with fillna might change the distribution.",
+                        f"Warning [potential]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} may have few instances, handling missing values with fillna might change the distribution.",
                         category=InappropriateMissingValuesWarning,
                         stacklevel=2,
                     )

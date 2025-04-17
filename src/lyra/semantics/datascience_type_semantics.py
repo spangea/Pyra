@@ -377,14 +377,14 @@ class DatascienceTypeSemantics(
         elif utilities.is_Series(state, caller):
             if caller in state.store and state.get_type(caller) == DatascienceTypeLattice.Status.CatSeries:
                 warnings.warn(
-                    f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} is a CatSeries, median my be not meaningful.",
+                    f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} is a CatSeries, median my be not meaningful.",
                     category=CategoricalConversionMeanWarning,
                     stacklevel=2,
                 )
             else:
-                if interpreter.warning_level == "possible":
+                if interpreter.warning_level == "potential":
                     warnings.warn(
-                        f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> if in {caller_to_print} there is a CatSeries, median my be not meaningful.",
+                        f"Warning [potential]: in {stmt} @ line {stmt.pp.line} -> if in {caller_to_print} there is a CatSeries, median my be not meaningful.",
                         category=CategoricalConversionMeanWarning,
                         stacklevel=2,
                     )
@@ -433,36 +433,36 @@ class DatascienceTypeSemantics(
         if utilities.is_Series(state, caller):
             if utilities.is_RatioSeries(state, caller):
                 warnings.warn(
-                    f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} is a RatioSeries, gmean should be used.",
+                    f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} is a RatioSeries, gmean should be used.",
                     category=GmeanWarning,
                     stacklevel=2,
                 )
             elif utilities.is_CatSeries(state, caller):
                 warnings.warn(
-                    f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} is a CatSeries, mean my be not meaningful.",
+                    f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} is a CatSeries, mean my be not meaningful.",
                     category=CategoricalConversionMeanWarning,
                     stacklevel=2,
                 )
             elif utilities.is_ScaledSeries(state, caller):
                 warnings.warn(
-                    f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} is a ScaledSeries [StdSeries or NormSeries], mean my be not meaningful.",
+                    f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} -> {caller_to_print} is a ScaledSeries [StdSeries or NormSeries], mean my be not meaningful.",
                     category=ScaledMeanWarning,
                     stacklevel=2,
                 )
             else:
-                if interpreter.warning_level == "possible":
+                if interpreter.warning_level == "potential":
                     warnings.warn(
-                        f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> if in {caller_to_print} there is a RatioSeries, gmean should be used.",
+                        f"Warning [potential]: in {stmt} @ line {stmt.pp.line} -> if in {caller_to_print} there is a RatioSeries, gmean should be used.",
                         category=GmeanWarning,
                         stacklevel=2,
                     )
                     warnings.warn(
-                        f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> if in {caller_to_print} there is a CatSeries, mean my be not meaningful.",
+                        f"Warning [potential]: in {stmt} @ line {stmt.pp.line} -> if in {caller_to_print} there is a CatSeries, mean my be not meaningful.",
                         category=CategoricalConversionMeanWarning,
                         stacklevel=2,
                     )
                     warnings.warn(
-                        f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> if in {caller_to_print} there is a ScaledSeries [StdSeries or NormSeries], mean my be not meaningful.",
+                        f"Warning [potential]: in {stmt} @ line {stmt.pp.line} -> if in {caller_to_print} there is a ScaledSeries [StdSeries or NormSeries], mean my be not meaningful.",
                         category=ScaledMeanWarning,
                         stacklevel=2,
                     )
@@ -649,9 +649,9 @@ class DatascienceTypeSemantics(
                 for v in state.variables:
                     if utilities.is_DataFrame(state, v):
                         data = v
-                        if interpreter.warning_level == "possible":
+                        if interpreter.warning_level == "potential":
                             warnings.warn(
-                                f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} could contain categorical data, a bar plot should be used.",
+                                f"Warning [potential]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} could contain categorical data, a bar plot should be used.",
                                 category=CategoricalPlotWarning,
                                 stacklevel=2,
                             )
@@ -674,58 +674,58 @@ class DatascienceTypeSemantics(
                         if sub.key.val == possible_sub_name:
                             if utilities.is_CatSeries(state, sub):
                                 warnings.warn(
-                                    f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a categorical Series, a bar plot should be used.",
+                                    f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a categorical Series, a bar plot should be used.",
                                     category=CategoricalPlotWarning,
                                     stacklevel=2,
                                 )
                             elif utilities.is_StringSeries(state, sub):
                                 warnings.warn(
-                                    f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a string Series, a bar plot should be used.",
+                                    f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a string Series, a bar plot should be used.",
                                     category=CategoricalPlotWarning,
                                     stacklevel=2,
                                 )
                             elif utilities.is_Series(state, sub) and not utilities.is_NumericSeries(state, sub):
-                                if interpreter.warning_level == "possible":
+                                if interpreter.warning_level == "potential":
                                     warnings.warn(
-                                        f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} could contain categorical data, a bar plot should be used. ",
+                                        f"Warning [potential]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} could contain categorical data, a bar plot should be used. ",
                                         category=CategoricalPlotWarning,
                                         stacklevel=2,
                                     )
                             break
-                elif interpreter.warning_level == "possible":
+                elif interpreter.warning_level == "potential":
                     warnings.warn(
-                                f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} could contain categorical data, a bar plot should be used. ",
+                                f"Warning [potential]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} could contain categorical data, a bar plot should be used. ",
                                 category=CategoricalPlotWarning,
                                 stacklevel=2,
                             )
             if utilities.is_StringArray(state, arg):
                 warnings.warn(
-                    f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a string array, a bar plot should be used.",
+                    f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a string array, a bar plot should be used.",
                     category=CategoricalPlotWarning,
                     stacklevel=2,
                 )
             elif utilities.is_StringList(state, arg):
                 warnings.warn(
-                    f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a string list, a bar plot should be used.",
+                    f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a string list, a bar plot should be used.",
                     category=CategoricalPlotWarning,
                     stacklevel=2,
                 )
             elif utilities.is_CatSeries(state, arg):
                 warnings.warn(
-                    f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a categorical Series, a bar plot should be used.",
+                    f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a categorical Series, a bar plot should be used.",
                     category=CategoricalPlotWarning,
                     stacklevel=2,
                 )
             elif utilities.is_StringSeries(state, arg):
                 warnings.warn(
-                    f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a string Series, a bar plot should be used.",
+                    f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a string Series, a bar plot should be used.",
                     category=CategoricalPlotWarning,
                     stacklevel=2,
                 )
             elif (utilities.is_Array(state, arg) or utilities.is_Top(state, arg)) and not utilities.is_NumericArray(state, arg):
-                if interpreter.warning_level == "possible":
+                if interpreter.warning_level == "potential":
                     warnings.warn(
-                        f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} could contain categorical data, a bar plot should be used. ",
+                        f"Warning [potential]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} could contain categorical data, a bar plot should be used. ",
                         category=CategoricalPlotWarning,
                         stacklevel=2,
                     )
@@ -734,7 +734,7 @@ class DatascienceTypeSemantics(
                     arg = arg.variable
                 if state.get_type(arg) == DatascienceTypeLattice.Status.DataFrameFromPCA:
                     warnings.warn(
-                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a DataFrame resulted from PCA, t-SNE or UMAP might be a better choice for visualization.",
+                        f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a DataFrame resulted from PCA, t-SNE or UMAP might be a better choice for visualization.",
                         stacklevel=2,
                         category=PCAVisualizationWarning
                     )
@@ -742,20 +742,20 @@ class DatascienceTypeSemantics(
             elif isinstance(arg, SubscriptionAccess):
                 if utilities.is_CatSeries(state, arg):
                     warnings.warn(
-                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a categorical Series, a bar plot should be used.",
+                        f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a categorical Series, a bar plot should be used.",
                         category=CategoricalPlotWarning,
                         stacklevel=2,
                     )
                 elif utilities.is_StringSeries(state, arg):
                     warnings.warn(
-                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a string Series, a bar plot should be used.",
+                        f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a string Series, a bar plot should be used.",
                         category=CategoricalPlotWarning,
                         stacklevel=2,
                     )
                 elif utilities.is_Series(state, arg) and not utilities.is_NumericSeries(state, arg):
-                    if interpreter.warning_level == "possible":
+                    if interpreter.warning_level == "potential":
                         warnings.warn(
-                            f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} could contain categorical data, a bar plot should be used. ",
+                            f"Warning [potential]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} could contain categorical data, a bar plot should be used. ",
                             category=CategoricalPlotWarning,
                             stacklevel=2,
                         )
@@ -765,27 +765,27 @@ class DatascienceTypeSemantics(
                     arg = arg.target
                 if state.get_type(arg) == DatascienceTypeLattice.Status.DataFrameFromPCA:
                     warnings.warn(
-                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a DataFrame resulted from PCA, t-SNE or UMAP might be a better choice for visualization.",
+                        f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a DataFrame resulted from PCA, t-SNE or UMAP might be a better choice for visualization.",
                         stacklevel=2,
                         category=PCAVisualizationWarning
                     )
             elif utilities.is_Series(state, arg):
                 if utilities.is_CatSeries(state, arg):
                     warnings.warn(
-                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a categorical Series, a bar plot should be used.",
+                        f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a categorical Series, a bar plot should be used.",
                         category=CategoricalPlotWarning,
                         stacklevel=2,
                     )
                 elif utilities.is_StringSeries(state, arg):
                     warnings.warn(
-                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a string Series, a bar plot should be used.",
+                        f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} is a string Series, a bar plot should be used.",
                         category=CategoricalPlotWarning,
                         stacklevel=2,
                     )
                 elif utilities.is_Series(state, arg) and not utilities.is_NumericSeries(state, arg):
-                    if interpreter.warning_level == "possible":
+                    if interpreter.warning_level == "potential":
                         warnings.warn(
-                            f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} could contain categorical data, a bar plot should be used. ",
+                            f"Warning [potential]: in {stmt} @ line {stmt.pp.line} -> {arg_to_print} could contain categorical data, a bar plot should be used. ",
                             category=CategoricalPlotWarning,
                             stacklevel=2,
                         )
@@ -1323,7 +1323,7 @@ class DatascienceTypeSemantics(
                 break
         if not is_reproducible:
             warnings.warn(
-                f"Warning [definite]: in {stmt} @ line {stmt.pp.line} the random state is not set, the experiment might not be reproducible.",
+                f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} the random state is not set, the experiment might not be reproducible.",
                 category=ReproducibilityWarning,
                 stacklevel=2,
             )
@@ -1332,31 +1332,31 @@ class DatascienceTypeSemantics(
             if not isinstance(arg, Keyword):
                 if utilities.is_NormSeries(state, arg):
                     warnings.warn(
-                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} @ column {stmt.pp.column} -> Data should be normalized after the split method",
+                        f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} @ column {stmt.pp.column} -> Data should be normalized after the split method",
                         category=DataLeakageWarning,
                         stacklevel=2,
                     )
                 elif utilities.is_StdSeries(state, arg):
                     warnings.warn(
-                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} @ column {stmt.pp.column} -> Data should be standardized after the split method",
+                        f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} @ column {stmt.pp.column} -> Data should be standardized after the split method",
                         category=DataLeakageWarning,
                         stacklevel=2,
                     )
                 elif utilities.is_CatSeries(state, arg):
                     warnings.warn(
-                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} @ column {stmt.pp.column} -> Data should be encoded after the split method",
+                        f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} @ column {stmt.pp.column} -> Data should be encoded after the split method",
                         category=DataLeakageWarning,
                         stacklevel=2,
                     )
                 elif utilities.is_FeatureSelected(state, arg):
                     warnings.warn(
-                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} @ column {stmt.pp.column} -> Data should be Feature Selected after the split method",
+                        f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} @ column {stmt.pp.column} -> Data should be Feature Selected after the split method",
                         category=DataLeakageWarning,
                         stacklevel=2,
                     )
                 elif utilities.is_Scaled(state, arg):
                     warnings.warn(
-                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} @ column {stmt.pp.column} -> Data should be scaled after the split method",
+                        f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} @ column {stmt.pp.column} -> Data should be scaled after the split method",
                         category=DataLeakageWarning,
                         stacklevel=2,
                     )

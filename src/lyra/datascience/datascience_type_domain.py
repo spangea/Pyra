@@ -646,12 +646,12 @@ class DatascienceTypeState(Store, StateWithSummarization, InputMixin):
             left_copy = copy.deepcopy(self.store[left])
             right_copy = copy.deepcopy(evaluation[right])
             if right_copy.meet(typ).is_bottom() and not typ.is_top():
-                warnings.warn(f"Warning [possible]: inferred type is different wrt annotated type for variable {left.name}. {typ} -> {evaluation[right]} @ line {self.pp}",
+                warnings.warn(f"Warning [potential]: inferred type is different wrt annotated type for variable {left.name}. {typ} -> {evaluation[right]} @ line {self.pp}",
                               category=InconsistentTypeWarning, stacklevel=2)
         # Assignment is destructive
         self.store[left] = evaluation[right]
         if evaluation[right].element == DatascienceTypeLattice.Status.NoneRet:
-            warnings.warn(f"Warning [definite]: Assignment to None type for variable {left.name} @ line {self.pp}",
+            warnings.warn(f"Warning [plausible]: Assignment to None type for variable {left.name} @ line {self.pp}",
                           category=NoneRetAssignmentWarning,
                           stacklevel=2)
         if left.is_dictionary:
@@ -694,7 +694,7 @@ class DatascienceTypeState(Store, StateWithSummarization, InputMixin):
                 if right[2] == True:
                     left.is_high_dimensionality = Status.YES
                     warnings.warn(
-                        f"Warning [definite]: {left.name} is high dimensional. Feature selection/engineering or dimensionality reduction may be necessary.",
+                        f"Warning [plausible]: {left.name} is high dimensional. Feature selection/engineering or dimensionality reduction may be necessary.",
                         category=HighDimensionalityWarning, stacklevel=2)
                 else:
                     left.is_high_dimensionality = Status.NO
@@ -732,7 +732,7 @@ class DatascienceTypeState(Store, StateWithSummarization, InputMixin):
         typ = DatascienceTypeLattice.from_lyra_type(left.typ)
         self.store[left] = evaluation[right].meet(typ)
         if evaluation[right].element == DatascienceTypeLattice.Status.NoneRet:
-                        warnings.warn(f"Warning [definite]: Assignment to None type for variable {left.name} @ line {self.pp}",
+                        warnings.warn(f"Warning [plausible]: Assignment to None type for variable {left.name} @ line {self.pp}",
                         NoneRetAssignmentWarning,
                         stacklevel=2)
         target = left.target
@@ -760,7 +760,7 @@ class DatascienceTypeState(Store, StateWithSummarization, InputMixin):
         else:
             self.store[left] = evaluation[right].meet(typ)
         if evaluation[right].element == DatascienceTypeLattice.Status.NoneRet:
-            warnings.warn(f"Warning [definite]: Assignment to None type for variable {left.name} @ line {self.pp}",
+            warnings.warn(f"Warning [plausible]: Assignment to None type for variable {left.name} @ line {self.pp}",
                           NoneRetAssignmentWarning,
                           stacklevel=2)
         return self

@@ -15,7 +15,7 @@ import warnings
 class DatascienceTypeTest(TestRunner):
 
     def interpreter(self):
-        return ForwardInterpreter(self.cfgs, self.fargs, DatascienceTypeSemantics(), 3, warning_level="possible")
+        return ForwardInterpreter(self.cfgs, self.fargs, DatascienceTypeSemantics(), 3, warning_level="potential")
 
     def state(self):
         return DatascienceTypeState(self.variables)

@@ -50,9 +50,9 @@ class SklearnTypeSemantics:
         data = list(self.semantics(stmt.arguments[1], state, interpreter).result)[0]
         caller = self.get_caller(stmt, state, interpreter)
         if utilities.is_SplittedTestData(state, data):
-            if interpreter.warning_level == "possible":
+            if interpreter.warning_level == "potential":
                 warnings.warn(
-                    f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> The fit method should be used on train data only.",
+                    f"Warning [potential]: in {stmt} @ line {stmt.pp.line} -> The fit method should be used on train data only.",
                     category=DataLeakageWarning,
                     stacklevel=2,
                 )
@@ -71,15 +71,15 @@ class SklearnTypeSemantics:
                         for sub in state.subscriptions[e]:
                             if sub in state.store and state.get_type(sub) == DatascienceTypeLattice.Status.CatSeries:
                                 warnings.warn(
-                                    f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> PCA is applied to Dataframe containing a categorical Series, it is better to use MixedPCA.",
+                                    f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} -> PCA is applied to Dataframe containing a categorical Series, it is better to use MixedPCA.",
                                     category=PCAOnCategoricalWarning,
                                     stacklevel=3,
                                 )
                                 warning_raised = True
                                 break
-                if not warning_raised and interpreter.warning_level == "possible":
+                if not warning_raised and interpreter.warning_level == "potential":
                     warnings.warn(
-                        f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> PCA might be applied to Dataframe containing a categorical Series, it is better to use MixedPCA.",
+                        f"Warning [potential]: in {stmt} @ line {stmt.pp.line} -> PCA might be applied to Dataframe containing a categorical Series, it is better to use MixedPCA.",
                         category=PCAOnCategoricalWarning,
                         stacklevel=3,
                     )
@@ -112,9 +112,9 @@ class SklearnTypeSemantics:
         data = list(self.semantics(stmt.arguments[1], state, interpreter).result)[0]
         caller = self.get_caller(stmt, state, interpreter)
         if utilities.is_SplittedTestData(state, data):
-            if interpreter.warning_level == "possible":
+            if interpreter.warning_level == "potential":
                 warnings.warn(
-                    f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> The fit_transform method should be used on train data only.",
+                    f"Warning [potential]: in {stmt} @ line {stmt.pp.line} -> The fit_transform method should be used on train data only.",
                     category=DataLeakageWarning,
                     stacklevel=2,
                 )
@@ -308,13 +308,13 @@ class SklearnTypeSemantics:
             if isinstance(a, Keyword) and a.name == "n_components":
                 if type(a.value) in (int, float):   # Constant number
                     warnings.warn(
-                        f"Warning [definite]: in {stmt} @ line {stmt.pp.line} -> n_components is {a.value}, this might be a wrong assumption. It may be better to run multiple experiments.",
+                        f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} -> n_components is {a.value}, this might be a wrong assumption. It may be better to run multiple experiments.",
                         category=FixedNComponentsPCAWarning,
                         stacklevel=2,
                     )
-                elif interpreter.warning_level == "possible":
+                elif interpreter.warning_level == "potential":
                     warnings.warn(
-                        f"Warning [possible]: in {stmt} @ line {stmt.pp.line} -> n_components might be a wrong assumption. It may be better to run multiple experiments.",
+                        f"Warning [potential]: in {stmt} @ line {stmt.pp.line} -> n_components might be a wrong assumption. It may be better to run multiple experiments.",
                         category=FixedNComponentsPCAWarning,
                         stacklevel=2,
                     )
