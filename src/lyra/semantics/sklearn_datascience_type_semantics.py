@@ -62,6 +62,7 @@ class SklearnTypeSemantics:
 
     def issue_pca_warnings(self, stmt, state, interpreter):
         warning_raised = False
+        no_warning = False
         caller = self.get_caller(stmt, state, interpreter)
         if utilities.is_PCA(state, caller) and state.get_type(caller) == DatascienceTypeLattice.Status.PCA:
             arg = stmt.arguments[1]
@@ -77,7 +78,10 @@ class SklearnTypeSemantics:
                                 )
                                 warning_raised = True
                                 break
-                if not warning_raised and interpreter.warning_level == "potential":
+                        if not warning_raised:
+                            no_warning = True
+                            break
+                if not warning_raised and not no_warning and interpreter.warning_level == "potential":
                     warnings.warn(
                         f"Warning [potential]: in {stmt} @ line {stmt.pp.line} -> PCA might be applied to Dataframe containing a categorical Series, it is better to use MixedPCA.",
                         category=PCAOnCategoricalWarning,
