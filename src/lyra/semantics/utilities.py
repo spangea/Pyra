@@ -1003,9 +1003,6 @@ class SelfUtilitiesSemantics:
             s = Subscription(TopLyraType, caller, arg.literal)
             if s in state.store:
                 state.forget_variable(s)
-            s = Subscription(TopLyraType, caller, arg.literal)
-            if s in state.store:
-                state.forget_variable(s)
         elif isinstance(arg, ListDisplayAccess):
             for i in arg.items:
                 s = Subscription(TopLyraType, caller, i.literal)
