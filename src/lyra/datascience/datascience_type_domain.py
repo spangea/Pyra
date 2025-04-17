@@ -32,7 +32,8 @@ class DatascienceTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
     from enum import IntEnum
 
     class Status(IntEnum):
-        Top = 54
+        Top = 55
+        NoneType = 54
 
         # Transformations
         PCA = 53
@@ -440,7 +441,8 @@ class DatascienceTypeLattice(BottomMixin, ArithmeticMixin, SequenceMixin, JSONMi
 
     @classmethod
     def _atom_types(cls):
-        s = (DatascienceTypeLattice.Status.NoneRet,
+        s = (DatascienceTypeLattice.Status.NoneType,
+             DatascienceTypeLattice.Status.NoneRet,
              DatascienceTypeLattice.Status.Plot,
              DatascienceTypeLattice.Status.Binarizer,
              DatascienceTypeLattice.Status.LabelBinarizer,
@@ -564,7 +566,7 @@ def resolve(typ: LyraType) -> DatascienceTypeLattice.Status:
     elif isinstance(_typ, SetLyraType):
         return DatascienceTypeLattice.Status.Set
     elif isinstance(_typ, NoneLyraType):
-        return DatascienceTypeLattice.Status.NoneRet
+        return DatascienceTypeLattice.Status.NoneType
     return DatascienceTypeLattice.Status.Top
 
 
