@@ -243,6 +243,8 @@ def resolve_type_annotation(annotation):
             return FloatLyraType()
         elif annotation.id == 'str':
             return StringLyraType()
+        elif annotation.id == 'list':
+            return ListLyraType(None)
 
     if isinstance(annotation, ast.Subscript):
         if annotation.value.id == 'List':
