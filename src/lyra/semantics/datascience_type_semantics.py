@@ -1251,11 +1251,6 @@ class DatascienceTypeSemantics(
                 state.result = {DatascienceTypeLattice.Status.Array}
         return state
 
-    def SVC_call_semantics(
-            self, stmt: Call, state: DatascienceTypeState, interpreter: ForwardInterpreter
-    ) -> DatascienceTypeState:
-        state.result = {DatascienceTypeLattice.Status.Top}
-        return state # Returns an object of the SVC class from the Sklearn library
 
     def KNeighborsClassifier_call_semantics(
             self, stmt: Call, state: DatascienceTypeState, interpreter: ForwardInterpreter
@@ -1272,6 +1267,17 @@ class DatascienceTypeSemantics(
     def KMeans_call_semantics(
             self, stmt: Call, state: DatascienceTypeState, interpreter: ForwardInterpreter
     ) -> DatascienceTypeState:
+        is_reproducible = False
+        for arg in stmt.arguments:
+            if isinstance(arg, Keyword) and arg.name == "random_state":
+                is_reproducible = True
+                break
+        if not is_reproducible:
+            warnings.warn(
+                f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} the random state is not set, the experiment might not be reproducible.",
+                category=ReproducibilityWarning,
+                stacklevel=2,
+            )
         state.result = {DatascienceTypeLattice.Status.Top}
         return state # Returns an object of the KMeans class from the Sklearn library.
 

@@ -23,7 +23,7 @@ from lyra.core.expressions import (
     VariableIdentifier
 )
 
-from lyra.core.datascience_warnings import FixedNComponentsPCAWarning, PCAOnCategoricalWarning
+from lyra.core.datascience_warnings import FixedNComponentsPCAWarning, PCAOnCategoricalWarning, ReproducibilityWarning
 
 class SklearnTypeSemantics:
     def MaxAbsScaler_call_semantics(
@@ -329,4 +329,21 @@ class SklearnTypeSemantics:
                         stacklevel=2,
                     )
         state.result = {DatascienceTypeLattice.Status.PCA}
+        return state
+
+    def SVC_call_semantics(
+        self, stmt: Call, state: DatascienceTypeState, interpreter: ForwardInterpreter
+    ) -> DatascienceTypeState:
+        is_reproducible = False
+        for arg in stmt.arguments:
+            if isinstance(arg, Keyword) and arg.name == "random_state":
+                is_reproducible = True
+                break
+        if not is_reproducible:
+            warnings.warn(
+                f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} the random state is not set, the experiment might not be reproducible.",
+                category=ReproducibilityWarning,
+                stacklevel=2,
+            )
+        state.result = {DatascienceTypeLattice.Status.Top}
         return state
