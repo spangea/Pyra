@@ -110,6 +110,12 @@ class SklearnTypeSemantics:
             state.result = {DatascienceTypeLattice.Status.Top}
         return state
 
+    def normalize_call_semantics(
+        self, stmt: Call, state: DatascienceTypeState, interpreter: ForwardInterpreter
+    ) -> DatascienceTypeState:
+        state.result = {DatascienceTypeLattice.Status.NormSeries}
+        return state
+
     def fit_transform_call_semantics(
         self, stmt: Call, state: DatascienceTypeState, interpreter: ForwardInterpreter
     ) -> DatascienceTypeState:
