@@ -1195,11 +1195,18 @@ class CFGVisitor(ast.NodeVisitor):
         """
         pp = ProgramPoint(node.lineno, node.col_offset)
         library = node.module
+        # Handle all imported names, not just the first one
+        for alias in node.names:
+            if hasattr(alias, 'asname') and alias.asname is not None:
+                name = alias.asname
+            else:
+                name = alias.name
+            libraries[name] = library
+        # Return the first import for backward compatibility
         if hasattr(node.names[0], 'asname') and node.names[0].asname is not None:
             name = node.names[0].asname
         else:
             name = node.names[0].name
-        libraries[name] = library
         if name:
             return Import(pp, library, name)
         else:
