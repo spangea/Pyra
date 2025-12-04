@@ -1,4 +1,5 @@
 import ast
+import inspect
 import optparse
 import sys
 import typing
@@ -13,6 +14,10 @@ from lyra.core.types import IntegerLyraType, BooleanLyraType, resolve_type_annot
 from lyra.visualization.graph_renderer import CFGRenderer
 from lyra.core.statements import AttributeAccess, Assert
 
+import warnings
+from lyra.core.datascience_warnings import (
+    ReproducibilityWarning
+)
 
 class LooseControlFlowGraph:
     class SpecialEdgeType(Enum):
@@ -662,11 +667,205 @@ class CFGVisitor(ast.NodeVisitor):
             second = right
         return result
 
+    def _extract_function_signature(self, func_name, target_obj=None, library_name=None):
+        """Extract function signature including default parameters using inspect.
+        :param func_name: name of the function to inspect
+        :param target_obj: optional target object for method calls
+        :param library_name: optional library name (e.g., 'pandas', 'sklearn')
+        :return: tuple of (parameters_dict, defaults_dict) or (None, None) if not found
+        """
+        try:
+            func_obj = None
+            # Try to get the function object
+            if target_obj is not None:
+                # Method call - try to get from the target object
+                if hasattr(target_obj, func_name):
+                    func_obj = getattr(target_obj, func_name)
+                else:
+                    return None, None
+            elif library_name is not None:
+                # Library function call (e.g., pd.read_csv, sklearn.preprocessing.StandardScaler)
+                try:
+                    # Try to import the library and get the function
+                    if library_name == 'pandas' or library_name == 'pd':
+                        import pandas as pd
+                        if hasattr(pd, func_name):
+                            func_obj = getattr(pd, func_name)
+                    elif library_name == 'numpy' or library_name == 'np':
+                        import numpy as np
+                        if hasattr(np, func_name):
+                            func_obj = getattr(np, func_name)
+                    elif library_name.startswith('sklearn'):
+                        # Handle sklearn submodules (e.g., sklearn.preprocessing)
+                        import importlib
+                        try:
+                            module = importlib.import_module(library_name)
+                            if hasattr(module, func_name):
+                                func_obj = getattr(module, func_name)
+                        except ImportError:
+                            pass
+                    elif library_name == 'matplotlib' or library_name.startswith('matplotlib.'):
+                        import importlib
+                        try:
+                            if library_name == 'matplotlib':
+                                import matplotlib
+                                module = matplotlib
+                            else:
+                                module = importlib.import_module(library_name)
+                            if hasattr(module, func_name):
+                                func_obj = getattr(module, func_name)
+                        except ImportError:
+                            pass
+                    elif library_name == 'seaborn' or library_name == 'sns':
+                        import seaborn as sns
+                        if hasattr(sns, func_name):
+                            func_obj = getattr(sns, func_name)
+                    else:
+                        # Try generic import
+                        import importlib
+                        try:
+                            module = importlib.import_module(library_name)
+                            if hasattr(module, func_name):
+                                func_obj = getattr(module, func_name)
+                        except ImportError:
+                            pass
+                except ImportError:
+                    return None, None
+            else:
+                # Regular function call - try to get from builtins or globals
+                import builtins
+                if hasattr(builtins, func_name):
+                    func_obj = getattr(builtins, func_name)
+                elif func_name in globals():
+                    func_obj = globals()[func_name]
+                else:
+                    return None, None
+            if func_obj is None:
+                return None, None
+
+            # Get signature
+            sig = inspect.signature(func_obj)
+
+            # Extract parameters with their defaults
+            params_dict = {}
+            defaults_dict = {}
+
+            for param_name, param in sig.parameters.items():
+                params_dict[param_name] = {
+                    'kind': param.kind,
+                    'annotation': param.annotation if param.annotation != inspect.Parameter.empty else None
+                }
+                if param.default != inspect.Parameter.empty:
+                    defaults_dict[param_name] = param.default
+
+            return params_dict, defaults_dict
+        except:
+            # Function not found or signature not available
+            return None, None
+
     def visit_Call(self, node, types=None, libraries=None, typ=None, fname=''):
         """Visitor function for a call.
         The attribute func stores the function being called (often a Name or Attribute object).
-        The attribute args stores a list fo the arguments passed by position."""
+        The attribute args stores a list fo the arguments passed by position.
+
+        Uses inspect to extract all parameters including defaults when possible.
+        """
         pp = ProgramPoint(node.lineno, node.col_offset)
+        # Extract function/method signature at the beginning for all calls
+        func_name = None
+        target_obj = None
+        library_name = None
+
+        if isinstance(node.func, ast.Name):
+            func_name = node.func.id
+            # Check if this function was imported from a library
+            if libraries and func_name in libraries:
+                library_name = libraries[func_name]
+                params_dict, defaults_dict = self._extract_function_signature(func_name, None, library_name)
+            else:
+                params_dict, defaults_dict = self._extract_function_signature(func_name)
+        elif isinstance(node.func, ast.Attribute):
+            func_name = node.func.attr
+            # Try to determine target object type for method inspection
+            try:
+                target = self.visit(node.func.value, types, libraries, None, fname=fname)
+
+                # Check if it's a library access (e.g., pd.read_csv, sklearn.preprocessing.StandardScaler)
+                if isinstance(target, LibraryAccess):
+                    library_name = target.library
+                    params_dict, defaults_dict = self._extract_function_signature(func_name, None, library_name)
+                elif hasattr(target, 'typ'):
+                    type_map = {
+                        'StringLyraType': str,
+                        'ListLyraType': list,
+                        'DictLyraType': dict,
+                        'SetLyraType': set,
+                    }
+                    type_name = type(target.typ).__name__
+                    if type_name in type_map:
+                        target_obj = type_map[type_name]
+                    params_dict, defaults_dict = self._extract_function_signature(func_name, target_obj, None)
+                else:
+                    params_dict, defaults_dict = self._extract_function_signature(func_name, target_obj, None)
+            except Exception as e:
+                params_dict, defaults_dict = None, None
+        else:
+            params_dict, defaults_dict = None, None
+
+        # Check random_state parameter if present in the signature
+        if params_dict is not None and 'random_state' in params_dict:
+            # Get the default value for random_state
+            default_random_state = defaults_dict.get('random_state', 'NO_DEFAULT')
+
+            # Check if random_state is explicitly provided in the call
+            random_state_provided = False
+            random_state_value = None
+
+            # Check positional arguments
+            param_names = list(params_dict.keys())
+            if 'random_state' in param_names:
+                random_state_idx = param_names.index('random_state')
+                if random_state_idx < len(node.args):
+                    random_state_provided = True
+                    arg_node = node.args[random_state_idx]
+                    # Try to extract the value
+                    if isinstance(arg_node, ast.Constant):
+                        random_state_value = arg_node.value
+                    elif isinstance(arg_node, ast.Name):
+                        random_state_value = f"Variable: {arg_node.id}"
+                    else:
+                        random_state_value = f"Expression: {ast.unparse(arg_node)}"
+
+            # Check keyword arguments
+            for keyword in node.keywords:
+                if keyword.arg == 'random_state':
+                    random_state_provided = True
+                    if isinstance(keyword.value, ast.Constant):
+                        random_state_value = keyword.value.value
+                    elif isinstance(keyword.value, ast.Name):
+                        random_state_value = f"Variable: {keyword.value.id}"
+                    else:
+                        random_state_value = f"Expression: {ast.unparse(keyword.value)}"
+                    break
+
+            if random_state_provided:
+                if random_state_value is None or (isinstance(random_state_value, str) and 'None' in random_state_value):
+                    warnings.warn(
+                        f"Warning [plausible]: in {func_name} @ line {node.lineno} the random state is not set, the experiment might not be reproducible.",
+                        category=ReproducibilityWarning,
+                        stacklevel=2,
+                    )
+                else:
+                    # No warning
+                    pass
+            else:
+                if default_random_state is None:
+                    warnings.warn(
+                        f"Warning [plausible]: in {func_name} @ line {node.lineno} the random state is not set, the experiment might not be reproducible.",
+                        category=ReproducibilityWarning,
+                        stacklevel=2,
+                    )
+
         if isinstance(node.func, ast.Name):
             name: str = node.func.id
             if name == 'bool' or name == 'int' or name == 'str':
