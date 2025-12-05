@@ -857,6 +857,16 @@ class PandasDatascienceTypeSemantics:
     def DataFrame_call_semantics(
         self, stmt: Call, state: DatascienceTypeState, interpreter: ForwardInterpreter
     ) -> DatascienceTypeState:
+        # Check if the first argument is a fit_transform call
+        # In cases like: pd.DataFrame(scaler.fit_transform(X))
+        # We want to propagate the result of fit_transform instead of returning a generic DataFrame
+        if stmt.arguments:
+            first_arg = stmt.arguments[0]
+            if isinstance(first_arg, Call) and first_arg.name == "fit_transform":
+                # Execute the fit_transform semantics to get its result type
+                fit_transform_state = self.semantics(first_arg, state, interpreter)
+                # Return the result type from fit_transform instead of a generic DataFrame
+                return fit_transform_state
         state.result = {DatascienceTypeLattice.Status.DataFrame}
         return state
 
