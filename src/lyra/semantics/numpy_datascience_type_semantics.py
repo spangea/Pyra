@@ -1,4 +1,5 @@
-from lyra.core.statements import Call
+from lyra.core.statements import Call, ListDisplayAccess, TupleDisplayAccess
+from lyra.core.expressions import ListDisplay, TupleDisplay
 
 from lyra.engine.forward import ForwardInterpreter
 
@@ -131,6 +132,35 @@ class NumPyDatascienceTypeSemantics:
                 state.result = {DatascienceTypeLattice.Status.Array}
         else:
             return self.relaxed_open_call_policy(stmt, state, interpreter)
+        return state
+
+    def hstack_call_semantics(
+            self, stmt: Call, state: DatascienceTypeState, interpreter: ForwardInterpreter
+    ) -> DatascienceTypeState:
+        # hstack concatenates arrays horizontally
+        # If at least one argument is Scaled, the result should be Scaled
+        has_scaled = False
+
+        # hstack usually takes a tuple/list of arrays as first argument
+        # Check all arguments and evaluate them
+        first_arg = stmt.arguments[0]
+        elements = []
+        if isinstance(first_arg, (ListDisplay, TupleDisplay, ListDisplayAccess, TupleDisplayAccess)):
+            elements = first_arg.items
+        else:
+            elements = [first_arg]
+
+        for element in elements:
+            if utilities.is_Scaled(state, element):
+                has_scaled = True
+                break
+
+        if has_scaled:
+            state.result = {DatascienceTypeLattice.Status.Scaled}
+        else:
+            # Default behavior: return Array type
+            state.result = {DatascienceTypeLattice.Status.Array}
+
         return state
 
     def log_call_semantics(

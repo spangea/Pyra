@@ -841,6 +841,8 @@ def is_Scaled(state, caller):
                 DatascienceTypeLattice.Status.Scaled
             }:
                 return True
+        if is_ScaledSeries(state, caller):
+            return True
     elif isinstance(caller, DatascienceTypeLattice.Status) and caller in {
         DatascienceTypeLattice.Status.Scaled
     }:
