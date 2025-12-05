@@ -847,24 +847,25 @@ class CFGVisitor(ast.NodeVisitor):
                     else:
                         random_state_value = f"Expression: {ast.unparse(keyword.value)}"
                     break
-
-            if random_state_provided:
-                if random_state_value is None or (isinstance(random_state_value, str) and 'None' in random_state_value):
-                    warnings.warn(
-                        f"Warning [plausible]: in {func_name} @ line {node.lineno} the random state is not set, the experiment might not be reproducible.",
-                        category=ReproducibilityWarning,
-                        stacklevel=2,
-                    )
+            # Check warning if the function is not train_test_split
+            if func_name != "train_test_split":
+                if random_state_provided:
+                    if random_state_value is None or (isinstance(random_state_value, str) and 'None' in random_state_value):
+                        warnings.warn(
+                            f"Warning [plausible]: in {func_name} @ line {node.lineno} the random state is not set, the experiment might not be reproducible.",
+                            category=ReproducibilityWarning,
+                            stacklevel=2,
+                        )
+                    else:
+                        # No warning
+                        pass
                 else:
-                    # No warning
-                    pass
-            else:
-                if default_random_state is None:
-                    warnings.warn(
-                        f"Warning [plausible]: in {func_name} @ line {node.lineno} the random state is not set, the experiment might not be reproducible.",
-                        category=ReproducibilityWarning,
-                        stacklevel=2,
-                    )
+                    if default_random_state is None:
+                        warnings.warn(
+                            f"Warning [plausible]: in {func_name} @ line {node.lineno} the random state is not set, the experiment might not be reproducible.",
+                            category=ReproducibilityWarning,
+                            stacklevel=2,
+                        )
 
         if isinstance(node.func, ast.Name):
             name: str = node.func.id

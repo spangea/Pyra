@@ -1328,12 +1328,11 @@ class DatascienceTypeSemantics(
                 is_reproducible = True
                 break
         if not is_reproducible:
-            # warnings.warn(
-            #     f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} the random state is not set, the experiment might not be reproducible.",
-            #     category=ReproducibilityWarning,
-            #     stacklevel=2,
-            # )
-            # Warning moved at translation time in cfg_generator to make it more general
+            warnings.warn(
+                f"Warning [plausible]: in {stmt} @ line {stmt.pp.line} the random state is not set, the experiment might not be reproducible.",
+                category=ReproducibilityWarning,
+                stacklevel=2,
+            )
             pass
         types: tuple = ()
         for arg in stmt.arguments:
