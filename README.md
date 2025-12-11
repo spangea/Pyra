@@ -7,14 +7,15 @@
 Pyra is a high-level linter static analyzer for data science applications written in Python, that helps developers identify potential issues in their data science code written in Python, as an extension of [Lyra](https://github.com/caterinaurban/Lyra).
 
 Pyra is based on the peer-reviewed publications:
-> Greta Dolcetti, Vincenzo Arceri, Antonella Mensi, Enea Zaffanella, Caterina Urban, Agostino Cortesi (2026). _**"Introducing Pyra: A High-Level Linter for Data Science Software**_.. In: Dutra, I., et al. Machine Learning and Knowledge Discovery in Databases. Applied Data Science Track and Demo Track.
-> 
-> Greta Dolcetti, Agostino Cortesi, Caterina Urban, Enea Zaffanella. _**"Towards a High Level Linter for Data Science"**_. In Proceedings of the 10th ACM SIGPLAN International Workshop on Numerical and Symbolic Abstract Domains (NSAD 2024), co-located with SPLASH 2024.
 
+> Greta Dolcetti, Vincenzo Arceri, Antonella Mensi, Enea Zaffanella, Caterina Urban, Agostino Cortesi (2026). _**"Introducing Pyra: A High-Level Linter for Data Science Software**_.. In: Dutra, I., et al. Machine Learning and Knowledge Discovery in Databases. Applied Data Science Track and Demo Track.
+>
+> Greta Dolcetti, Agostino Cortesi, Caterina Urban, Enea Zaffanella. _**"Towards a High Level Linter for Data Science"**_. In Proceedings of the 10th ACM SIGPLAN International Workshop on Numerical and Symbolic Abstract Domains (NSAD 2024), co-located with SPLASH 2024.
 
 ### Abstract datatype analysis
 
 Let us consider the following fragment. The code represents a simple data science pipeline that reads a CSV file, drops duplicates, plots the data, scales it, splits it into training and testing sets, and fits a logistic regression model.
+
 ```
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -34,7 +35,7 @@ X_scaled = scaler.fit_transform(df[["Amount"]])
 X_train, X_test, y_train, y_test =
     train_test_split(X_scaled, df["Label"])
 
-model = LogisticRegression()
+model = LogisticRegression(random_state=42)
 model.fit(X_train, y_train)
 ```
 
@@ -49,38 +50,32 @@ Pyra detects these issues and raises warnings, and raises the following warnings
 
 ![warnings](https://github.com/user-attachments/assets/6c11faed-2bdb-4648-94a3-2f8e33295d69)
 
-## Getting Started 
+## Getting Started
 
 ### Prerequisites
 
 * Install **Git**
-
 * Install [**Python 3.9.18**](http://www.python.org/)
-
 * Install ``pyenv``
 
 ### Installation
 
 * Create a virtual Python environment:
-
-    | Linux or Mac OS X                     |
-    | ------------------------------------- |
-    | `pyenv local 3.9.18` |
-
+  | Linux or Mac OS X      |
+  | ---------------------- |
+  | `pyenv local 3.9.18` |
 * Install Lyra in the virtual environment:
+  | Linux or Mac OS X                                                   |
+  | ------------------------------------------------------------------- |
+  | `./<env>/bin/pip install git+https://github.com/spangea/Pyra.git` |
 
-    | Linux or Mac OS X                                                       |
-    | ----------------------------------------------------------------------- |
-    | `./<env>/bin/pip install git+https://github.com/spangea/Pyra.git` | 
-    
 ### Command Line Usage
 
 To analyze a specific Python program run:
 
-   | Linux or Mac OS X                            |
-   | ---------------------------------------------|
-   | `./<env>/bin/pyra --analysis type-datasciencetest.py` | 
+| Linux or Mac OS X                                       |
+| ------------------------------------------------------- |
+| `./<env>/bin/pyra --analysis type-datasciencetest.py` |
 
-   
 After the analysis, Pyra generates a PDF file showing the control flow graph of the program
-annotated with the result of the abstract data type analysis before and after each statement in the program. 
+annotated with the result of the abstract data type analysis before and after each statement in the program.
