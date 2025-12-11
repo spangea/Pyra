@@ -48,7 +48,7 @@ The code fragment contains several issues that could lead to misleading results 
 
 Pyra detects these issues and raises warnings, and raises the following warnings:
 
-![warnings](https://github.com/user-attachments/assets/6c11faed-2bdb-4648-94a3-2f8e33295d69)
+![warnings](https://github.com/spangea/Pyra/blob/datascience/warnings.png)
 
 ## Getting Started
 
