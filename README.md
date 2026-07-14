@@ -6,8 +6,10 @@
 
 Pyra is a high-level linter static analyzer for data science applications written in Python, that helps developers identify potential issues in their data science code written in Python, as an extension of [Lyra](https://github.com/caterinaurban/Lyra).
 
-Pyra is based on the peer-reviewed publications:
+Pyra is based on the peer-reviewed publications (please cite the journal version because it is the newest and most complete):
 
+> Greta Dolcetti, Vincenzo Arceri, Antonella Mensi, Enea Zaffanella, Caterina Urban, and Agostino Cortesi. 2026. _**PYRA: A high-level linter for data science software.**_ Know.-Based Syst. 337, C (Mar 2026). https://doi.org/10.1016/j.knosys.2026.115412
+>
 > Greta Dolcetti, Vincenzo Arceri, Antonella Mensi, Enea Zaffanella, Caterina Urban, Agostino Cortesi (2026). _**"Introducing Pyra: A High-Level Linter for Data Science Software**_.. In: Dutra, I., et al. Machine Learning and Knowledge Discovery in Databases. Applied Data Science Track and Demo Track.
 >
 > Greta Dolcetti, Agostino Cortesi, Caterina Urban, Enea Zaffanella. _**"Towards a High Level Linter for Data Science"**_. In Proceedings of the 10th ACM SIGPLAN International Workshop on Numerical and Symbolic Abstract Domains (NSAD 2024), co-located with SPLASH 2024.
